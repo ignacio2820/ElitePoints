@@ -156,31 +156,31 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
   // Si está seleccionado, mostramos el chip
   if (seleccionado) {
     return (
-      <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4">
+      <div className="rounded-2xl border border-bark-100 bg-cream-50/80 p-4 shadow-soft">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-400/20 font-display text-lg font-semibold text-emerald-100">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white font-display text-lg font-semibold text-bark-600 ring-1 ring-bark-100">
               {seleccionado.nombre.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="flex items-center gap-2 font-display text-base font-semibold text-emerald-50">
-                <CheckCircle2 size={16} className="text-emerald-300" />
+              <p className="flex items-center gap-2 font-display text-base font-semibold text-bark-800">
+                <CheckCircle2 size={16} className="text-emerald-600" />
                 {seleccionado.nombre}
               </p>
               {seleccionado.codigoCliente && (
-                <p className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 font-mono text-[11px] font-semibold tracking-wider text-emerald-200">
+                <p className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-bark-200 bg-white px-2 py-0.5 font-mono text-[11px] font-semibold tracking-wider text-bark-600">
                   Código {seleccionado.codigoCliente}
                 </p>
               )}
-              <p className="mt-1 text-xs text-emerald-200/70">
+              <p className="mt-1 text-xs text-bark-500">
                 Saldo:{" "}
-                <span className="font-semibold text-emerald-100">
+                <span className="font-semibold text-bark-700">
                   {formatNumber(seleccionado.saldoHuellitas)} Huellitas
                 </span>
                 {seleccionado.email && (
                   <>
                     {" · "}
-                    <span className="text-emerald-200/60">
+                    <span className="text-bark-400">
                       {seleccionado.email}
                     </span>
                   </>
@@ -191,7 +191,7 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
           <button
             type="button"
             onClick={limpiar}
-            className="rounded-full p-1.5 text-emerald-300/70 transition hover:bg-emerald-500/15 hover:text-emerald-100"
+            className="rounded-full p-1.5 text-bark-400 transition hover:bg-cream-100 hover:text-bark-700"
             title="Cambiar cliente"
           >
             <X size={16} />
@@ -204,15 +204,15 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
   return (
     <div ref={wrapperRef} className="relative">
       <label className="mb-2 flex items-center gap-2">
-        <User size={16} className="text-amber-300/70" />
-        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+        <User size={16} className="text-bark-400" />
+        <span className="text-xs font-semibold uppercase tracking-widest text-bark-400">
           Cliente
         </span>
       </label>
       <div className="relative">
         <Search
           size={16}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-bark-400"
         />
         <input
           ref={inputRef}
@@ -225,23 +225,23 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
           onFocus={() => setOpen(true)}
           placeholder="Código del cliente (ABC-123) o nombre / email / teléfono…"
           autoComplete="off"
-          className={`w-full rounded-xl border bg-zinc-900 py-3 pl-11 pr-10 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition focus:ring-2 ${
+          className={`w-full rounded-xl border bg-cream-50 py-3 pl-11 pr-10 text-sm text-bark-700 placeholder-zinc-500 outline-none transition focus:ring-2 ${
             pareceCodigo
               ? "border-amber-400 font-mono uppercase tracking-wider focus:border-amber-300 focus:ring-amber-400/30"
-              : "border-zinc-800 focus:border-amber-400 focus:ring-amber-400/20"
+              : "border-bark-100 focus:border-bark-400 focus:ring-bark-400/20"
           }`}
         />
         {buscando && (
           <Loader2
             size={16}
-            className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-amber-300"
+            className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-bark-400"
           />
         )}
         {!buscando && q && (
           <button
             type="button"
             onClick={() => setQ("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-bark-400 hover:bg-cream-100 hover:text-bark-600"
             title="Limpiar"
           >
             <X size={14} />
@@ -249,15 +249,15 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
         )}
       </div>
 
-      <p className="mt-2 text-xs text-zinc-500">
-        Pedile al cliente su <span className="text-amber-300">código corto</span>{" "}
+      <p className="mt-2 text-xs text-bark-400">
+        Pedile al cliente su <span className="font-medium text-bark-600">código corto</span>{" "}
         (lo ve en su pantalla de "Mi cuenta"), o buscalo por nombre.
       </p>
 
       {open && q.trim() && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl shadow-black/50">
+        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-bark-100 bg-white shadow-2xl shadow-bark-900/10">
           {resultados.length === 0 && !buscando && (
-            <div className="p-4 text-center text-sm text-zinc-500">
+            <div className="p-4 text-center text-sm text-bark-400">
               {error ?? "Sin resultados"}
             </div>
           )}
@@ -268,18 +268,18 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
                   <button
                     type="button"
                     onClick={() => elegir(c)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-zinc-900"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-cream-50"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-800 font-display text-sm font-semibold text-zinc-200">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cream-100 font-display text-sm font-semibold text-bark-600">
                       {c.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-zinc-100">
+                      <p className="truncate text-sm font-semibold text-bark-700">
                         {c.nombre}
                       </p>
-                      <p className="truncate text-xs text-zinc-500">
+                      <p className="truncate text-xs text-bark-400">
                         {c.codigoCliente && (
-                          <span className="font-mono text-amber-300">
+                          <span className="font-mono text-bark-500">
                             {c.codigoCliente}
                           </span>
                         )}
@@ -287,9 +287,9 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
                         {c.email || c.telefono || "—"}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs tabular-nums text-zinc-400">
+                    <span className="shrink-0 text-xs tabular-nums text-bark-400">
                       {formatNumber(c.saldoHuellitas)}{" "}
-                      <span className="text-zinc-600">Huellitas</span>
+                      <span className="text-bark-300">Huellitas</span>
                     </span>
                   </button>
                 </li>

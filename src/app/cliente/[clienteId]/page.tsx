@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ClienteView } from "./ClienteView";
+import { getInfoLocal } from "@/lib/huellitas/localService";
+import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import {
   CONFIGURACION_DEFAULT,
   type ConfiguracionLocal,
@@ -8,7 +10,6 @@ import {
   type Mascota
 } from "@/lib/huellitas/types";
 
-const LOCAL_DEMO_ID = "demo";
 const NOMBRE_LOCAL_DEMO = "Pet Shop Patitas";
 
 const CLIENTE_DEMO = {
@@ -100,12 +101,20 @@ async function loadCliente(localId: string, clienteId: string) {
 }
 
 export default async function ClientePage({
-  params
+  params,
+  searchParams
 }: {
   params: { clienteId: string };
+  searchParams?: { localId?: string };
 }) {
-  const data = await loadCliente(LOCAL_DEMO_ID, params.clienteId);
+  const localId = searchParams?.localId?.trim();
+  if (!localId) notFound();
+
+  const data = await loadCliente(localId, params.clienteId);
   if (!data) notFound();
+
+  const infoLocal = await getInfoLocal(localId);
+  const membresiaExpirada = isMembresiaExpirada(infoLocal);
 
   const h = headers();
   const proto = h.get("x-forwarded-proto") ?? "http";
@@ -114,10 +123,12 @@ export default async function ClientePage({
 
   return (
     <ClienteView
+      localId={localId}
       cliente={data.cliente}
       cfg={data.cfg}
       nombreLocal={data.nombreLocal}
       baseUrl={baseUrl}
+      membresiaExpirada={membresiaExpirada}
     />
   );
 }

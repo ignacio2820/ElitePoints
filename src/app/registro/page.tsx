@@ -4,9 +4,10 @@ import { RegistroForm } from "./RegistroForm";
 import { CONFIGURACION_DEFAULT } from "@/lib/huellitas/types";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { normalizarCodigo } from "@/lib/huellitas/referidos";
+import { getInfoLocal } from "@/lib/huellitas/localService";
+import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
+import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-
-const LOCAL_DEMO_ID = "demo";
 
 async function getCfg(localId: string) {
   try {
@@ -22,8 +23,29 @@ export default async function RegistroPage({
 }: {
   searchParams: { ref?: string; localId?: string };
 }) {
-  const localId = searchParams.localId?.trim() || LOCAL_DEMO_ID;
+  const localId = searchParams.localId?.trim() || "";
+  if (!localId) {
+    return (
+      <main className="paw-bg min-h-screen">
+        <section className="mx-auto max-w-3xl px-6 py-24 text-center">
+          <h1 className="font-display text-3xl font-semibold text-bark-700">
+            Falta el local
+          </h1>
+          <p className="mt-3 text-[color:var(--muted)]">
+            Pedile al Pet Shop o veterinaria el link de registro con su
+            identificador de local.
+          </p>
+          <Link href="/" className="btn-primary mt-8 inline-flex">
+            Volver al inicio
+          </Link>
+        </section>
+      </main>
+    );
+  }
+
   const cfg = await getCfg(localId);
+  const infoLocal = await getInfoLocal(localId);
+  const membresiaExpirada = isMembresiaExpirada(infoLocal);
   const codigoRef = searchParams.ref ? normalizarCodigo(searchParams.ref) : "";
   const tieneRef = codigoRef.length >= 4;
 
@@ -89,6 +111,12 @@ export default async function RegistroPage({
                 </div>
               </div>
             </div>
+          </div>
+        ) : null}
+
+        {membresiaExpirada ? (
+          <div className="mt-8">
+            <AvisoMembresiaExpiradaCliente nombreLocal={infoLocal.nombre} />
           </div>
         ) : null}
 

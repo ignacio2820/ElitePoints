@@ -30,7 +30,8 @@ function getAdminApp(): App {
 
   _app = initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
-    projectId
+    projectId,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
   });
   return _app;
 }

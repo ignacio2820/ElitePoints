@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth/server";
 import { listarClientes } from "@/lib/huellitas/clientesService";
+import { requireMembresiaActiva } from "@/lib/huellitas/requireMembresiaActiva";
 import { getConfiguracion } from "@/lib/huellitas/service";
 import { BuscadorClientes } from "@/components/admin/BuscadorClientes";
 
@@ -8,6 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function ClientesPage() {
   const sesion = await requireAdmin();
   const localId = sesion.claims.localId;
+  await requireMembresiaActiva(localId);
 
   const [clientesIniciales, cfg] = await Promise.all([
     listarClientes(localId, "", 100),

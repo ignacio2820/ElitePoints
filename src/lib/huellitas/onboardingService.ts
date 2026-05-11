@@ -86,8 +86,9 @@ function premiosInicialesGenericos(localId: string): Premio[] {
 export interface OnboardingInput {
   emailDueno: string;
   nombreLocal: string;
-  telefonoWhatsapp?: string;
-  logoUrl?: string;
+  direccion: string;
+  telefonoWhatsapp: string;
+  logoUrl: string;
 }
 
 export interface OnboardingResult {
@@ -223,10 +224,11 @@ export async function crearLocalYOnboarding(
         creadoEn: ahora,
         actualizadoEn: ahora,
         emailDueno: email,
-        ...(input.telefonoWhatsapp
-          ? { telefonoWhatsapp: input.telefonoWhatsapp.trim() }
-          : {}),
-        ...(input.logoUrl ? { logoUrl: input.logoUrl.trim() } : {})
+        direccion: input.direccion.trim(),
+        telefonoWhatsapp: input.telefonoWhatsapp.trim(),
+        logoUrl: input.logoUrl.trim(),
+        estadoMembresia: "pendiente",
+        membresiaEstado: "pendiente"
       },
       { merge: true }
     );
@@ -300,7 +302,7 @@ export async function crearLocalYOnboarding(
   const baseUrl = (
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ).replace(/\/$/, "");
-  const continueUrl = `${baseUrl}/login/verify?intent=admin&redirect=/admin`;
+  const continueUrl = `${baseUrl}/login/verify?intent=admin&redirect=/admin/pagos`;
   const magicLink = await auth.generateSignInWithEmailLink(email, {
     url: continueUrl,
     handleCodeInApp: true

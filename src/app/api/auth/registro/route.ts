@@ -20,8 +20,7 @@ const Body = z.object({
   email: z.string().email().transform((s) => s.trim().toLowerCase()),
   nombre: z.string().min(2, "Tu nombre es obligatorio").max(120),
   telefono: z.string().max(30).optional(),
-  /** Si no viene, se usa NEXT_PUBLIC_DEFAULT_LOCAL_ID. */
-  localId: z.string().min(1).optional(),
+  localId: z.string().min(1, "Falta el local"),
   /** Código de referido opcional (cliente vino con un link de invitación). */
   codigoReferido: z.string().max(20).optional(),
   mascota: z.object({
@@ -56,19 +55,7 @@ export async function POST(req: Request) {
     );
   }
   const data = parsed.data;
-  const localId =
-    data.localId ?? process.env.NEXT_PUBLIC_DEFAULT_LOCAL_ID ?? "";
-  if (!localId) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "No hay un local configurado para auto-registro. " +
-          "Definí NEXT_PUBLIC_DEFAULT_LOCAL_ID en .env.local."
-      },
-      { status: 500 }
-    );
-  }
+  const localId = data.localId;
 
   try {
     // 1. Verificar que el local exista (Firestore)

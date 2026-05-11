@@ -1,5 +1,6 @@
 import { NuevaVentaForm } from "./NuevaVentaForm";
 import { requireAdmin } from "@/lib/auth/server";
+import { requireMembresiaActiva } from "@/lib/huellitas/requireMembresiaActiva";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getConfiguracion } from "@/lib/huellitas/service";
@@ -37,6 +38,7 @@ export default async function NuevaVentaPage({
 }) {
   const sesion = await requireAdmin();
   const localId = sesion.claims.localId;
+  await requireMembresiaActiva(localId);
 
   const [{ cfg, fuente, error }, localSnap] = await Promise.all([
     safeGetConfig(localId),

@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
-import { getInfoLocal, setInfoLocal } from "@/lib/huellitas/localService";
+import { getInfoLocal, membresiaActiva, setInfoLocal } from "@/lib/huellitas/localService";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const Body = z.object({
   nombre: z.string().min(1).max(120).optional(),
+  logoUrl: z
+    .union([z.string().trim().url().max(500), z.literal(""), z.null()])
+    .optional(),
   telefonoWhatsapp: z
     .string()
     .max(30)
@@ -21,7 +24,11 @@ export async function GET() {
   try {
     const sesion = await requireAdmin();
     const info = await getInfoLocal(sesion.claims.localId);
-    return NextResponse.json({ ok: true, info });
+    return NextResponse.json({
+      ok: true,
+      info,
+      membresiaActiva: membresiaActiva(info)
+    });
   } catch (err) {
     if (err instanceof ErrorAuth) {
       return NextResponse.json(
@@ -45,9 +52,17 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    await setInfoLocal(sesion.claims.localId, parsed.data);
+    const patch = { ...parsed.data };
+    if (patch.logoUrl === "") {
+      patch.logoUrl = null;
+    }
+    await setInfoLocal(sesion.claims.localId, patch);
     const info = await getInfoLocal(sesion.claims.localId);
-    return NextResponse.json({ ok: true, info });
+    return NextResponse.json({
+      ok: true,
+      info,
+      membresiaActiva: membresiaActiva(info)
+    });
   } catch (err) {
     if (err instanceof ErrorAuth) {
       return NextResponse.json(

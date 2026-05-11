@@ -1,8 +1,21 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { AdminNav } from "@/components/admin/AdminNav";
+import { LocalBrandMark } from "@/components/LocalBrandMark";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { getSesion } from "@/lib/auth/server";
+import { AvisoMembresiaPorVencer } from "@/components/admin/AvisoMembresiaPorVencer";
+import { getInfoLocal } from "@/lib/huellitas/localService";
+import {
+  diasHastaVencimiento,
+  membresiaPorVencer
+} from "@/lib/huellitas/membresia";
+import { notificarMembresiaPorVencerSiCorresponde } from "@/lib/huellitas/membresiaAlertasService";
+import {
+  requireMembresiaActiva,
+  rutaRequiereAccesoOperativo
+} from "@/lib/huellitas/requireMembresiaActiva";
 
 export default async function AdminLayout({
   children
@@ -14,75 +27,58 @@ export default async function AdminLayout({
     redirect("/login?intent=admin&redirect=/admin");
   }
   if (sesion.claims.role !== "admin") {
-    redirect("/mi-cuenta");
+    redirect(`/mi-cuenta?localId=${encodeURIComponent(sesion.claims.localId)}`);
   }
+
+  const pathname = headers().get("x-pathname") ?? "";
+  if (rutaRequiereAccesoOperativo(pathname)) {
+    await requireMembresiaActiva(sesion.claims.localId);
+  }
+
+  const info = await getInfoLocal(sesion.claims.localId);
+  void notificarMembresiaPorVencerSiCorresponde(info);
+
+  const diasRestantes = diasHastaVencimiento(info);
+  const mostrarAvisoMembresia =
+    membresiaPorVencer(info) && diasRestantes !== null && diasRestantes > 0;
+  const fechaVencimiento = info.fechaVencimiento
+    ? info.fechaVencimiento.toLocaleDateString("es-AR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      })
+    : "";
 
   return (
     <div className="paw-bg min-h-screen">
       <header className="border-b border-bark-100 bg-cream-50/80 backdrop-blur sticky top-0 z-10 print:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-          <Link href="/admin" className="flex items-center gap-2">
-            <HuellitaIcon size={24} className="text-bark-400" />
-            <span className="font-display text-lg font-semibold text-bark-700">
-              Huellitas
-            </span>
-            <span className="ml-2 rounded-full bg-cream-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-bark-500">
-              Admin · {sesion.claims.localId}
-            </span>
+          <Link href="/admin" className="flex min-w-0 items-center gap-3">
+            <LocalBrandMark
+              nombreLocal={info.nombre}
+              logoUrl={info.logoUrl}
+              size={36}
+            />
+            <div className="min-w-0">
+              <span className="block truncate font-display text-lg font-semibold text-bark-700">
+                Admin · {info.nombre}
+              </span>
+            </div>
           </Link>
-          <nav className="hidden items-center gap-1 text-sm md:flex">
-            <NavLink href="/admin">Dashboard</NavLink>
-            <NavLink href="/admin/nueva-venta" highlight>
-              Caja
-            </NavLink>
-            <NavLink href="/admin/canjes">Canjes</NavLink>
-            <NavLink href="/admin/clientes">Clientes</NavLink>
-            <NavLink href="/admin/configuracion">Configuración</NavLink>
-          </nav>
+          <AdminNav className="hidden md:flex" />
           <UserMenu />
         </div>
-        <nav className="flex items-center gap-1 overflow-x-auto px-4 pb-2 text-sm md:hidden">
-          <NavLink href="/admin">Dashboard</NavLink>
-          <NavLink href="/admin/nueva-venta" highlight>
-            Caja
-          </NavLink>
-          <NavLink href="/admin/canjes">Canjes</NavLink>
-          <NavLink href="/admin/clientes">Clientes</NavLink>
-          <NavLink href="/admin/configuracion">Configuración</NavLink>
-        </nav>
+        <AdminNav className="overflow-x-auto px-4 pb-2 md:hidden" />
       </header>
       <main className="mx-auto max-w-6xl px-6 py-10 print:max-w-none print:p-0">
+        {mostrarAvisoMembresia ? (
+          <AvisoMembresiaPorVencer
+            diasRestantes={diasRestantes}
+            fechaVencimiento={fechaVencimiento}
+          />
+        ) : null}
         {children}
       </main>
     </div>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-  highlight = false
-}: {
-  href: string;
-  children: React.ReactNode;
-  highlight?: boolean;
-}) {
-  if (highlight) {
-    return (
-      <Link
-        href={href}
-        className="ml-1 inline-flex items-center gap-1.5 rounded-lg border border-amber-400/50 bg-gradient-to-r from-amber-100 to-amber-50 px-3 py-2 font-semibold text-amber-700 shadow-sm transition hover:border-amber-500 hover:from-amber-200 hover:to-amber-100"
-      >
-        {children}
-      </Link>
-    );
-  }
-  return (
-    <Link
-      href={href}
-      className="rounded-lg px-3 py-2 text-bark-500 transition hover:bg-cream-100 hover:text-bark-700"
-    >
-      {children}
-    </Link>
   );
 }

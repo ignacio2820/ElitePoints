@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Phone, Save, Store } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRef, useState, useTransition } from "react";
+import { ImageIcon, Phone, Save, Store, Upload } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import type { InfoLocal } from "@/lib/huellitas/localService";
@@ -11,12 +12,16 @@ export interface DatosLocalFormProps {
 }
 
 export function DatosLocalForm({ initial }: DatosLocalFormProps) {
+  const router = useRouter();
   const [nombre, setNombre] = useState(initial.nombre);
+  const [logoUrl, setLogoUrl] = useState(initial.logoUrl ?? "");
   const [telefonoWhatsapp, setTelefono] = useState(initial.telefonoWhatsapp ?? "");
   const [direccion, setDireccion] = useState(initial.direccion ?? "");
   const [pending, startTransition] = useTransition();
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function guardar() {
     setError(null);
@@ -27,6 +32,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nombre,
+            logoUrl: logoUrl.trim() || "",
             telefonoWhatsapp,
             direccion
           })
@@ -37,6 +43,9 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
           return;
         }
         setSavedAt(new Date().toLocaleTimeString("es-AR"));
+        if (!data.membresiaActiva) {
+          router.push("/admin/pagos");
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Error");
       }
@@ -65,6 +74,92 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
           />
+        </Field>
+
+        <Field
+          label="Logo del local"
+          hint="Pegá una URL pública o subí un archivo. Se muestra en el panel admin y en Mi Cuenta."
+        >
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl}
+                  alt={`Logo de ${nombre || "tu local"}`}
+                  className="h-14 w-14 rounded-xl border border-bark-100 bg-white object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-bark-200 bg-cream-50 text-bark-300">
+                  <ImageIcon size={20} />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <input
+                  type="url"
+                  className="input-elegant"
+                  maxLength={500}
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setError(null);
+                  setUploadingLogo(true);
+                  try {
+                    const form = new FormData();
+                    form.append("file", file);
+                    const res = await fetch("/api/admin/local/logo", {
+                      method: "POST",
+                      body: form
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) {
+                      throw new Error(data.error ?? "No pudimos subir el logo");
+                    }
+                    setLogoUrl(data.logoUrl ?? "");
+                    setSavedAt(new Date().toLocaleTimeString("es-AR"));
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Error");
+                  } finally {
+                    setUploadingLogo(false);
+                    e.target.value = "";
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingLogo || pending}
+                className="inline-flex items-center gap-2 rounded-xl border border-bark-200 bg-white px-4 py-2 text-sm font-medium text-bark-700 transition hover:border-bark-300 hover:bg-cream-50 disabled:opacity-50"
+              >
+                <Upload size={16} />
+                {uploadingLogo ? "Subiendo…" : "Subir archivo"}
+              </button>
+              {logoUrl ? (
+                <button
+                  type="button"
+                  onClick={() => setLogoUrl("")}
+                  className="text-sm text-bark-500 transition hover:text-bark-700"
+                >
+                  Quitar logo
+                </button>
+              ) : null}
+            </div>
+            </div>
         </Field>
 
         <Field

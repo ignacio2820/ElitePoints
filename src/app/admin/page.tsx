@@ -33,26 +33,25 @@ export default async function AdminDashboard() {
       <DashboardStats localId={localId} />
 
       <Link href="/admin/nueva-venta" className="group mb-6 block">
-        <div className="relative overflow-hidden rounded-2xl border border-amber-400/50 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black p-6 shadow-[0_15px_40px_-15px_rgba(251,191,36,0.4)] transition hover:shadow-[0_20px_50px_-15px_rgba(251,191,36,0.55)]">
-          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-400/15 via-transparent to-amber-300/5" />
+        <div className="rounded-2xl border border-bark-100/80 bg-cream-50/70 p-6 shadow-soft transition hover:-translate-y-0.5 hover:border-bark-200 hover:shadow-[0_12px_32px_-12px_rgba(60,40,20,0.12)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-400/40 bg-amber-400/10 text-amber-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cream-100 text-bark-500 ring-1 ring-bark-100">
                 <ScanLine size={20} />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-bark-400">
                   Caja registradora
                 </p>
-                <h2 className="font-display text-2xl font-semibold text-zinc-50">
+                <h2 className="font-display text-2xl font-semibold text-bark-700">
                   Registrar nueva venta
                 </h2>
-                <p className="mt-1 text-sm text-zinc-400">
+                <p className="mt-1 text-sm text-[color:var(--muted)]">
                   Acreditá huellitas al instante y subí el nivel del cliente.
                 </p>
               </div>
             </div>
-            <ArrowRight className="text-amber-300 transition group-hover:translate-x-1" />
+            <ArrowRight className="text-bark-400 transition group-hover:translate-x-1 group-hover:text-bark-600" />
           </div>
         </div>
       </Link>

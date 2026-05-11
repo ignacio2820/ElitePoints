@@ -136,49 +136,48 @@ export function NuevaVentaForm({
   const nivelAnteriorResult = niveles.find((n) => n.id === resultado?.nivelAnterior);
 
   return (
-    <div className="-mx-6 -my-10 min-h-[calc(100vh-72px)] bg-gradient-to-br from-zinc-950 via-zinc-900 to-black px-6 py-12">
-      <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl">
         {/* Encabezado */}
         <div className="mb-8 flex items-start justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+            <span className="label-elegant inline-flex items-center gap-2">
               <ScanLine size={12} />
               Caja registradora
-            </div>
-            <h1 className="mt-3 font-display text-4xl font-semibold text-zinc-50">
+            </span>
+            <h1 className="mt-3 font-display text-4xl font-semibold text-bark-700">
               Nueva venta
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
               {nombreLocal} ·{" "}
-              <span className="text-amber-300">
+              <span className="font-medium text-bark-600">
                 1 Huellita cada {formatARS(montoParaUnaHuellita)}
               </span>
             </p>
           </div>
-          <div className="hidden items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-zinc-400 sm:flex">
+          <div className="hidden items-center gap-2 rounded-full border border-bark-100 bg-cream-50 px-3 py-2 text-xs text-bark-500 sm:flex">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
             {configFuente === "firestore" ? "Conectado a Firestore" : "Modo demo"}
           </div>
         </div>
 
         {configFuente === "fallback" && (
-          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4 text-sm text-amber-200">
-            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-600" />
             <div>
-              <p className="font-semibold text-amber-100">
+              <p className="font-semibold text-amber-900">
                 Configuración cargada en modo demo
               </p>
-              <p className="mt-1 text-amber-200/80">
+              <p className="mt-1 text-amber-800/90">
                 No pude leer la configuración de <code>{localId}</code> desde
                 Firestore. Verificá que pegaste la private key real en{" "}
                 <code>.env.local</code> y que corriste{" "}
-                <code className="rounded bg-zinc-900/60 px-1.5 py-0.5">
+                <code className="rounded bg-white px-1.5 py-0.5 ring-1 ring-amber-100">
                   npm run seed
                 </code>
                 .
               </p>
               {configError && (
-                <p className="mt-2 text-xs text-amber-200/60">
+                <p className="mt-2 text-xs text-amber-800/70">
                   Detalle: {configError}
                 </p>
               )}
@@ -187,9 +186,7 @@ export function NuevaVentaForm({
         )}
 
         {/* Card principal */}
-        <div className="relative rounded-3xl border border-amber-400/40 bg-zinc-950/80 p-1 shadow-[0_25px_70px_-20px_rgba(251,191,36,0.25)] backdrop-blur">
-          <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-to-br from-amber-400/15 via-transparent to-amber-300/5" />
-          <div className="rounded-[22px] border border-zinc-800/80 bg-zinc-950/90 p-7">
+        <div className="rounded-3xl border border-bark-100/80 bg-white/90 p-7 shadow-soft">
             {!resultado ? (
               <form onSubmit={onSubmit} className="space-y-6">
                 <SelectorCliente
@@ -204,7 +201,7 @@ export function NuevaVentaForm({
                   icon={<Receipt size={16} />}
                 >
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-amber-300">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-bark-500">
                       $
                     </span>
                     <input
@@ -215,7 +212,7 @@ export function NuevaVentaForm({
                       value={monto}
                       onChange={(e) => setMonto(e.target.value)}
                       placeholder="0"
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900 py-4 pl-9 pr-4 text-2xl font-semibold text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                      className="w-full rounded-xl input-elegant py-4 pl-9 pr-4 text-2xl font-semibold outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                     />
                   </div>
                 </FieldDark>
@@ -229,13 +226,13 @@ export function NuevaVentaForm({
                 />
 
                 {/* Canje opcional */}
-                <details className="group rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
-                  <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-zinc-300 transition group-open:text-amber-300">
+                <details className="group rounded-xl border border-bark-100 bg-cream-50 p-4">
+                  <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-bark-600 transition group-open:text-bark-700">
                     <span className="flex items-center gap-2">
-                      <HuellitaIcon size={14} className="text-amber-300" />
+                      <HuellitaIcon size={14} className="text-bark-500" />
                       Canjear huellitas en esta venta (opcional)
                     </span>
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-bark-400">
                       {canjeNum > 0
                         ? `−${formatARS(canjeNum * valorMonetarioHuellita)}`
                         : "Ninguna"}
@@ -250,9 +247,9 @@ export function NuevaVentaForm({
                       value={huellitasACanjear}
                       onChange={(e) => setHuellitasACanjear(e.target.value)}
                       placeholder="0"
-                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                      className="w-full rounded-lg input-elegant py-2.5 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                     />
-                    <p className="mt-2 text-xs text-zinc-500">
+                    <p className="mt-2 text-xs text-bark-400">
                       El cliente puede canjear sus huellitas vigentes para
                       descontar parte del total. El sistema valida saldo y tope
                       configurado.
@@ -261,13 +258,13 @@ export function NuevaVentaForm({
                 </details>
 
                 {error && (
-                  <div className="flex items-start gap-3 rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+                  <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
                     <AlertTriangle size={18} className="mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-semibold text-rose-100">
+                      <p className="font-semibold text-rose-900">
                         No se pudo registrar la venta
                       </p>
-                      <p className="mt-1 text-rose-200/80">{error}</p>
+                      <p className="mt-1 text-rose-800/90">{error}</p>
                     </div>
                   </div>
                 )}
@@ -275,22 +272,19 @@ export function NuevaVentaForm({
                 <button
                   type="submit"
                   disabled={!isValid || enviando}
-                  className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 py-4 text-base font-bold text-zinc-900 shadow-[0_8px_24px_-8px_rgba(251,191,36,0.6)] transition hover:shadow-[0_12px_32px_-8px_rgba(251,191,36,0.7)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+                  className="btn-primary flex w-full items-center justify-center gap-2 py-4 text-base"
                 >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    {enviando ? (
-                      <>
-                        <Spinner /> Registrando...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles size={18} />
-                        Registrar venta · Sumar {formatNumber(huellitasPrevistas)}{" "}
-                        Huellitas
-                      </>
-                    )}
-                  </span>
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  {enviando ? (
+                    <>
+                      <Spinner /> Registrando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={18} />
+                      Registrar venta · Sumar {formatNumber(huellitasPrevistas)}{" "}
+                      Huellitas
+                    </>
+                  )}
                 </button>
               </form>
             ) : (
@@ -301,14 +295,12 @@ export function NuevaVentaForm({
                 onNuevaVenta={nuevaVenta}
               />
             )}
-          </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-zinc-600">
-          Local: <span className="text-zinc-400">{localId}</span> · Las
+        <p className="mt-6 text-center text-xs text-[color:var(--muted)]">
+          Local: <span className="text-bark-500">{localId}</span> · Las
           huellitas se acreditan al instante en el saldo del cliente.
         </p>
-      </div>
     </div>
   );
 }
@@ -329,13 +321,13 @@ function FieldDark({
   return (
     <label className="block">
       <div className="mb-2 flex items-center gap-2">
-        {icon && <span className="text-amber-300/70">{icon}</span>}
-        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+        {icon && <span className="text-bark-400">{icon}</span>}
+        <span className="text-xs font-semibold uppercase tracking-widest text-bark-400">
           {label}
         </span>
       </div>
       {children}
-      {hint && <p className="mt-2 text-xs text-zinc-500">{hint}</p>}
+      {hint && <p className="mt-2 text-xs text-bark-400">{hint}</p>}
     </label>
   );
 }
@@ -358,37 +350,37 @@ function CalculoEnVivo({
 
   return (
     <div
-      className={`rounded-2xl border p-5 transition-all ${
+      className={`rounded-2xl border p-5 shadow-soft transition-all ${
         huellitas > 0
-          ? "border-amber-400/50 bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent shadow-[0_0_30px_-12px_rgba(251,191,36,0.5)]"
-          : "border-zinc-800 bg-zinc-900/40"
+          ? "border-amber-200/80 bg-cream-50/90 ring-1 ring-amber-100"
+          : "border-bark-100 bg-cream-50/70"
       }`}
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+          <p className="text-xs font-semibold uppercase tracking-widest text-bark-400">
             Ganará
           </p>
           <div className="mt-1 flex items-baseline gap-2">
             <span
               className={`font-display text-5xl font-bold tabular-nums ${
-                huellitas > 0 ? "text-amber-300" : "text-zinc-600"
+                huellitas > 0 ? "text-amber-600" : "text-bark-300"
               }`}
             >
               {formatNumber(huellitas)}
             </span>
             <span
               className={`text-lg font-medium ${
-                huellitas > 0 ? "text-amber-200/80" : "text-zinc-600"
+                huellitas > 0 ? "text-amber-700" : "text-bark-300"
               }`}
             >
               Huellitas
             </span>
           </div>
           {huellitas > 0 && (
-            <p className="mt-2 text-sm text-amber-200/70">
+            <p className="mt-2 text-sm text-amber-800/80">
               Equivalen a{" "}
-              <span className="font-semibold text-amber-200">
+              <span className="font-semibold text-amber-800">
                 {formatARS(valorEnPesos)}
               </span>{" "}
               de descuento futuro
@@ -398,7 +390,7 @@ function CalculoEnVivo({
         <HuellitasFlotantes huellitas={huellitas} />
       </div>
       {muestraResto && (
-        <div className="mt-4 flex items-center gap-2 border-t border-zinc-800 pt-3 text-xs text-zinc-500">
+        <div className="mt-4 flex items-center gap-2 border-t border-bark-100 pt-3 text-xs text-bark-400">
           <TrendingUp size={12} />
           Sumá {formatARS(restoParaSiguiente)} más para ganar 1 Huellita extra
         </div>
@@ -411,7 +403,7 @@ function HuellitasFlotantes({ huellitas }: { huellitas: number }) {
   const visibles = Math.min(huellitas, 5);
   if (visibles === 0) {
     return (
-      <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-zinc-800 text-zinc-700">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-bark-200 text-bark-300">
         <HuellitaIcon size={28} />
       </div>
     );
@@ -422,7 +414,7 @@ function HuellitasFlotantes({ huellitas }: { huellitas: number }) {
         <HuellitaIcon
           key={i}
           size={26}
-          className="absolute text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+          className="absolute text-amber-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
           style={{
             top: `${(i % 2) * 18 + (i % 3) * 6}px`,
             left: `${i * 12}px`,
@@ -432,7 +424,7 @@ function HuellitasFlotantes({ huellitas }: { huellitas: number }) {
         />
       ))}
       {huellitas > 5 && (
-        <span className="absolute -bottom-1 right-0 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-zinc-900">
+        <span className="absolute -bottom-1 right-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800">
           +{huellitas - 5}
         </span>
       )}
@@ -453,33 +445,33 @@ function ResultadoVenta({
 }) {
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/20 text-emerald-300">
+      <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
           <CheckCircle2 size={22} />
         </div>
         <div>
-          <p className="font-semibold text-emerald-100">¡Venta registrada!</p>
-          <p className="text-xs text-emerald-200/70">
+          <p className="font-semibold text-emerald-900">¡Venta registrada!</p>
+          <p className="text-xs text-emerald-800/80">
             ID: <code className="font-mono">{resultado.ventaId}</code>
           </p>
         </div>
       </div>
 
       {/* Saldo destacado */}
-      <div className="rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-500/15 via-amber-400/5 to-transparent p-6 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-amber-300/80">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-amber-800/80">
           Nuevo saldo del cliente
         </p>
         <div className="mt-2 flex items-center justify-center gap-3">
           <HuellitaIcon
             size={36}
-            className="text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]"
+            className="text-amber-600 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]"
           />
-          <span className="font-display text-6xl font-bold text-amber-200 tabular-nums">
+          <span className="font-display text-6xl font-bold text-amber-800 tabular-nums">
             {formatNumber(resultado.saldoFinal ?? 0)}
           </span>
         </div>
-        <p className="mt-1 text-sm text-amber-200/70">
+        <p className="mt-1 text-sm text-amber-800/80">
           Huellitas vigentes (acumulado histórico:{" "}
           {formatNumber(resultado.acumuladoHistorico ?? 0)})
         </p>
@@ -516,15 +508,15 @@ function ResultadoVenta({
 
       {/* Subió de nivel */}
       {resultado.subioNivel && nivelActual && (
-        <div className="flex items-center gap-3 rounded-2xl border border-purple-400/40 bg-gradient-to-br from-purple-500/15 to-fuchsia-500/10 p-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-400/20 text-purple-300">
+        <div className="flex items-center gap-3 rounded-2xl border border-purple-200 bg-purple-50 p-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700">
             <Crown size={22} />
           </div>
           <div>
-            <p className="font-semibold text-purple-100">¡Subió de nivel!</p>
-            <p className="text-sm text-purple-200/80">
+            <p className="font-semibold text-purple-900">¡Subió de nivel!</p>
+            <p className="text-sm text-purple-800/80">
               {nivelAnterior?.nombre ?? "—"} →{" "}
-              <span className="font-bold text-purple-100">
+              <span className="font-bold text-purple-900">
                 {nivelActual.nombre}
               </span>
             </p>
@@ -537,21 +529,21 @@ function ResultadoVenta({
         resultado.bonificaciones?.primeraCompra?.aplicado) && (
         <div className="space-y-3">
           {resultado.bonificaciones?.cumpleanos?.aplicado && (
-            <div className="flex items-center gap-3 rounded-2xl border border-pink-400/40 bg-gradient-to-br from-pink-500/15 to-rose-500/10 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-400/20 text-pink-200">
+            <div className="flex items-center gap-3 rounded-2xl border border-pink-200 bg-pink-50 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-100 text-pink-700">
                 <Cake size={20} />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-pink-100">
+                <p className="font-semibold text-pink-900">
                   ¡Bono Cumpleaños aplicado!
                 </p>
-                <p className="text-sm text-pink-200/80">
+                <p className="text-sm text-pink-800/80">
                   Multiplicador ×
                   {(
                     resultado.bonificaciones.cumpleanos.multiplicador ?? 2
                   ).toFixed(0)}{" "}
                   ·{" "}
-                  <span className="font-bold text-pink-100">
+                  <span className="font-bold text-pink-900">
                     +
                     {formatNumber(
                       resultado.bonificaciones.cumpleanos.huellitasExtra ?? 0
@@ -564,17 +556,17 @@ function ResultadoVenta({
           )}
 
           {resultado.bonificaciones?.primeraCompra?.aplicado && (
-            <div className="flex items-center gap-3 rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-500/15 to-orange-500/10 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-400/20 text-amber-200">
+            <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700">
                 <Gift size={20} />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-amber-100">
+                <p className="font-semibold text-amber-900">
                   ¡Bono Primera Compra acreditado!
                 </p>
-                <p className="text-sm text-amber-200/80">
+                <p className="text-sm text-amber-800/80">
                   Lote de bienvenida:{" "}
-                  <span className="font-bold text-amber-100">
+                  <span className="font-bold text-amber-900">
                     +
                     {formatNumber(
                       resultado.bonificaciones.primeraCompra.huellitasExtra ?? 0
@@ -590,17 +582,17 @@ function ResultadoVenta({
 
       {/* Bonus de referido */}
       {resultado.referidoActivado && (
-        <div className="rounded-2xl border border-sky-400/40 bg-gradient-to-br from-sky-500/15 to-cyan-500/10 p-4">
-          <p className="font-semibold text-sky-100">
+        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4">
+          <p className="font-semibold text-sky-900">
             🎁 Activación de referido
           </p>
-          <p className="mt-1 text-sm text-sky-200/80">
+          <p className="mt-1 text-sm text-sky-800/80">
             Bienvenida acreditada:{" "}
-            <span className="font-bold text-sky-100">
+            <span className="font-bold text-sky-900">
               +{formatNumber(resultado.referidoActivado.bonusBienvenida)}
             </span>{" "}
             · Premio al referente:{" "}
-            <span className="font-bold text-sky-100">
+            <span className="font-bold text-sky-900">
               +{formatNumber(resultado.referidoActivado.bonusReferente)}
             </span>
           </p>
@@ -609,7 +601,7 @@ function ResultadoVenta({
 
       <button
         onClick={onNuevaVenta}
-        className="w-full rounded-xl border border-amber-400/50 bg-zinc-900 py-3 text-sm font-semibold text-amber-300 transition hover:border-amber-400 hover:bg-zinc-800"
+        className="w-full rounded-xl border border-bark-200 bg-white py-3 text-sm font-semibold text-bark-700 transition hover:border-bark-300 hover:bg-cream-50"
       >
         Registrar otra venta
       </button>
@@ -630,16 +622,16 @@ function Stat({
     <div
       className={`rounded-xl border p-3 ${
         accent
-          ? "border-amber-400/40 bg-amber-500/5"
-          : "border-zinc-800 bg-zinc-900/60"
+          ? "border-amber-200 bg-amber-50/80"
+          : "border-bark-100 bg-cream-50/70"
       }`}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-bark-400">
         {label}
       </p>
       <p
         className={`mt-1 font-display text-xl font-semibold tabular-nums ${
-          accent ? "text-amber-300" : "text-zinc-100"
+          accent ? "text-amber-700" : "text-bark-700"
         }`}
       >
         {value}
@@ -651,7 +643,7 @@ function Stat({
 function Spinner() {
   return (
     <span
-      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900/30 border-t-zinc-900"
+      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-bark-200 border-t-bark-600"
       role="status"
       aria-label="cargando"
     />

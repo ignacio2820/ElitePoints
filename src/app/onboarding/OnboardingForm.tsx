@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ImageIcon,
   Mail,
+  MapPin,
   PartyPopper,
   Phone,
   ShieldCheck,
@@ -122,7 +123,7 @@ function Formulario({
 
           <form action={formAction} className="mt-8 space-y-5">
             <Field
-              label="Nombre del Pet Shop"
+              label="Nombre del local"
               hint={
                 slugPreview
                   ? `Tu URL: tuapp.com/${slugPreview}`
@@ -136,7 +137,7 @@ function Formulario({
                 name="nombreLocal"
                 value={nombreLocal}
                 onChange={(e) => setNombreLocal(e.target.value)}
-                placeholder="Mi Pet Shop"
+                placeholder="Mi Pet Shop o Veterinaria"
                 required
                 minLength={2}
                 maxLength={80}
@@ -146,29 +147,15 @@ function Formulario({
             </Field>
 
             <Field
-              label="Email del dueño"
-              hint="Te mandamos un link mágico para entrar al panel."
-              icon={<Mail size={16} />}
-            >
-              <input
-                type="email"
-                name="email"
-                placeholder="hola@tupetshop.com"
-                required
-                autoComplete="email"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-              />
-            </Field>
-
-            <Field
-              label="Teléfono / WhatsApp"
-              hint="Para que tus clientes te consulten desde su Mi Cuenta. Opcional."
+              label="Teléfono de WhatsApp"
+              hint="Lo usan tus clientes para consultarte desde Mi Cuenta."
               icon={<Phone size={16} />}
             >
               <input
                 type="tel"
                 name="telefonoWhatsapp"
                 placeholder="+54 9 11 0000-0000"
+                required
                 maxLength={30}
                 autoComplete="tel"
                 className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
@@ -176,8 +163,25 @@ function Formulario({
             </Field>
 
             <Field
-              label="Logo (URL)"
-              hint="Pegá un link a tu logo. Lo podés cambiar después. Opcional."
+              label="Dirección"
+              hint="Calle, número y ciudad. Tus clientes la ven en su portal."
+              icon={<MapPin size={16} />}
+            >
+              <input
+                type="text"
+                name="direccion"
+                placeholder="Av. Corrientes 1234, CABA"
+                required
+                minLength={3}
+                maxLength={300}
+                autoComplete="street-address"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+              />
+            </Field>
+
+            <Field
+              label="Logo del local"
+              hint="Pegá la URL pública de tu logo. Después podés subir un archivo desde Configuración."
               icon={<ImageIcon size={16} />}
             >
               <div className="flex items-center gap-3">
@@ -187,6 +191,7 @@ function Formulario({
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                   placeholder="https://..."
+                  required
                   maxLength={500}
                   className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                 />
@@ -202,6 +207,21 @@ function Formulario({
                   />
                 )}
               </div>
+            </Field>
+
+            <Field
+              label="Email del dueño"
+              hint="Te mandamos un link mágico para entrar al panel."
+              icon={<Mail size={16} />}
+            >
+              <input
+                type="email"
+                name="email"
+                placeholder="hola@tupetshop.com"
+                required
+                autoComplete="email"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+              />
             </Field>
 
             {errorMsg && (

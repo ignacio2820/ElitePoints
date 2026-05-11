@@ -54,7 +54,10 @@ export async function POST(req: Request) {
       role: decoded.role,
       localId: decoded.localId,
       clienteId: decoded.clienteId ?? null,
-      redirectTo: decoded.role === "admin" ? "/admin" : "/mi-cuenta"
+      redirectTo:
+        decoded.role === "admin"
+          ? "/admin"
+          : `/mi-cuenta?localId=${encodeURIComponent(decoded.localId)}`
     });
     res.cookies.set({ ...SESSION_COOKIE_OPTIONS, value: cookie });
     return res;

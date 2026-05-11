@@ -10,6 +10,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { NivelCard } from "@/components/NivelCard";
 import { CatalogoPremios, PREMIOS_DEMO } from "@/components/CatalogoPremios";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
+import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { calcularNivel } from "@/lib/huellitas/engine";
 import type {
@@ -20,6 +21,7 @@ import type {
 import { formatARS } from "@/lib/utils";
 
 export interface ClienteViewProps {
+  localId: string;
   cliente: {
     id: string;
     nombre: string;
@@ -35,14 +37,17 @@ export interface ClienteViewProps {
   premios?: Premio[];
   nombreLocal: string;
   baseUrl: string;
+  membresiaExpirada?: boolean;
 }
 
 export function ClienteView({
+  localId,
   cliente,
   cfg,
   premios,
   nombreLocal,
-  baseUrl
+  baseUrl,
+  membresiaExpirada = false
 }: ClienteViewProps) {
   const [mascotas, setMascotas] = useState<Mascota[]>(cliente.mascotas);
   const [mostrarForm, setMostrarForm] = useState(cliente.mascotas.length === 0);
@@ -63,7 +68,7 @@ export function ClienteView({
           </Link>
           <div className="flex items-center gap-2">
             <Link
-              href={`/cliente/${cliente.id}/qr`}
+              href={`/cliente/${cliente.id}/qr?localId=${encodeURIComponent(localId)}`}
               className="btn-ghost inline-flex items-center gap-1.5 text-sm"
             >
               <QrCode size={14} /> Mi QR
@@ -79,6 +84,9 @@ export function ClienteView({
       </header>
 
       <div className="mx-auto max-w-6xl px-6 py-10 space-y-8">
+        {membresiaExpirada ? (
+          <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
+        ) : null}
         {/* Hero: saldo + nivel/progreso */}
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="lg:col-span-7">
@@ -159,6 +167,7 @@ export function ClienteView({
         {/* Boca en boca: invitar amigos */}
         {cfg.referidos.activo && cliente.codigoReferido ? (
           <InvitarAmigos
+            localId={localId}
             codigo={cliente.codigoReferido}
             nombreLocal={nombreLocal}
             baseUrl={baseUrl}

@@ -6,6 +6,10 @@ import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
 import { getConfiguracion } from "@/lib/huellitas/service";
+import { getInfoLocal } from "@/lib/huellitas/localService";
+import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
+import { asegurarLocalIdEnRuta, rutaConLocalId } from "@/lib/huellitas/tenant";
+import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { progresoNivel } from "@/lib/huellitas/engine";
 import { MascotaCard } from "@/components/MascotaCard";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
@@ -19,14 +23,27 @@ export const dynamic = "force-dynamic";
 
 interface DocLocal {
   nombre?: string;
+  logoUrl?: string;
   telefonoWhatsapp?: string;
 }
 
-export default async function MiCuentaPage() {
+export default async function MiCuentaPage({
+  searchParams
+}: {
+  searchParams?: { localId?: string };
+}) {
   const sesion = await getSesion();
   if (!sesion?.claims.clienteId) redirect("/login?intent=cliente");
 
   const { localId, clienteId } = sesion.claims;
+  const destino = asegurarLocalIdEnRuta(
+    "/mi-cuenta",
+    localId,
+    searchParams?.localId
+  );
+  if (destino !== rutaConLocalId("/mi-cuenta", localId)) {
+    redirect(destino);
+  }
   const db = adminDb();
 
   const [clienteSnap, localSnap, cfg, premiosSnap] = await Promise.all([
@@ -52,7 +69,10 @@ export default async function MiCuentaPage() {
     referidosActivados: Number(clienteRaw.referidosActivados ?? 0)
   };
   const dataLocal = (localSnap.data() ?? {}) as DocLocal;
+  const infoLocal = await getInfoLocal(localId);
+  const membresiaExpirada = isMembresiaExpirada(infoLocal);
   const nombreLocal = dataLocal.nombre ?? localId;
+  const logoUrl = dataLocal.logoUrl ?? null;
   const telefonoWhatsapp = dataLocal.telefonoWhatsapp ?? null;
 
   const progreso = progresoNivel(cliente.acumuladoHistorico, cfg.niveles);
@@ -128,6 +148,7 @@ export default async function MiCuentaPage() {
     >
       <MiCuentaStickyHeader
         nombreLocal={nombreLocal}
+        logoUrl={logoUrl}
         primerNombre={cliente.nombre.split(" ")[0]}
         saldoHuellitas={cliente.saldoHuellitas}
         valorMonetarioHuellita={cfg.valorMonetarioHuellita}
@@ -145,6 +166,9 @@ export default async function MiCuentaPage() {
       />
 
       <div className="mx-auto max-w-6xl space-y-5 px-4 pb-14 pt-0">
+        {membresiaExpirada ? (
+          <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
+        ) : null}
         {premios.length > 0 && (
           <CanjesDisponibles
             premios={premios}
@@ -157,7 +181,7 @@ export default async function MiCuentaPage() {
         )}
 
         <Link
-          href="/mi-cuenta/qr"
+          href={rutaConLocalId("/mi-cuenta/qr", localId)}
           className={cn(
             "group block overflow-hidden rounded-3xl p-5 transition active:scale-[0.99]",
             esTopTier
@@ -227,6 +251,7 @@ export default async function MiCuentaPage() {
 
         {cliente.codigoReferido && cfg.referidos.activo && (
           <InvitarAmigos
+            localId={localId}
             codigo={cliente.codigoReferido}
             nombreLocal={nombreLocal}
             mensajePlantilla={cfg.referidos.mensajeWhatsApp}

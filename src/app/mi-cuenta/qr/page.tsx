@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
+import { asegurarLocalIdEnRuta, rutaConLocalId } from "@/lib/huellitas/tenant";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { formatNumber } from "@/lib/utils";
 import type { Cliente } from "@/lib/huellitas/types";
@@ -15,10 +16,22 @@ export const metadata = {
   title: "Mi QR — Huellitas"
 };
 
-export default async function MiQRPage() {
+export default async function MiQRPage({
+  searchParams
+}: {
+  searchParams?: { localId?: string };
+}) {
   const sesion = await getSesion();
   if (!sesion?.claims.clienteId) redirect("/login?intent=cliente");
   const { localId, clienteId } = sesion.claims;
+  const destino = asegurarLocalIdEnRuta(
+    "/mi-cuenta/qr",
+    localId,
+    searchParams?.localId
+  );
+  if (destino !== rutaConLocalId("/mi-cuenta/qr", localId)) {
+    redirect(destino);
+  }
 
   const db = adminDb();
   const [clienteSnap, localSnap] = await Promise.all([
@@ -49,7 +62,7 @@ export default async function MiQRPage() {
       {/* Top bar */}
       <header className="flex items-center justify-between px-4 py-4">
         <Link
-          href="/mi-cuenta"
+          href={rutaConLocalId("/mi-cuenta", localId)}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-bark-600 shadow-sm transition hover:bg-cream-100"
         >
           <ArrowLeft size={18} />

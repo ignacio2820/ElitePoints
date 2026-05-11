@@ -27,20 +27,23 @@ const Input = z.object({
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
     .max(80, "El nombre es demasiado largo"),
+  direccion: z
+    .string()
+    .min(3, "Ingresá la dirección del local")
+    .max(300, "La dirección es demasiado larga")
+    .transform((s) => s.trim()),
   telefonoWhatsapp: z
     .string()
+    .min(1, "Ingresá el teléfono de WhatsApp")
     .max(30, "Teléfono demasiado largo")
-    .optional()
-    .transform((v) => (v ? v.trim() : v)),
+    .transform((v) => v.replace(/[^0-9]/g, ""))
+    .refine((v) => v.length >= 8, "Ingresá un WhatsApp válido"),
   logoUrl: z
     .string()
+    .min(1, "Elegí el logo del local")
     .max(500)
-    .optional()
-    .refine(
-      (v) => !v || /^https?:\/\//.test(v.trim()),
-      "El logo debe ser una URL https://..."
-    )
-    .transform((v) => (v ? v.trim() : v))
+    .refine((v) => /^https?:\/\//.test(v.trim()), "El logo debe ser una URL https://...")
+    .transform((v) => v.trim())
 });
 
 export type OnboardingState =
@@ -63,6 +66,7 @@ export async function registrarPetShop(
   const r = await crearLocalYOnboarding({
     emailDueno: data.email,
     nombreLocal: data.nombreLocal,
+    direccion: data.direccion,
     telefonoWhatsapp: data.telefonoWhatsapp,
     logoUrl: data.logoUrl
   });

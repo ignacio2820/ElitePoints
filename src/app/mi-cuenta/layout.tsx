@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSesion } from "@/lib/auth/server";
+import { loginClienteRedirect } from "@/lib/huellitas/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export default async function MiCuentaLayout({
 }) {
   const sesion = await getSesion();
   if (!sesion) {
-    redirect("/login?intent=cliente&redirect=/mi-cuenta");
+    redirect(loginClienteRedirect("/mi-cuenta"));
   }
   if (sesion.claims.role !== "cliente" || !sesion.claims.clienteId) {
     redirect("/admin");

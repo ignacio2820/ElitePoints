@@ -19,6 +19,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { cn, formatNumber } from "@/lib/utils";
 
 export interface InvitarAmigosProps {
+  localId: string;
   codigo: string;
   nombreLocal: string;
   baseUrl: string;
@@ -43,6 +44,7 @@ export interface InvitarAmigosProps {
  * para invitar a copiarlo. Animación sutil al copiar.
  */
 export function InvitarAmigos({
+  localId,
   codigo,
   nombreLocal,
   baseUrl,
@@ -54,13 +56,10 @@ export function InvitarAmigos({
 }: InvitarAmigosProps) {
   const [copiado, setCopiado] = useState<"none" | "codigo" | "url">("none");
 
-  const url = urlRegistroConRef({ nombreLocal, codigo, baseUrl });
-  const wa = urlWhatsApp(mensajePlantilla, { nombreLocal, codigo, baseUrl });
-  const previewMensaje = renderMensajeReferido(mensajePlantilla, {
-    nombreLocal,
-    codigo,
-    baseUrl
-  });
+  const share = { localId, nombreLocal, codigo, baseUrl };
+  const url = urlRegistroConRef(share);
+  const wa = urlWhatsApp(mensajePlantilla, share);
+  const previewMensaje = renderMensajeReferido(mensajePlantilla, share);
 
   const copiar = async (texto: string, tipo: "codigo" | "url") => {
     try {

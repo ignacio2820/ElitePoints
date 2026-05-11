@@ -1,4 +1,5 @@
 import { LogOut } from "lucide-react";
+import { LocalBrandMark } from "@/components/LocalBrandMark";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { ProgressBar } from "@/components/ProgressBar";
 import { NivelBadge } from "@/components/NivelBadge";
@@ -8,6 +9,7 @@ import { cn, formatARS, formatNumber } from "@/lib/utils";
 
 export interface MiCuentaStickyHeaderProps {
   nombreLocal: string;
+  logoUrl?: string | null;
   primerNombre: string;
   saldoHuellitas: number;
   valorMonetarioHuellita: number;
@@ -29,6 +31,7 @@ export interface MiCuentaStickyHeaderProps {
  */
 export function MiCuentaStickyHeader({
   nombreLocal,
+  logoUrl,
   primerNombre,
   saldoHuellitas,
   valorMonetarioHuellita,
@@ -91,7 +94,18 @@ export function MiCuentaStickyHeader({
 
       <div className="relative mx-auto max-w-6xl px-3 sm:px-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <LocalBrandMark
+              nombreLocal={nombreLocal}
+              logoUrl={logoUrl}
+              size={34}
+              imageClassName={cn(
+                "border-white/20 bg-white/95",
+                esTopTier ? "ring-1 ring-amber-300/30" : ""
+              )}
+              iconClassName={esTopTier ? "text-amber-200" : "text-cream-50"}
+            />
+            <div className="min-w-0">
             <p
               className={cn(
                 "truncate font-sans text-[9px] font-semibold uppercase tracking-[0.16em] sm:text-[10px]",
@@ -113,6 +127,7 @@ export function MiCuentaStickyHeader({
                 <CodigoClienteChip codigo={codigoCliente} esTopTier={esTopTier} />
               </div>
             )}
+            </div>
           </div>
           <form action="/api/auth/logout" method="POST">
             <button

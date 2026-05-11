@@ -24,7 +24,7 @@ export function renderEmailReferidoActivado(p: PayloadReferidoActivado): {
   html: string;
   text: string;
 } {
-  const subject = `¡Buenas noticias! Tu amigo ${p.nombreInvitado} ya visitó la veterinaria`;
+  const subject = `¡Buenas noticias! Tu amigo ${p.nombreInvitado} ya compró en ${p.nombreLocal}`;
 
   const html = `<!doctype html>
 <html lang="es">
@@ -38,8 +38,8 @@ export function renderEmailReferidoActivado(p: PayloadReferidoActivado): {
           </td></tr>
           <tr><td style="padding:32px 40px;">
             <p style="font-size:16px;line-height:1.6;margin:0 0 16px;">
-              Tu amigo <strong>${p.nombreInvitado}</strong> ya visitó la veterinaria
-              y le sumamos sus primeras huellitas con tu código.
+              Tu amigo <strong>${p.nombreInvitado}</strong> ya hizo su primera compra en
+              <strong>${p.nombreLocal}</strong> y le sumamos sus primeras huellitas con tu código.
             </p>
             <div style="margin:24px 0;padding:20px;border:1px dashed #C9AE8C;border-radius:16px;background:#FBF8F3;">
               <div style="font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#8B5E3C;">Tu recompensa</div>
@@ -64,7 +64,7 @@ export function renderEmailReferidoActivado(p: PayloadReferidoActivado): {
 
   const text =
     `¡Buenas noticias, ${p.nombreReferente}!\n\n` +
-    `Tu amigo ${p.nombreInvitado} ya visitó la veterinaria.\n` +
+    `Tu amigo ${p.nombreInvitado} ya hizo su primera compra en ${p.nombreLocal}.\n` +
     `Sumaste ${p.huellitasGanadas} Huellitas de regalo en ${p.nombreLocal}.\n` +
     (p.saldoActualReferente !== undefined
       ? `Saldo actual: ${p.saldoActualReferente} huellitas.\n`

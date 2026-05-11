@@ -15,7 +15,9 @@ export default async function OnboardingPage() {
   const sesion = await getSesion();
   if (sesion) {
     if (sesion.claims.role === "admin") redirect("/admin");
-    if (sesion.claims.role === "cliente") redirect("/mi-cuenta");
+    if (sesion.claims.role === "cliente") {
+      redirect(`/mi-cuenta?localId=${encodeURIComponent(sesion.claims.localId)}`);
+    }
   }
   return <OnboardingForm />;
 }

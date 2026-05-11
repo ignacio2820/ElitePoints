@@ -125,6 +125,7 @@ export function normalizarCodigo(codigo: string): string {
 // ──────────────────────────────────────────────────────────────────────────────
 
 export interface DatosShare {
+  localId: string;
   nombreLocal: string;
   codigo: string;
   baseUrl: string; // e.g. https://huellitas.app
@@ -133,6 +134,7 @@ export interface DatosShare {
 /** Construye la URL canónica de registro con el código preseleccionado. */
 export function urlRegistroConRef(d: DatosShare): string {
   const url = new URL("/registro", d.baseUrl);
+  url.searchParams.set("localId", d.localId);
   url.searchParams.set("ref", d.codigo);
   return url.toString();
 }

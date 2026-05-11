@@ -15,7 +15,7 @@ export default function Home() {
           <Link href="/admin/configuracion" className="btn-ghost text-sm">
             Panel del local
           </Link>
-          <Link href="/cliente/demo" className="btn-primary text-sm">
+          <Link href="/cliente/demo?localId=demo" className="btn-primary text-sm">
             Vista del cliente
           </Link>
         </nav>
@@ -40,11 +40,11 @@ export default function Home() {
               Todo en una sola plataforma elegante y transparente.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
-              <Link href="/admin/configuracion" className="btn-primary">
-                Configurar mi programa
+              <Link href="/onboarding" className="btn-primary">
+                Registrar mi Pet Shop o Veterinaria
               </Link>
-              <Link href="/cliente/demo" className="btn-ghost">
-                Ver experiencia del cliente
+              <Link href="/login" className="btn-ghost">
+                Ingresar al panel
               </Link>
             </div>
 
