@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helpers ────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return request.auth.token.role;
+    }
+
+    /** Admin (dueño) del local indicado. */
+    function isAdminOf(localId) {
+      return isSignedIn() &&
+             role() == 'admin' &&
+             request.auth.token.localId == localId;
+    }
+
+    /** Cliente autenticado, accediendo a SU propio doc del local. */
+    function isClienteSelf(localId, clienteId) {
+      return isSignedIn() &&
+             role() == 'cliente' &&
+             request.auth.token.localId == localId &&
+             request.auth.token.clienteId == clienteId;
+    }
+
+    /** Pertenece al local (admin o cliente). */
+    function inLocal(localId) {
+      return isSignedIn() && request.auth.token.localId == localId;
+    }
+
+    // /Locales/{localId} ─────────────────────────────────────────────────
+    match /Locales/{localId} {
+      allow read:  if inLocal(localId);
+      allow write: if isAdminOf(localId);
+
+      match /ConfiguracionLocal/{docId} {
+        allow read:  if inLocal(localId);
+        allow write: if isAdminOf(localId);
+      }
+
+      match /Clientes/{clienteId} {
+        allow read:  if isAdminOf(localId) || isClienteSelf(localId, clienteId);
+        // El cliente sólo puede actualizar metadatos de SU mascota (la collection
+        // Mascotas hereda la regla de write más laxa; no escribe en este doc).
+        allow write: if isAdminOf(localId);
+
+        match /Mascotas/{mascotaId} {
+          allow read:  if isAdminOf(localId) || isClienteSelf(localId, clienteId);
+          allow write: if isAdminOf(localId) || isClienteSelf(localId, clienteId);
+        }
+
+        match /Huellitas/{loteId} {
+          allow read:  if isAdminOf(localId) || isClienteSelf(localId, clienteId);
+          allow write: if false; // sólo backend (Admin SDK)
+        }
+      }
+
+      match /Ventas/{ventaId} {
+        allow read:  if isAdminOf(localId);
+        allow write: if false;
+      }
+
+      match /Canjes/{canjeId} {
+        allow read:  if isAdminOf(localId);
+        allow write: if false;
+      }
+
+      // Tickets de canje pendientes (cliente reserva, admin confirma)
+      match /CanjesPendientes/{ticketId} {
+        allow read: if isAdminOf(localId) ||
+                       (isSignedIn() &&
+                        request.auth.token.role == 'cliente' &&
+                        request.auth.token.localId == localId);
+        // Sólo backend escribe (Admin SDK garantiza unicidad y reglas).
+        allow write: if false;
+      }
+
+      match /Premios/{premioId} {
+        allow read:  if inLocal(localId);
+        allow write: if isAdminOf(localId);
+      }
+
+      // Validar código de referido en /registro?ref= → lectura pública,
+      // escritura sólo por backend (genera códigos únicos transaccionales).
+      match /Referidos/{codigo} {
+        allow read:  if true;
+        allow write: if false;
+      }
+
+      match /EventosReferido/{eventoId} {
+        allow read:  if isAdminOf(localId);
+        allow write: if false;
+      }
+
+      // Índice del código corto del cliente (ej "ABC-123" → clienteId).
+      // Sólo el admin lo lee desde el panel; el backend lo escribe.
+      match /CodigosClientes/{codigoDocId} {
+        allow read:  if isAdminOf(localId);
+        allow write: if false;
+      }
+    }
+  }
+}

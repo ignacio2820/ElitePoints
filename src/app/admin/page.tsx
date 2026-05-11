@@ -1,0 +1,114 @@
+import Link from "next/link";
+import {
+  ArrowRight,
+  Cake,
+  ScanLine,
+  Settings2,
+  Users,
+  type LucideIcon
+} from "lucide-react";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { DashboardStats } from "@/components/admin/DashboardStats";
+import { requireAdmin } from "@/lib/auth/server";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboard() {
+  const sesion = await requireAdmin();
+  const localId = sesion.claims.localId;
+
+  return (
+    <div>
+      <div className="mb-10">
+        <span className="label-elegant">Panel del local</span>
+        <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
+          Bienvenido de vuelta
+        </h1>
+        <p className="mt-2 max-w-xl text-[color:var(--muted)]">
+          Acá podés registrar ventas, configurar tu programa, ver clientes y
+          monitorear cumpleaños próximos.
+        </p>
+      </div>
+
+      <DashboardStats localId={localId} />
+
+      <Link href="/admin/nueva-venta" className="group mb-6 block">
+        <div className="relative overflow-hidden rounded-2xl border border-amber-400/50 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black p-6 shadow-[0_15px_40px_-15px_rgba(251,191,36,0.4)] transition hover:shadow-[0_20px_50px_-15px_rgba(251,191,36,0.55)]">
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-400/15 via-transparent to-amber-300/5" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-400/40 bg-amber-400/10 text-amber-300">
+                <ScanLine size={20} />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                  Caja registradora
+                </p>
+                <h2 className="font-display text-2xl font-semibold text-zinc-50">
+                  Registrar nueva venta
+                </h2>
+                <p className="mt-1 text-sm text-zinc-400">
+                  Acreditá huellitas al instante y subí el nivel del cliente.
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="text-amber-300 transition group-hover:translate-x-1" />
+          </div>
+        </div>
+      </Link>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <DashboardCard
+          href="/admin/configuracion"
+          title="Configuración"
+          description="Ajustá costo de acumulación, valor de canje y vencimiento."
+          Icon={Settings2}
+        />
+        <DashboardCard
+          href="/admin/clientes"
+          title="Clientes y mascotas"
+          description="Gestioná clientes, mascotas, saldos y movimientos."
+          Icon={Users}
+        />
+        <DashboardCard
+          href="/admin/clientes"
+          title="Cumpleaños"
+          description="Quiénes cumplen pronto y a quiénes ya saludamos."
+          Icon={Cake}
+        />
+      </div>
+    </div>
+  );
+}
+
+function DashboardCard({
+  href,
+  title,
+  description,
+  Icon
+}: {
+  href: string;
+  title: string;
+  description: string;
+  Icon: LucideIcon;
+}) {
+  return (
+    <Link href={href} className="group">
+      <Card className="h-full transition hover:-translate-y-0.5 hover:shadow-soft">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cream-100 text-bark-500">
+              <Icon size={18} />
+            </div>
+            <CardTitle className="text-xl">{title}</CardTitle>
+          </div>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-bark-500 transition group-hover:gap-2.5 group-hover:text-bark-700">
+          Abrir
+          <ArrowRight size={14} />
+        </div>
+      </Card>
+    </Link>
+  );
+}
