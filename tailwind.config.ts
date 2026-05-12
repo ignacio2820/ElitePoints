@@ -6,57 +6,59 @@ const config: Config = {
     extend: {
       colors: {
         cream: {
-          50: "#FBF8F3",
-          100: "#F5EFE3",
-          200: "#EADFC7"
+          50: "#F8F9FA",
+          100: "#F1F3F5",
+          200: "#E9ECEF"
         },
         bark: {
-          50: "#F7F1EA",
-          100: "#E8DCCB",
-          200: "#C9AE8C",
-          300: "#A88660",
-          400: "#8B5E3C",
-          500: "#6F4626",
-          600: "#54331A",
-          700: "#3B2210",
-          800: "#221308"
+          50: "#F1FAF5",
+          100: "#D8F3DC",
+          200: "#B7E4C7",
+          300: "#52B788",
+          400: "#40916C",
+          500: "#2D6A4F",
+          600: "#1B4332",
+          700: "#1B4332",
+          800: "#143328",
+          900: "#0D2818"
         },
         terracotta: {
-          50: "#FBEEE8",
-          100: "#F4D4C5",
-          200: "#EAA98C",
-          300: "#E07A5F",
-          400: "#C95E45",
-          500: "#A04631"
+          50: "#FFF4E6",
+          100: "#FFE8CC",
+          200: "#FFD4A3",
+          300: "#FB8500",
+          400: "#FB8500",
+          500: "#E67700"
         },
         sage: {
-          50: "#F2F5F0",
-          100: "#DDE5D6",
-          200: "#A9BD9B",
-          300: "#7E9871"
+          50: "#F1FAF5",
+          100: "#D8F3DC",
+          200: "#95D5B2",
+          300: "#52B788"
         },
-        // Niveles de lealtad
         cachorro: {
-          50: "#FBF1E5",
-          100: "#F4E0C7",
-          400: "#C68A4F",
-          600: "#7A4E22"
+          50: "#FFF4E6",
+          100: "#FFE8CC",
+          400: "#FB8500",
+          600: "#C66A00"
         },
         explorador: {
-          50: "#EAF1FB",
-          100: "#CFE0F5",
-          400: "#3F78C9",
-          600: "#1F4D8C"
+          50: "#E8F5EF",
+          100: "#C5E4D4",
+          400: "#40916C",
+          600: "#1B4332"
         },
         guardian: {
-          50: "#F1ECF8",
-          100: "#DCD0EE",
-          400: "#7B5BB0",
-          600: "#4A2F7A"
+          50: "#D8F3DC",
+          100: "#B7E4C7",
+          400: "#2D6A4F",
+          600: "#143328"
         }
       },
       fontFamily: {
         sans: [
+          '"Nunito"',
+          "ui-rounded",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -65,20 +67,27 @@ const config: Config = {
           "Roboto",
           "sans-serif"
         ],
-        display: ['"Fraunces"', "Georgia", "serif"]
+        display: [
+          '"Nunito"',
+          "ui-rounded",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
+        ]
       },
       boxShadow: {
-        soft: "0 1px 2px rgba(60,40,20,0.04), 0 8px 24px -8px rgba(60,40,20,0.10)",
-        ring: "0 0 0 4px rgba(224,122,95,0.18)"
+        soft: "0 1px 2px rgba(27, 67, 50, 0.05), 0 10px 28px -10px rgba(27, 67, 50, 0.14)",
+        ring: "0 0 0 4px rgba(251, 133, 0, 0.22)"
       },
       borderRadius: {
-        xl: "0.9rem",
-        "2xl": "1.25rem",
-        "3xl": "1.75rem"
+        xl: "1rem",
+        "2xl": "1.5rem",
+        "3xl": "2rem",
+        "4xl": "2.5rem"
       },
       backgroundImage: {
         "paw-pattern":
-          "radial-gradient(circle at 1px 1px, rgba(139,94,60,0.08) 1px, transparent 0)"
+          "radial-gradient(circle at 1px 1px, rgba(27, 67, 50, 0.08) 1px, transparent 0)"
       }
     }
   },

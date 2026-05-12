@@ -63,7 +63,7 @@ export default async function MiQRPage({
   const qrSvg = await QRCode.toString(qrUrl, {
     type: "svg",
     margin: 1,
-    color: { dark: "#221308", light: "#FFFFFF" },
+    color: { dark: "#1B4332", light: "#FFFFFF" },
     errorCorrectionLevel: "H",
     width: 320
   });

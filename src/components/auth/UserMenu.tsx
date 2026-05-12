@@ -12,13 +12,13 @@ export function UserMenu({ tone = "light" }: { tone?: "light" | "dark" }) {
     <div
       className={`flex items-center gap-3 rounded-full border px-3 py-1.5 text-xs ${
         isDark
-          ? "border-zinc-700 bg-zinc-900/60 text-zinc-300"
+          ? "border-bark-600 bg-bark-800/70 text-cream-50"
           : "border-bark-100 bg-cream-50 text-bark-600"
       }`}
     >
       <span
         className={`flex h-7 w-7 items-center justify-center rounded-full ${
-          isDark ? "bg-amber-400/15 text-amber-300" : "bg-bark-50 text-bark-500"
+          isDark ? "bg-terracotta-400/20 text-terracotta-300" : "bg-bark-50 text-bark-500"
         }`}
       >
         <User size={14} />
@@ -29,7 +29,7 @@ export function UserMenu({ tone = "light" }: { tone?: "light" | "dark" }) {
         title="Cerrar sesión"
         className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
           isDark
-            ? "hover:bg-zinc-800 hover:text-rose-300"
+            ? "hover:bg-bark-600 hover:text-rose-200"
             : "hover:bg-cream-100 hover:text-rose-600"
         }`}
       >

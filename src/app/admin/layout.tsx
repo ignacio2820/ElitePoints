@@ -52,7 +52,7 @@ export default async function AdminLayout({
 
   return (
     <div className="paw-bg flex min-h-screen flex-col">
-      <header className="border-b border-bark-100 bg-cream-50/80 backdrop-blur sticky top-0 z-10 print:hidden">
+      <header className="sticky top-0 z-10 border-b border-bark-800 bg-bark-700 text-cream-50 shadow-soft print:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <Link href="/admin" className="flex min-w-0 items-center gap-3">
             <LocalBrandMark
@@ -61,13 +61,13 @@ export default async function AdminLayout({
               size={36}
             />
             <div className="min-w-0">
-              <span className="block truncate font-display text-lg font-semibold text-bark-700">
+              <span className="block truncate font-display text-lg font-semibold text-white">
                 Admin · {info.nombre}
               </span>
             </div>
           </Link>
           <AdminNav className="hidden md:flex" />
-          <UserMenu />
+          <UserMenu tone="dark" />
         </div>
         <AdminNav className="overflow-x-auto px-4 pb-2 md:hidden" />
       </header>

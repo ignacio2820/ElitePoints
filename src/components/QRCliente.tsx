@@ -16,7 +16,7 @@ export async function QRCliente({ url, size = 220, caption }: QRClienteProps) {
   const svg = await QRCode.toString(url, {
     type: "svg",
     margin: 1,
-    color: { dark: "#221308", light: "#FBF8F3" },
+    color: { dark: "#1B4332", light: "#F8F9FA" },
     errorCorrectionLevel: "M",
     width: size
   });

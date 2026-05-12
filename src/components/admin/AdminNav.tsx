@@ -33,10 +33,10 @@ export function AdminNav({ className }: { className?: string }) {
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "border-b-2 px-3 pb-2.5 pt-1 text-sm transition-colors",
+              "rounded-full px-3 py-2 text-sm transition-colors",
               active
-                ? "border-amber-500 font-semibold text-bark-700"
-                : "border-transparent font-medium text-bark-500 hover:text-bark-700"
+                ? "bg-bark-600 font-semibold text-white shadow-soft"
+                : "font-medium text-cream-100/85 hover:bg-bark-600/45 hover:text-white"
             )}
           >
             {link.label}
