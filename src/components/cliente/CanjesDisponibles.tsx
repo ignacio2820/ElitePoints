@@ -157,8 +157,13 @@ function PremioCard({
   const Icono = iconoPremio(premio.categoria);
   const cardTone =
     tone === "green"
-      ? "bg-bark-700 text-white"
+      ? "bg-bark-900 text-white"
       : "bg-terracotta-400 text-white";
+  
+  const btnColor =
+    tone === "green"
+      ? "bg-terracotta-400 hover:bg-terracotta-500 text-white border-transparent"
+      : "bg-bark-900 hover:bg-bark-800 text-white border-transparent";
 
   let boton: ReactNode;
   if (desbloqueado) {
@@ -169,7 +174,7 @@ function PremioCard({
         disabled={pidiendo}
         className={
           embedded
-            ? "mt-auto inline-flex w-full items-center justify-center rounded-full border border-white/30 bg-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-60"
+            ? `mt-auto inline-flex w-full items-center justify-center rounded-full border px-4 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${btnColor}`
             : "btn-primary mt-auto w-full justify-center py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
         }
       >
@@ -231,7 +236,7 @@ function PremioCard({
       className={
         embedded
           ? `flex h-full min-h-[15rem] flex-col rounded-[1.5rem] p-5 shadow-soft ${cardTone}`
-          : "flex h-full flex-col rounded-2xl border border-bark-100 bg-cream-50/80 p-4 shadow-sm transition-shadow duration-200 hover:shadow-md"
+          : "surface-card flex h-full flex-col p-5 transition-shadow duration-200 hover:shadow-soft"
       }
     >
       {embedded ? (

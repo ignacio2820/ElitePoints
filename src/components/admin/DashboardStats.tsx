@@ -131,7 +131,7 @@ function CardEmisionCanje({ stats }: { stats: EmisionVsCanjeStats }) {
           etiqueta="Emitidas"
           valor={stats.emitidas}
           pct={pctEmitidas}
-          color="from-amber-300 to-amber-500"
+          color="from-terracotta-300 to-terracotta-500"
           icono="up"
         />
         <Barra

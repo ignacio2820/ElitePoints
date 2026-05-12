@@ -86,10 +86,10 @@ export function AsignarHuellitasModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-bark-700/60 backdrop-blur-sm sm:items-center"
+      className="modal-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-soft sm:rounded-3xl">
+      <div className="modal-panel max-w-md">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-bark-400">

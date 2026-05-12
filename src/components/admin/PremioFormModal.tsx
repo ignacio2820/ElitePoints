@@ -130,8 +130,8 @@ export function PremioFormModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-soft">
+    <div className="modal-overlay p-4 sm:items-center">
+      <div className="modal-panel max-w-lg">
         <div className="mb-5 flex items-start justify-between gap-3">
           <div>
             <p className="label-elegant">Catálogo</p>

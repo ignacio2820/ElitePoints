@@ -182,7 +182,7 @@ export function CanjesPendientesPanel({
                     <button
                       onClick={() => confirmar(t.codigo)}
                       disabled={t.expirado || pendingId === t.codigo}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 px-3 py-2 text-sm font-semibold text-zinc-950 shadow disabled:opacity-50"
+                      className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-sm disabled:opacity-50"
                     >
                       {pendingId === t.codigo ? (
                         <Loader2 size={14} className="animate-spin" />

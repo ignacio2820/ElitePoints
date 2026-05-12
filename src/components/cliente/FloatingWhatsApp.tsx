@@ -60,7 +60,7 @@ export function FloatingWhatsApp({
   const baseCls =
     "fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full px-4 py-3 font-semibold shadow-2xl transition active:scale-95";
   const themeCls = premium
-    ? "bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-zinc-950 shadow-amber-500/30"
+    ? "bg-gradient-to-r from-terracotta-400 via-terracotta-400 to-terracotta-500 text-white shadow-soft"
     : "bg-[#25D366] text-white shadow-emerald-700/30 hover:bg-[#1EBE5C]";
 
   return (

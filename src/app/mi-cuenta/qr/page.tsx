@@ -95,7 +95,7 @@ export default async function MiQRPage({
                 {cliente?.nombre ?? "Cliente"}
               </h1>
               {nombreMascota ? (
-                <p className="mt-1 font-sans text-sm text-zinc-600">
+                <p className="mt-1 font-sans text-sm text-bark-500">
                   Mascota: {nombreMascota}
                 </p>
               ) : null}

@@ -59,8 +59,8 @@ export function CustomerPanel({
   const progresoPct = Math.max(0, Math.min(100, pctTramo * 100));
 
   return (
-    <div className="min-h-screen bg-bark-700 lg:flex">
-      <aside className="relative flex w-full shrink-0 flex-col bg-bark-700 px-5 py-6 text-white lg:w-[17.5rem] lg:px-6 lg:py-8">
+    <div className="min-h-screen bg-bark-900 lg:flex">
+      <aside className="relative flex w-full shrink-0 flex-col bg-bark-900 px-5 py-6 text-white lg:w-[17.5rem] lg:px-6 lg:py-8">
         <div className="flex items-center gap-2">
           <HuellitaIcon size={22} className="text-terracotta-400" />
           <div className="font-display text-xl font-extrabold leading-none tracking-tight">
@@ -80,19 +80,19 @@ export function CustomerPanel({
             />
           </div>
           <p className="mt-4 font-display text-lg font-bold text-white">{nombreCliente}</p>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/90">
             {nombreLocal}
           </p>
         </div>
 
         <div className="mt-8 lg:mt-10">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/90">
             Actividad reciente
           </p>
           <ul className="mt-4 space-y-4 text-sm">
             <li className="border-b border-white/10 pb-4">
               <p className="font-semibold text-white">Programa activo</p>
-              <p className="mt-1 text-xs text-white/65">
+              <p className="mt-1 text-xs text-white/90">
                 Hola, {primerNombre}. Tus movimientos del local aparecerán acá.
               </p>
               <p className="mt-2 text-sm font-bold text-terracotta-300">
@@ -101,7 +101,7 @@ export function CustomerPanel({
             </li>
             <li>
               <p className="font-semibold text-white">Rango actual</p>
-              <p className="mt-1 text-xs text-white/65">{nivelActual.nombre}</p>
+              <p className="mt-1 text-xs text-white/90">{nivelActual.nombre}</p>
               <p className="mt-2 text-sm font-bold text-terracotta-300">
                 {formatNumber(saldoHuellitas)} huellitas en saldo
               </p>
@@ -130,7 +130,7 @@ export function CustomerPanel({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col rounded-t-[2rem] bg-cream-50 lg:rounded-tl-[2.5rem] lg:rounded-tr-none">
-        <header className="border-b border-bark-100/80 bg-bark-700/95 px-4 py-4 text-white lg:rounded-tl-[2.5rem] lg:px-8">
+        <header className="border-b border-bark-100/80 bg-bark-900/95 px-4 py-4 text-white lg:rounded-tl-[2.5rem] lg:px-8">
           <nav className="flex flex-wrap items-center gap-2">
             {NAV_LINKS.map((link) => (
               <Link
@@ -149,12 +149,12 @@ export function CustomerPanel({
           <div className="rounded-[2rem] bg-white p-5 shadow-soft lg:p-8">
             <div className="mb-6 flex items-center gap-2">
               <HuellitaIcon size={24} className="text-terracotta-400" />
-              <h1 className="font-display text-2xl font-bold text-bark-700">Huellita</h1>
+              <h1 className="font-display text-2xl font-bold text-bark-900">Huellita</h1>
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <section className="rounded-[1.75rem] bg-bark-700 p-6 text-white shadow-soft lg:p-7">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/75">
+              <section className="rounded-[1.75rem] bg-bark-900 p-6 text-white shadow-soft lg:p-7">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/90">
                   Tus huellitas acumuladas
                 </p>
                 <div className="mt-4 flex items-end gap-2">
@@ -173,7 +173,7 @@ export function CustomerPanel({
                       style={{ width: `${progresoPct}%` }}
                     />
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-white/80">
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-white/90">
                     <span>{nivelActual.nombre}</span>
                     {!esLeyenda && nivelSiguienteNombre ? (
                       <span>

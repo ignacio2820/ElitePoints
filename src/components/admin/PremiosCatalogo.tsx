@@ -77,7 +77,7 @@ export function PremiosCatalogo({ initialPremios, niveles }: Props) {
           {premios.map((premio) => (
             <article
               key={premio.id}
-              className="rounded-2xl border border-bark-100 bg-white p-5 shadow-soft"
+              className="surface-card p-5"
             >
               <div className="flex items-start gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-cream-100 text-bark-400">

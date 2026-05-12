@@ -24,7 +24,7 @@ export default async function RootLayout({
   const sesion = await getSesion();
   return (
     <html lang="es">
-      <body className="min-h-screen bg-cream-50">
+      <body className="min-h-screen paw-bg text-cream-50">
         <AuthProvider sesionInicial={sesion}>{children}</AuthProvider>
       </body>
     </html>

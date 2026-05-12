@@ -65,8 +65,8 @@ export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
   const codigoPretty = ticket.codigo.match(/.{1,2}/g)?.join(" ") ?? ticket.codigo;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-bark-800/40 backdrop-blur-sm sm:items-center sm:px-4">
-      <div className="surface-card relative w-full max-w-md overflow-hidden rounded-t-3xl text-bark-800 sm:rounded-2xl">
+    <div className="modal-overlay sm:px-4">
+      <div className="modal-panel relative max-w-md overflow-hidden text-bark-800">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-2xl border border-bark-200 bg-white text-bark-600 transition hover:bg-cream-100"

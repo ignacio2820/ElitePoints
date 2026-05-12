@@ -128,10 +128,8 @@ function PremioTile({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border p-5 transition",
-        desbloqueado
-          ? "border-bark-100 bg-white hover:-translate-y-0.5 hover:shadow-soft"
-          : "border-bark-100 bg-cream-50/60"
+        "group relative overflow-hidden surface-card p-5 transition",
+        desbloqueado ? "hover:-translate-y-0.5 hover:shadow-soft" : "opacity-95"
       )}
     >
       {!desbloqueado ? (

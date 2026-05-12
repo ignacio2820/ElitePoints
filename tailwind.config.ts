@@ -57,8 +57,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          '"Nunito"',
-          "ui-rounded",
+          '"Outfit"',
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -68,8 +67,7 @@ const config: Config = {
           "sans-serif"
         ],
         display: [
-          '"Nunito"',
-          "ui-rounded",
+          '"Outfit"',
           "ui-sans-serif",
           "system-ui",
           "sans-serif"

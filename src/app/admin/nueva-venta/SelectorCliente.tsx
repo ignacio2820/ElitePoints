@@ -225,7 +225,7 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
           onFocus={() => setOpen(true)}
           placeholder="Código del cliente (ABC-123) o nombre / email / teléfono…"
           autoComplete="off"
-          className={`w-full rounded-xl border bg-cream-50 py-3 pl-11 pr-10 text-sm text-bark-700 placeholder-zinc-500 outline-none transition focus:ring-2 ${
+          className={`w-full rounded-xl border bg-cream-50 py-3 pl-11 pr-10 text-sm text-bark-700 placeholder-bark-400 outline-none transition focus:ring-2 ${
             pareceCodigo
               ? "border-amber-400 font-mono uppercase tracking-wider focus:border-amber-300 focus:ring-amber-400/30"
               : "border-bark-100 focus:border-bark-400 focus:ring-bark-400/20"

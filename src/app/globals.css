@@ -2,28 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --bg: #f8f9fa;
+  --bg: #1b4332;
   --surface: #ffffff;
   --forest: #1b4332;
   --forest-soft: #2d6a4f;
   --accent: #fb8500;
-  --ink: #1b4332;
-  --muted: #40916c;
+  --ink: #f8f9fa;
+  --muted: #d8f3dc;
 }
 
 html,
 body {
   background-color: var(--bg);
   color: var(--ink);
-  font-family: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .font-display {
-  font-family: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -31,7 +31,7 @@ body {
   background-color: var(--bg);
   background-image: radial-gradient(
     circle at 1px 1px,
-    rgba(27, 67, 50, 0.08) 1px,
+    rgba(255, 255, 255, 0.08) 1px,
     transparent 0
   );
   background-size: 18px 18px;
@@ -114,16 +114,16 @@ input[type="range"]:focus::-webkit-slider-thumb {
 }
 
 .btn-ghost {
-  background: transparent;
-  color: var(--forest);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
   border-radius: 9999px;
   padding: 0.7rem 1.1rem;
   font-weight: 700;
-  border: 1px solid rgba(27, 67, 50, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   transition: background 0.15s;
 }
 .btn-ghost:hover {
-  background: rgba(27, 67, 50, 0.06);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .input-elegant {
@@ -148,6 +148,45 @@ input[type="range"]:focus::-webkit-slider-thumb {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.lucide {
+  stroke-width: 1.5;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(20, 51, 40, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 2rem 2rem 0 0;
+  background: var(--surface);
+  padding: 1.5rem;
+  box-shadow:
+    0 1px 2px rgba(27, 67, 50, 0.05),
+    0 10px 28px -10px rgba(27, 67, 50, 0.14);
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .modal-panel {
+    border-radius: 2rem;
+  }
 }
 
 @media print {
