@@ -18,7 +18,7 @@ export default async function MiCuentaLayout({
     redirect("/admin");
   }
   return (
-    <div className="paw-bg flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col">
       <div className="flex-1">{children}</div>
       <MascotPointsFooter className="print:hidden" />
     </div>

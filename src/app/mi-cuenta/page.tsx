@@ -16,7 +16,7 @@ import { MascotaCard } from "@/components/MascotaCard";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
 import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
-import { MiCuentaStickyHeader } from "@/components/cliente/MiCuentaStickyHeader";
+import { CustomerPanel } from "@/components/cliente/CustomerPanel";
 import type { Cliente, Mascota, Premio } from "@/lib/huellitas/types";
 
 export const dynamic = "force-dynamic";
@@ -79,7 +79,6 @@ export default async function MiCuentaPage({
   const telefonoWhatsapp = dataLocal.telefonoWhatsapp ?? null;
 
   const progreso = progresoNivel(cliente.acumuladoHistorico, cfg.niveles);
-  // Serializamos mascotas a objetos planos (sin Timestamps de Firestore).
   const mascotasRaw = (clienteRaw.mascotas as Mascota[] | undefined) ?? [];
   const mascotas: Mascota[] = mascotasRaw.map((m) => ({
     nombre: String(m.nombre ?? ""),
@@ -122,48 +121,43 @@ export default async function MiCuentaPage({
   const h = headers();
   const baseUrl = resolvePublicBaseUrl(h);
 
-  // ¿Es el nivel más alto del programa? (último en la lista de niveles)
-  const idxActual = cfg.niveles.findIndex(
-    (n) => n.id === progreso.nivelActual.id
-  );
-  const esTopTier =
-    idxActual >= 0 && idxActual === cfg.niveles.length - 1;
-
-  const temaNivel = progreso.nivelActual.tema;
-
   return (
     <div className="pb-28 antialiased text-bark-800">
-      <MiCuentaStickyHeader
+      <CustomerPanel
         nombreLocal={nombreLocal}
         logoUrl={logoUrl}
-        primerNombre={cliente.nombre.split(" ")[0]}
+        nombreCliente={cliente.nombre}
         saldoHuellitas={cliente.saldoHuellitas}
         valorMonetarioHuellita={cfg.valorMonetarioHuellita}
         nivelActual={progreso.nivelActual}
-        temaNivel={temaNivel}
         pctTramo={progreso.pctTramo}
         nivelSiguienteNombre={
           progreso.nivelSiguiente ? progreso.nivelSiguiente.nombre : null
         }
         huellitasFaltantes={progreso.huellitasFaltantes}
         esLeyenda={!progreso.nivelSiguiente}
-        esTopTier={esTopTier}
-        codigoCliente={cliente.codigoCliente}
-      />
-
-      <main className="mx-auto max-w-6xl space-y-5 px-6 py-10 pb-14">
+        montoParaUnaHuellita={cfg.montoParaUnaHuellita}
+        diasVencimiento={cfg.diasVencimiento}
+        recompensas={
+          premios.length > 0 ? (
+            <CanjesDisponibles
+              embedded
+              premios={premios}
+              saldoCliente={cliente.saldoHuellitas ?? 0}
+              nivelCliente={progreso.nivelActual}
+              niveles={cfg.niveles}
+              especiesCliente={mascotas.map((m) => m.especie)}
+            />
+          ) : (
+            <p className="rounded-2xl border border-dashed border-bark-100 bg-cream-50 px-4 py-8 text-center text-sm text-bark-500">
+              Todavía no hay premios disponibles.
+            </p>
+          )
+        }
+      >
         {membresiaExpirada ? (
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
         ) : null}
-        {premios.length > 0 && (
-          <CanjesDisponibles
-            premios={premios}
-            saldoCliente={cliente.saldoHuellitas ?? 0}
-            nivelCliente={progreso.nivelActual}
-            niveles={cfg.niveles}
-            especiesCliente={mascotas.map((m) => m.especie)}
-          />
-        )}
 
         <Link
           href="/mi-cuenta/qr"
@@ -219,7 +213,7 @@ export default async function MiCuentaPage({
             baseUrl={baseUrl}
           />
         )}
-      </main>
+      </CustomerPanel>
 
       <FloatingWhatsApp
         telefono={telefonoWhatsapp}
