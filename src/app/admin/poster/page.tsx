@@ -4,6 +4,7 @@ import { PosterA4 } from "@/components/admin/PosterA4";
 import { PosterAutoPrint } from "@/components/admin/PosterAutoPrint";
 import { PosterPrintControls } from "@/components/admin/PosterPrintControls";
 import { requireAdmin } from "@/lib/auth/server";
+import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { getInfoLocal } from "@/lib/huellitas/localService";
 
 export const dynamic = "force-dynamic";
@@ -18,11 +19,7 @@ export default async function AdminPosterPage() {
   const info = await getInfoLocal(localId);
 
   const h = headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const baseUrl = (
-    process.env.NEXT_PUBLIC_APP_URL ?? `${proto}://${host}`
-  ).replace(/\/$/, "");
+  const baseUrl = resolvePublicBaseUrl(h);
   const registroUrl = `${baseUrl}/registro?localId=${encodeURIComponent(localId)}`;
 
   return (

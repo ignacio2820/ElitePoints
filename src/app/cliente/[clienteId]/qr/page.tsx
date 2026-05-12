@@ -9,6 +9,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import type { Cliente } from "@/lib/huellitas/types";
 import { rutaConLocalId } from "@/lib/huellitas/tenant";
+import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +40,8 @@ export default async function ClienteQrPage({
     (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
   const h = headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const scanUrl = `${proto}://${host}/admin/scan/${params.clienteId}`;
+  const baseUrl = resolvePublicBaseUrl(h);
+  const scanUrl = `${baseUrl}/admin/scan/${params.clienteId}`;
 
   const qrSvg = await QRCode.toString(scanUrl, {
     type: "svg",

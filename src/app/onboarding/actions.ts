@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { crearLocalYOnboarding } from "@/lib/huellitas/onboardingService";
 import { enviarEmailBienvenidaPetShop } from "@/lib/email/bienvenidaPetShop";
+import { appBaseUrlForAuth } from "@/lib/auth/continueUrl";
 
 /**
  * Server Action de onboarding del Pet Shop.
@@ -80,9 +81,7 @@ export async function registrarPetShop(
   // Si Resend está configurado, mandamos email de bienvenida (con el magic
   // link embebido + 4 tips de onboarding). Si falla o no hay Resend,
   // devolvemos el link al cliente para que toque "Continuar al panel".
-  const baseUrl = (
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-  ).replace(/\/$/, "");
+  const baseUrl = appBaseUrlForAuth();
 
   const haveResend = !!process.env.RESEND_API_KEY;
   if (haveResend) {

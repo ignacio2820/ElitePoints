@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ClienteView } from "./ClienteView";
 import { getInfoLocal } from "@/lib/huellitas/localService";
+import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import {
   CONFIGURACION_DEFAULT,
@@ -117,9 +118,7 @@ export default async function ClientePage({
   const membresiaExpirada = isMembresiaExpirada(infoLocal);
 
   const h = headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const host = h.get("host") ?? "localhost:3000";
-  const baseUrl = `${proto}://${host}`;
+  const baseUrl = resolvePublicBaseUrl(h);
 
   return (
     <ClienteView

@@ -7,6 +7,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
 import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
+import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { formatHuellitas } from "@/lib/utils";
@@ -56,9 +57,7 @@ export default async function MiQRPage({
     (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
   const h = headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const baseUrl = `${proto}://${host}`;
+  const baseUrl = resolvePublicBaseUrl(h);
   const qrUrl = `${baseUrl}/admin/scan/${clienteId}`;
 
   const qrSvg = await QRCode.toString(qrUrl, {

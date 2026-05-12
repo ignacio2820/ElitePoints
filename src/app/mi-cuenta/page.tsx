@@ -7,6 +7,7 @@ import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
 import { getConfiguracion } from "@/lib/huellitas/service";
 import { getInfoLocal } from "@/lib/huellitas/localService";
+import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
@@ -119,9 +120,7 @@ export default async function MiCuentaPage({
   });
 
   const h = headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const baseUrl = `${proto}://${host}`;
+  const baseUrl = resolvePublicBaseUrl(h);
 
   // ¿Es el nivel más alto del programa? (último en la lista de niveles)
   const idxActual = cfg.niveles.findIndex(

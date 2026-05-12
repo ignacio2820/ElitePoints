@@ -15,6 +15,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { Field } from "@/components/ui/Field";
 import { nombreASlug } from "@/lib/huellitas/slug";
 import { registrarPetShop, type OnboardingState } from "./actions";
 
@@ -55,25 +56,24 @@ function Formulario({
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-zinc-100 lg:flex-row">
-      {/* Panel izquierdo: branding (solo desktop) */}
-      <aside className="relative hidden flex-1 flex-col justify-between overflow-hidden border-r border-amber-400/10 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-12 lg:flex">
+    <div className="paw-bg flex min-h-screen flex-col lg:flex-row">
+      <aside className="relative hidden flex-1 flex-col justify-between overflow-hidden border-r border-bark-100 bg-cream-50/80 p-12 lg:flex">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-amber-400/10 blur-3xl"
+          className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-amber-200/30 blur-3xl"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-amber-300/5 blur-3xl"
+          className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-terracotta-200/20 blur-3xl"
         />
         <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-            <Sparkles size={12} /> Onboarding · Dueños
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-bark-600">
+            <Sparkles size={12} className="text-bark-500" /> Onboarding · Dueños
           </div>
-          <h1 className="mt-6 max-w-md font-display text-4xl font-semibold leading-tight text-amber-50 xl:text-5xl">
+          <h1 className="mt-6 max-w-md font-display text-4xl font-semibold leading-tight text-bark-700 xl:text-5xl">
             Tu Pet Shop con un programa de fidelidad de verdad.
           </h1>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-zinc-400">
+          <p className="mt-4 max-w-md text-sm leading-relaxed text-[color:var(--muted)]">
             En 60 segundos creás tu cuenta, tu sistema de Huellitas y empezás
             a sumar clientes recurrentes. Sin tarjetas de plástico, sin Excel.
           </p>
@@ -97,149 +97,175 @@ function Formulario({
           />
         </ul>
 
-        <p className="relative mt-10 text-xs text-zinc-500">
+        <p className="relative mt-10 text-xs text-bark-400">
           ¿Ya sos dueño de un Pet Shop con cuenta? Volvé a la{" "}
-          <a href="/login" className="text-amber-300 underline underline-offset-2">
+          <a href="/login" className="font-semibold text-bark-700 underline underline-offset-2">
             pantalla de ingreso
           </a>
           .
         </p>
       </aside>
 
-      {/* Panel derecho: formulario */}
       <main className="flex flex-1 items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-md">
-          <div className="lg:hidden">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-              <Sparkles size={12} /> Onboarding · Dueños
-            </div>
-            <h1 className="mt-4 font-display text-3xl font-semibold text-amber-50">
-              Crear tu Pet Shop
-            </h1>
-            <p className="mt-2 text-sm text-zinc-400">
-              Un programa de fidelidad listo en 60 segundos.
-            </p>
-          </div>
+          <div className="surface-card overflow-visible rounded-2xl">
+            <div className="p-6 sm:p-8">
+              <div className="lg:hidden">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-cream-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-bark-600">
+                  <Sparkles size={12} className="text-bark-500" /> Onboarding · Dueños
+                </div>
+                <h1 className="mt-4 font-display text-3xl font-semibold text-bark-700">
+                  Crear tu Pet Shop
+                </h1>
+                <p className="mt-2 text-sm text-[color:var(--muted)]">
+                  Un programa de fidelidad listo en 60 segundos.
+                </p>
+              </div>
 
-          <form action={formAction} className="mt-8 space-y-5">
-            <Field
-              label="Nombre del local"
-              hint={
-                slugPreview
-                  ? `Tu URL: tuapp.com/${slugPreview}`
-                  : "Ej: el nombre con el que tus clientes te conocen"
-              }
-              icon={<Building2 size={16} />}
-            >
-              <input
-                ref={inputRef}
-                type="text"
-                name="nombreLocal"
-                value={nombreLocal}
-                onChange={(e) => setNombreLocal(e.target.value)}
-                placeholder="Mi Pet Shop o Veterinaria"
-                required
-                minLength={2}
-                maxLength={80}
-                autoComplete="organization"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-              />
-            </Field>
-
-            <Field
-              label="Teléfono de WhatsApp"
-              hint="Lo usan tus clientes para consultarte desde Mi Cuenta."
-              icon={<Phone size={16} />}
-            >
-              <input
-                type="tel"
-                name="telefonoWhatsapp"
-                placeholder="+54 9 11 0000-0000"
-                required
-                maxLength={30}
-                autoComplete="tel"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-              />
-            </Field>
-
-            <Field
-              label="Dirección"
-              hint="Calle, número y ciudad. Tus clientes la ven en su portal."
-              icon={<MapPin size={16} />}
-            >
-              <input
-                type="text"
-                name="direccion"
-                placeholder="Av. Corrientes 1234, CABA"
-                required
-                minLength={3}
-                maxLength={300}
-                autoComplete="street-address"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-              />
-            </Field>
-
-            <Field
-              label="Logo del local"
-              hint="Pegá la URL pública de tu logo. Después podés subir un archivo desde Configuración."
-              icon={<ImageIcon size={16} />}
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="url"
-                  name="logoUrl"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="https://..."
-                  required
-                  maxLength={500}
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                />
-                {logoUrl && /^https?:\/\//.test(logoUrl) && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={logoUrl}
-                    alt="Vista previa del logo"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = "none";
-                    }}
-                    className="h-12 w-12 shrink-0 rounded-xl border border-zinc-800 bg-zinc-900 object-cover"
+              <form action={formAction} className="mt-8 space-y-5 lg:mt-0">
+                <CampoConIcono
+                  label="Nombre del local"
+                  hint={
+                    slugPreview
+                      ? `Tu URL: tuapp.com/${slugPreview}`
+                      : "Ej: el nombre con el que tus clientes te conocen"
+                  }
+                  icon={<Building2 size={16} />}
+                >
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    name="nombreLocal"
+                    value={nombreLocal}
+                    onChange={(e) => setNombreLocal(e.target.value)}
+                    placeholder="Mi Pet Shop o Veterinaria"
+                    required
+                    minLength={2}
+                    maxLength={80}
+                    autoComplete="organization"
+                    className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300"
                   />
+                </CampoConIcono>
+
+                <CampoConIcono
+                  label="Teléfono de WhatsApp"
+                  hint="Lo usan tus clientes para consultarte desde Mi Cuenta."
+                  icon={<Phone size={16} />}
+                >
+                  <input
+                    type="tel"
+                    name="telefonoWhatsapp"
+                    placeholder="+54 9 11 0000-0000"
+                    required
+                    maxLength={30}
+                    autoComplete="tel"
+                    className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300"
+                  />
+                </CampoConIcono>
+
+                <CampoConIcono
+                  label="Dirección"
+                  hint="Calle, número y ciudad. Tus clientes la ven en su portal."
+                  icon={<MapPin size={16} />}
+                >
+                  <input
+                    type="text"
+                    name="direccion"
+                    placeholder="Av. Corrientes 1234, CABA"
+                    required
+                    minLength={3}
+                    maxLength={300}
+                    autoComplete="street-address"
+                    className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300"
+                  />
+                </CampoConIcono>
+
+                <Field
+                  label="Logo del local"
+                  hint="Pegá la URL pública de tu logo. Después podés subir un archivo desde Configuración."
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-bark-100 bg-white px-3 py-3 transition focus-within:border-bark-400 focus-within:ring-2 focus-within:ring-bark-300/30">
+                      <ImageIcon size={16} className="shrink-0 text-bark-400" />
+                      <input
+                        type="url"
+                        name="logoUrl"
+                        value={logoUrl}
+                        onChange={(e) => setLogoUrl(e.target.value)}
+                        placeholder="https://..."
+                        required
+                        maxLength={500}
+                        className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300"
+                      />
+                    </div>
+                    {logoUrl && /^https?:\/\//.test(logoUrl) && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={logoUrl}
+                        alt="Vista previa del logo"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                        className="h-12 w-12 shrink-0 rounded-xl border border-amber-200/70 bg-white object-cover shadow-soft"
+                      />
+                    )}
+                  </div>
+                </Field>
+
+                <CampoConIcono
+                  label="Email del dueño"
+                  hint="Te mandamos un link mágico para entrar al panel."
+                  icon={<Mail size={16} />}
+                >
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="hola@tupetshop.com"
+                    required
+                    autoComplete="email"
+                    className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300"
+                  />
+                </CampoConIcono>
+
+                {errorMsg && (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                    {errorMsg}
+                  </div>
                 )}
-              </div>
-            </Field>
 
-            <Field
-              label="Email del dueño"
-              hint="Te mandamos un link mágico para entrar al panel."
-              icon={<Mail size={16} />}
-            >
-              <input
-                type="email"
-                name="email"
-                placeholder="hola@tupetshop.com"
-                required
-                autoComplete="email"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-              />
-            </Field>
+                <BotonEnviar />
 
-            {errorMsg && (
-              <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">
-                {errorMsg}
-              </div>
-            )}
-
-            <BotonEnviar />
-
-            <p className="text-center text-xs leading-relaxed text-zinc-500">
-              Al continuar aceptás recibir el email con el link de acceso al
-              panel. Sin contraseñas. El link expira en 1 hora.
-            </p>
-          </form>
+                <p className="text-center text-xs leading-relaxed text-bark-400">
+                  Al continuar aceptás recibir el email con el link de acceso al
+                  panel. Sin contraseñas. El link expira en 1 hora.
+                </p>
+              </form>
+            </div>
+          </div>
         </div>
       </main>
     </div>
+  );
+}
+
+function CampoConIcono({
+  label,
+  hint,
+  icon,
+  children
+}: {
+  label: string;
+  hint?: React.ReactNode;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Field label={label} hint={hint}>
+      <div className="flex items-center gap-2 rounded-xl border border-bark-100 bg-white px-3 py-3 transition focus-within:border-bark-400 focus-within:ring-2 focus-within:ring-bark-300/30">
+        <span className="text-bark-400">{icon}</span>
+        {children}
+      </div>
+    </Field>
   );
 }
 
@@ -249,46 +275,20 @@ function BotonEnviar() {
     <button
       type="submit"
       disabled={pending}
-      className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 py-3.5 text-sm font-bold text-zinc-900 shadow-[0_8px_24px_-8px_rgba(251,191,36,0.6)] transition hover:shadow-[0_12px_32px_-8px_rgba(251,191,36,0.7)] disabled:cursor-not-allowed disabled:opacity-50"
+      className="btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <span className="relative z-10 flex items-center justify-center gap-2">
-        {pending ? (
-          <>
-            <Spinner /> Creando tu Pet Shop...
-          </>
-        ) : (
-          <>
-            <Sparkles size={16} />
-            Crear mi Pet Shop
-            <ArrowRight size={16} />
-          </>
-        )}
-      </span>
-      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+      {pending ? (
+        <>
+          <Spinner /> Creando tu Pet Shop...
+        </>
+      ) : (
+        <>
+          <Sparkles size={16} />
+          Crear mi Pet Shop
+          <ArrowRight size={16} />
+        </>
+      )}
     </button>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  icon,
-  children
-}: {
-  label: string;
-  hint?: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-zinc-400">
-        {icon && <span className="text-amber-300/80">{icon}</span>}
-        {label}
-      </span>
-      {children}
-      {hint && <p className="mt-1.5 text-xs text-zinc-500">{hint}</p>}
-    </label>
   );
 }
 
@@ -303,12 +303,12 @@ function Beneficio({
 }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300">
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-200/80 bg-white text-bark-600 shadow-soft">
         {icon}
       </span>
       <div>
-        <p className="text-sm font-semibold text-amber-50">{titulo}</p>
-        <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">{sub}</p>
+        <p className="text-sm font-semibold text-bark-700">{titulo}</p>
+        <p className="mt-0.5 text-xs leading-relaxed text-[color:var(--muted)]">{sub}</p>
       </div>
     </li>
   );
@@ -324,17 +324,17 @@ function ExitoPanel({
   state: Extract<OnboardingState, { status: "ok" }>;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-black px-6 py-12">
-      <div className="w-full max-w-md text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-400/30">
+    <div className="paw-bg flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="surface-card w-full max-w-md p-8 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200">
           <CheckCircle2 size={32} />
         </div>
-        <h1 className="mt-6 font-display text-3xl font-semibold text-amber-50">
+        <h1 className="mt-6 font-display text-3xl font-semibold text-bark-700">
           ¡Tu Pet Shop está listo!
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+        <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
           Creamos tu local con el identificador{" "}
-          <code className="rounded bg-zinc-900 px-2 py-0.5 font-mono text-amber-300">
+          <code className="rounded-lg bg-cream-100 px-2 py-0.5 font-mono text-sm text-bark-700 ring-1 ring-bark-100">
             {state.localId}
           </code>{" "}
           y configuramos tu programa de fidelidad con valores saludables (1%
@@ -342,31 +342,28 @@ function ExitoPanel({
         </p>
 
         {state.sent ? (
-          <p className="mt-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm leading-relaxed text-emerald-100">
+          <p className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-relaxed text-emerald-800">
             Te mandamos el link de acceso a tu email. Tocalo desde el celular o
             la compu donde quieras entrar al panel.
           </p>
         ) : state.devLink ? (
           <div className="mt-6 space-y-3">
-            <a
-              href={state.devLink}
-              className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 py-3.5 text-sm font-bold text-zinc-900 shadow-[0_8px_24px_-8px_rgba(251,191,36,0.6)] transition hover:shadow-[0_12px_32px_-8px_rgba(251,191,36,0.7)]"
-            >
+            <a href={state.devLink} className="btn-primary w-full justify-center">
               Continuar al panel
               <ArrowRight size={16} />
             </a>
-            <p className="text-xs leading-relaxed text-zinc-500">
+            <p className="text-xs leading-relaxed text-bark-400">
               Este botón te lleva al panel directo. En producción te llegaría
               el link por email.
             </p>
           </div>
         ) : null}
 
-        <p className="mt-8 text-xs text-zinc-500">
+        <p className="mt-8 text-xs text-bark-400">
           ¿Necesitás ayuda? Escribinos a{" "}
           <a
             href="mailto:hola@huellitas.app"
-            className="text-amber-300 underline underline-offset-2"
+            className="font-semibold text-bark-700 underline underline-offset-2"
           >
             hola@huellitas.app
           </a>
@@ -380,7 +377,7 @@ function ExitoPanel({
 function Spinner() {
   return (
     <span
-      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900/30 border-t-zinc-900"
+      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-cream-50/40 border-t-cream-50"
       role="status"
       aria-label="cargando"
     />

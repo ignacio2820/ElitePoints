@@ -4,6 +4,7 @@ import { cols } from "@/lib/firebase/collections";
 import { enviarEmailMembresiaPorVencer } from "@/lib/email/membresiaPorVencer";
 import type { InfoLocal } from "./localService";
 import { diasHastaVencimiento, membresiaPorVencer } from "./membresia";
+import { appBaseUrlForAuth } from "@/lib/auth/continueUrl";
 
 const DIAS_UMBRAL = 7;
 const HORAS_ENTRE_AVISOS = 72;
@@ -27,9 +28,7 @@ export async function notificarMembresiaPorVencerSiCorresponde(
   const dias = diasHastaVencimiento(info);
   if (dias === null || dias <= 0) return;
 
-  const baseUrl = (
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-  ).replace(/\/$/, "");
+  const baseUrl = appBaseUrlForAuth();
   const renovarUrl = `${baseUrl}/admin/pagos`;
   const fechaVencimiento = info.fechaVencimiento
     ? info.fechaVencimiento.toLocaleDateString("es-AR", {
