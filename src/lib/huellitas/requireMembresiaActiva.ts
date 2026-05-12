@@ -4,7 +4,8 @@ import { tieneAccesoOperativo } from "./membresia";
 
 export const RUTA_PAGOS_ADMIN = "/admin/pagos";
 
-const RUTAS_OPERATIVAS_ADMIN = ["/admin/nueva-venta", "/admin/clientes"] as const;
+/** La caja es operativa; la cartera de clientes se consulta sin redirigir a pagos. */
+const RUTAS_OPERATIVAS_ADMIN = ["/admin/nueva-venta"] as const;
 
 export function rutaRequiereAccesoOperativo(pathname: string): boolean {
   return RUTAS_OPERATIVAS_ADMIN.some(

@@ -7,6 +7,7 @@ import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
 import { cols } from "@/lib/firebase/collections";
 import { adminDb } from "@/lib/firebase/admin";
+import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
 
 export const runtime = "nodejs";
 
@@ -169,13 +170,13 @@ export async function POST(req: Request) {
     // Genera el link de magic-link nativo de Firebase.
     // El destino siempre es /login/verify para que el cliente complete el
     // sign-in y el redirect post-login se decide ahí según el rol detectado.
-    const baseUrl = (
-      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-    ).replace(/\/$/, "");
-    const params = new URLSearchParams();
-    params.set("intent", rolFinal);
-    if (redirect) params.set("redirect", redirect);
-    const continueUrl = `${baseUrl}/login/verify?${params.toString()}`;
+    const redirectFinal =
+      redirect ??
+      (rolFinal === "admin" ? "/admin" : rolFinal === "cliente" ? "/mi-cuenta" : undefined);
+    const continueUrl = urlVerificacionLogin({
+      intent: rolFinal,
+      redirect: redirectFinal
+    });
 
     const link = await auth.generateSignInWithEmailLink(email, {
       url: continueUrl,

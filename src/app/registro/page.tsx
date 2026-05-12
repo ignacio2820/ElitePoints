@@ -2,11 +2,11 @@ import Link from "next/link";
 import { ArrowLeft, Gift, Heart } from "lucide-react";
 import { RegistroForm } from "./RegistroForm";
 import { CONFIGURACION_DEFAULT } from "@/lib/huellitas/types";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { normalizarCodigo } from "@/lib/huellitas/referidos";
 import { getInfoLocal } from "@/lib/huellitas/localService";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
+import { LocalBrandMark } from "@/components/LocalBrandMark";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 
 async function getCfg(localId: string) {
@@ -53,10 +53,14 @@ export default async function RegistroPage({
     <main className="paw-bg min-h-screen">
       <header className="border-b border-bark-100 bg-cream-50/80 backdrop-blur sticky top-0 z-10">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <HuellitaIcon size={22} className="text-bark-400" />
-            <span className="font-display text-lg font-semibold text-bark-700">
-              Huellitas
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <LocalBrandMark
+              nombreLocal={infoLocal.nombre}
+              logoUrl={infoLocal.logoUrl}
+              size={32}
+            />
+            <span className="truncate font-display text-lg font-semibold text-bark-700">
+              {infoLocal.nombre}
             </span>
           </Link>
           <Link

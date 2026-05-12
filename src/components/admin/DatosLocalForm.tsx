@@ -1,27 +1,52 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
-import { ImageIcon, Phone, Save, Store, Upload } from "lucide-react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { ImageIcon, Phone, Save, Store } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import type { InfoLocal } from "@/lib/huellitas/localService";
 
+const LOGO_ACCEPT = "image/jpeg,image/png,.jpg,.jpeg,.png";
+
 export interface DatosLocalFormProps {
   initial: InfoLocal;
+}
+
+function esLogoPermitido(file: File): boolean {
+  const tipo = file.type.toLowerCase();
+  if (tipo === "image/jpeg" || tipo === "image/png") return true;
+  const nombre = file.name.toLowerCase();
+  return nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png");
 }
 
 export function DatosLocalForm({ initial }: DatosLocalFormProps) {
   const router = useRouter();
   const [nombre, setNombre] = useState(initial.nombre);
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl ?? "");
+  const [previewSrc, setPreviewSrc] = useState<string | null>(initial.logoUrl ?? null);
   const [telefonoWhatsapp, setTelefono] = useState(initial.telefonoWhatsapp ?? "");
   const [direccion, setDireccion] = useState(initial.direccion ?? "");
   const [pending, startTransition] = useTransition();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewObjectUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewObjectUrlRef.current) {
+        URL.revokeObjectURL(previewObjectUrlRef.current);
+      }
+    };
+  }, []);
+
+  function limpiarPreviewLocal() {
+    if (previewObjectUrlRef.current) {
+      URL.revokeObjectURL(previewObjectUrlRef.current);
+      previewObjectUrlRef.current = null;
+    }
+  }
 
   function guardar() {
     setError(null);
@@ -52,6 +77,44 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
     });
   }
 
+  async function onLogoSeleccionado(file: File | undefined) {
+    if (!file) return;
+    if (!esLogoPermitido(file)) {
+      setError("Solo aceptamos imágenes JPG o PNG.");
+      return;
+    }
+
+    setError(null);
+    limpiarPreviewLocal();
+    const objectUrl = URL.createObjectURL(file);
+    previewObjectUrlRef.current = objectUrl;
+    setPreviewSrc(objectUrl);
+    setUploadingLogo(true);
+
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/admin/local/logo", {
+        method: "POST",
+        body: form
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error ?? "No pudimos subir el logo");
+      }
+      const url = data.logoUrl ?? "";
+      setLogoUrl(url);
+      setPreviewSrc(url);
+      limpiarPreviewLocal();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error");
+      setPreviewSrc(logoUrl || null);
+      limpiarPreviewLocal();
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -78,88 +141,58 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
 
         <Field
           label="Logo del local"
-          hint="Pegá una URL pública o subí un archivo. Se muestra en el panel admin y en Mi Cuenta."
+          hint="Subí un JPG o PNG. Se guarda en Firebase y se muestra en el panel y en Mi Cuenta."
         >
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={logoUrl}
-                  alt={`Logo de ${nombre || "tu local"}`}
-                  className="h-14 w-14 rounded-xl border border-bark-100 bg-white object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-bark-200 bg-cream-50 text-bark-300">
-                  <ImageIcon size={20} />
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <input
-                  type="url"
-                  className="input-elegant"
-                  maxLength={500}
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  setError(null);
-                  setUploadingLogo(true);
-                  try {
-                    const form = new FormData();
-                    form.append("file", file);
-                    const res = await fetch("/api/admin/local/logo", {
-                      method: "POST",
-                      body: form
-                    });
-                    const data = await res.json();
-                    if (!res.ok || !data.ok) {
-                      throw new Error(data.error ?? "No pudimos subir el logo");
-                    }
-                    setLogoUrl(data.logoUrl ?? "");
-                    setSavedAt(new Date().toLocaleTimeString("es-AR"));
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : "Error");
-                  } finally {
-                    setUploadingLogo(false);
-                    e.target.value = "";
-                  }
+          <div className="flex flex-wrap items-start gap-4">
+            {previewSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewSrc}
+                alt={`Logo de ${nombre || "tu local"}`}
+                className="h-16 w-16 rounded-xl border border-amber-200/70 bg-white object-cover shadow-soft"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
                 }}
               />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-bark-200 bg-cream-50 text-bark-300">
+                <ImageIcon size={22} />
+              </div>
+            )}
+            <div className="min-w-0 flex-1 space-y-2">
+              <input
+                type="file"
+                accept={LOGO_ACCEPT}
                 disabled={uploadingLogo || pending}
-                className="inline-flex items-center gap-2 rounded-xl border border-bark-200 bg-white px-4 py-2 text-sm font-medium text-bark-700 transition hover:border-bark-300 hover:bg-cream-50 disabled:opacity-50"
-              >
-                <Upload size={16} />
-                {uploadingLogo ? "Subiendo…" : "Subir archivo"}
-              </button>
+                className="block w-full cursor-pointer text-sm text-bark-600 file:mr-4 file:rounded-xl file:border file:border-amber-200/80 file:bg-cream-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-bark-700 hover:file:border-amber-300 hover:file:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  void onLogoSeleccionado(file);
+                  e.target.value = "";
+                }}
+              />
+              <p className="text-xs text-bark-400">
+                {uploadingLogo
+                  ? "Subiendo logo a Firebase Storage…"
+                  : logoUrl
+                    ? "Logo listo. Podés cambiarlo o guardar el resto de los datos."
+                    : "Elegí una imagen para ver la vista previa y subirla."}
+              </p>
               {logoUrl ? (
                 <button
                   type="button"
-                  onClick={() => setLogoUrl("")}
+                  onClick={() => {
+                    setLogoUrl("");
+                    setPreviewSrc(null);
+                    limpiarPreviewLocal();
+                  }}
                   className="text-sm text-bark-500 transition hover:text-bark-700"
                 >
                   Quitar logo
                 </button>
               ) : null}
             </div>
-            </div>
+          </div>
         </Field>
 
         <Field

@@ -1,7 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
-import { tieneAccesoOperativo, type PlanMembresia } from "./membresia";
+import { tieneAccesoOperativo, type PlanMembresia } from "./membresia.shared";
 
 export interface InfoLocal {
   id: string;
@@ -61,7 +61,9 @@ export function membresiaActiva(info: InfoLocal): boolean {
 export async function setInfoLocal(
   localId: string,
   patch: Partial<
-    Pick<InfoLocal, "nombre" | "logoUrl" | "telefonoWhatsapp" | "email" | "direccion">
+    Pick<InfoLocal, "nombre" | "telefonoWhatsapp" | "email" | "direccion"> & {
+      logoUrl?: string | null;
+    }
   >
 ): Promise<void> {
   const db = adminDb();

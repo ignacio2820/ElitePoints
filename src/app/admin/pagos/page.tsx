@@ -25,7 +25,7 @@ export default async function PagosAdminPage() {
           Activá tu local
         </h1>
         <p className="mt-2 max-w-2xl text-[color:var(--muted)]">
-          Elegí un plan para habilitar la caja y la gestión de clientes. Si te
+          Elegí un plan para habilitar la caja registradora. Si te
           regalamos días de prueba, el acceso se habilita automáticamente hasta
           la fecha de <code className="text-bark-600">trialHasta</code> en
           Firestore.

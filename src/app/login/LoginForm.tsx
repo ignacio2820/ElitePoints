@@ -41,6 +41,7 @@ export function LoginForm() {
    */
   const redirect = sp.get("redirect") ?? undefined;
   const refCode = sp.get("ref") ?? undefined;
+  const localId = sp.get("localId")?.trim() ?? "";
 
   // Limpiamos los params indeseados (`intent`) sin recargar la página, para
   // que un F5 o "atrás" no vuelvan a inyectar el modo viejo.
@@ -100,7 +101,15 @@ export function LoginForm() {
     if (enviando) return;
     setEnviando(true);
     reset();
+    if (!localId) {
+      setError(
+        "Pedile al local el enlace de registro con su identificador (no podemos asignarte a un comercio por defecto)."
+      );
+      setEnviando(false);
+      return;
+    }
     const res = await registrarseYRecibirMagicLink({
+      localId,
       email: email.trim(),
       nombre: nombre.trim(),
       mascota: {
@@ -136,7 +145,7 @@ export function LoginForm() {
           </p>
         </div>
 
-        <div className="card overflow-hidden">
+        <div className="surface-card overflow-visible rounded-2xl">
           <div className="p-6 sm:p-8">
             {exito ? (
               <ExitoPanel
@@ -160,11 +169,19 @@ export function LoginForm() {
                 error={error}
                 onIrARegistro={() => {
                   reset();
+                  if (!localId) {
+                    setError(
+                      "Para registrarte necesitás el enlace que te comparte tu Pet Shop (incluye el identificador del local)."
+                    );
+                    return;
+                  }
                   setModo("registrar");
                 }}
+                registroDisponible={!!localId}
               />
             ) : (
               <FormRegistro
+                localId={localId}
                 email={email}
                 nombre={nombre}
                 mascotaNombre={mascotaNombre}
@@ -217,7 +234,8 @@ function FormIngresar({
   onSubmit,
   enviando,
   error,
-  onIrARegistro
+  onIrARegistro,
+  registroDisponible
 }: {
   email: string;
   onEmailChange: (v: string) => void;
@@ -225,6 +243,7 @@ function FormIngresar({
   enviando: boolean;
   error: string | null;
   onIrARegistro: () => void;
+  registroDisponible: boolean;
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-5">
@@ -271,6 +290,13 @@ function FormIngresar({
         </button>
       </div>
 
+      {!registroDisponible ? (
+        <p className="text-center text-xs text-bark-400">
+          El alta de clientes requiere el enlace de registro que te comparte tu
+          Pet Shop.
+        </p>
+      ) : null}
+
       <p className="text-center text-xs text-bark-400">
         Sin contraseñas. El link expira en 1 hora y solo se usa una vez.
       </p>
@@ -279,6 +305,7 @@ function FormIngresar({
 }
 
 function FormRegistro({
+  localId,
   email,
   nombre,
   mascotaNombre,
@@ -295,6 +322,7 @@ function FormRegistro({
   onVolverAIngresar,
   refCode
 }: {
+  localId: string;
   email: string;
   nombre: string;
   mascotaNombre: string;
@@ -312,6 +340,7 @@ function FormRegistro({
   refCode?: string;
 }) {
   const valido =
+    localId.length > 0 &&
     email.trim().length > 3 &&
     nombre.trim().length >= 2 &&
     mascotaNombre.trim().length >= 1;
@@ -513,38 +542,39 @@ function ExitoPanel({
       : null;
   return (
     <div className="text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-        <CheckCircle2 size={28} />
-      </div>
-      <h2 className="mt-4 font-display text-2xl font-semibold text-bark-700">
-        {creada ? "¡Cuenta creada!" : "Revisá tu email"}
-      </h2>
-      {etiqueta && (
-        <p className="mt-2 inline-block rounded-full bg-cream-100 px-3 py-1 text-xs font-medium text-bark-700">
-          {etiqueta}
-        </p>
-      )}
-      <p className="mt-2 text-sm text-bark-500">
-        {creada
-          ? "Tu cuenta está lista. Te enviamos un link mágico a "
-          : "Te enviamos un link mágico a "}
-        <strong className="text-bark-700">{email}</strong>. Tocalo desde el
-        celular o la compu donde quieras ingresar.
-      </p>
-
-      {datosDev.devLink && (
-        <div className="mt-6">
-          <a
-            href={datosDev.devLink}
-            className="btn-primary w-full justify-center text-base"
-          >
-            Continuar al panel
-            <ArrowRight size={18} />
-          </a>
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+            <CheckCircle2 size={28} />
+          </div>
+          <h2 className="font-display text-2xl font-semibold text-bark-700">
+            {creada ? "¡Cuenta creada!" : "Revisá tu email"}
+          </h2>
+          {etiqueta && (
+            <p className="inline-block rounded-full bg-cream-100 px-3 py-1 text-xs font-medium text-bark-700">
+              {etiqueta}
+            </p>
+          )}
+          <p className="text-sm leading-relaxed text-bark-500">
+            {creada
+              ? "Tu cuenta está lista. Te enviamos un link mágico a "
+              : "Te enviamos un link mágico a "}
+            <strong className="text-bark-700">{email}</strong>. Tocalo desde el
+            celular o la compu donde quieras ingresar.
+          </p>
         </div>
-      )}
 
-      <button onClick={onVolver} className="btn-ghost mt-4 inline-flex text-xs">
+        {datosDev.devLink && (
+          <div className="w-full">
+            <a href={datosDev.devLink} className="btn-primary w-full text-base">
+              Continuar al panel
+              <ArrowRight size={18} aria-hidden />
+            </a>
+          </div>
+        )}
+      </div>
+
+      <button onClick={onVolver} className="btn-ghost mt-6 inline-flex text-xs">
         Volver al inicio
       </button>
     </div>

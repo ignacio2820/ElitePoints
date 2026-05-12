@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
 import { UserMenu } from "@/components/auth/UserMenu";
@@ -27,7 +28,7 @@ export default async function AdminLayout({
     redirect("/login?intent=admin&redirect=/admin");
   }
   if (sesion.claims.role !== "admin") {
-    redirect(`/mi-cuenta?localId=${encodeURIComponent(sesion.claims.localId)}`);
+    redirect("/mi-cuenta");
   }
 
   const pathname = headers().get("x-pathname") ?? "";
@@ -50,7 +51,7 @@ export default async function AdminLayout({
     : "";
 
   return (
-    <div className="paw-bg min-h-screen">
+    <div className="paw-bg flex min-h-screen flex-col">
       <header className="border-b border-bark-100 bg-cream-50/80 backdrop-blur sticky top-0 z-10 print:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <Link href="/admin" className="flex min-w-0 items-center gap-3">
@@ -70,7 +71,7 @@ export default async function AdminLayout({
         </div>
         <AdminNav className="overflow-x-auto px-4 pb-2 md:hidden" />
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-10 print:max-w-none print:p-0">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 print:max-w-none print:p-0">
         {mostrarAvisoMembresia ? (
           <AvisoMembresiaPorVencer
             diasRestantes={diasRestantes}
@@ -79,6 +80,7 @@ export default async function AdminLayout({
         ) : null}
         {children}
       </main>
+      <MascotPointsFooter className="print:hidden" />
     </div>
   );
 }

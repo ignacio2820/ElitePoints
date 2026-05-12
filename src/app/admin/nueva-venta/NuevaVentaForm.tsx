@@ -138,9 +138,10 @@ export function NuevaVentaForm({
   return (
     <div className="mx-auto max-w-3xl">
         {/* Encabezado */}
-        <div className="mb-8 flex items-start justify-between gap-6">
+        <div className="mb-8 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-[#FFFCF4] via-cream-50 to-cream-100/80 p-6 shadow-soft ring-1 ring-amber-100/60">
+          <div className="flex items-start justify-between gap-6">
           <div>
-            <span className="label-elegant inline-flex items-center gap-2">
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700/80">
               <ScanLine size={12} />
               Caja registradora
             </span>
@@ -154,9 +155,10 @@ export function NuevaVentaForm({
               </span>
             </p>
           </div>
-          <div className="hidden items-center gap-2 rounded-full border border-bark-100 bg-cream-50 px-3 py-2 text-xs text-bark-500 sm:flex">
+          <div className="hidden items-center gap-2 rounded-full border border-amber-200/70 bg-cream-50/90 px-3 py-2 text-xs text-bark-500 sm:flex">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
             {configFuente === "firestore" ? "Conectado a Firestore" : "Modo demo"}
+          </div>
           </div>
         </div>
 

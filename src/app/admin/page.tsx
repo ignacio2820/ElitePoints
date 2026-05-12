@@ -10,19 +10,24 @@ import {
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { requireAdmin } from "@/lib/auth/server";
+import { getInfoLocal } from "@/lib/huellitas/localService";
 
 export const dynamic = "force-dynamic";
+
+const CAJA_CARD_CLASS =
+  "rounded-2xl border border-amber-200/80 bg-gradient-to-br from-[#FFFCF4] via-cream-50 to-cream-100/80 p-6 shadow-soft ring-1 ring-amber-100/60 transition hover:-translate-y-0.5 hover:border-amber-300/80 hover:shadow-soft";
 
 export default async function AdminDashboard() {
   const sesion = await requireAdmin();
   const localId = sesion.claims.localId;
+  const info = await getInfoLocal(localId);
 
   return (
     <div>
       <div className="mb-10">
         <span className="label-elegant">Panel del local</span>
         <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
-          Bienvenido de vuelta
+          Bienvenido de vuelta, {info.nombre}
         </h1>
         <p className="mt-2 max-w-xl text-[color:var(--muted)]">
           Acá podés registrar ventas, configurar tu programa, ver clientes y
@@ -33,14 +38,14 @@ export default async function AdminDashboard() {
       <DashboardStats localId={localId} />
 
       <Link href="/admin/nueva-venta" className="group mb-6 block">
-        <div className="rounded-2xl border border-bark-100/80 bg-cream-50/70 p-6 shadow-soft transition hover:-translate-y-0.5 hover:border-bark-200 hover:shadow-[0_12px_32px_-12px_rgba(60,40,20,0.12)]">
+        <div className={CAJA_CARD_CLASS}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cream-100 text-bark-500 ring-1 ring-bark-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200/70 bg-cream-50 text-amber-700">
                 <ScanLine size={20} />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-bark-400">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700/80">
                   Caja registradora
                 </p>
                 <h2 className="font-display text-2xl font-semibold text-bark-700">
@@ -51,7 +56,7 @@ export default async function AdminDashboard() {
                 </p>
               </div>
             </div>
-            <ArrowRight className="text-bark-400 transition group-hover:translate-x-1 group-hover:text-bark-600" />
+            <ArrowRight className="text-amber-600/70 transition group-hover:translate-x-1 group-hover:text-amber-700" />
           </div>
         </div>
       </Link>

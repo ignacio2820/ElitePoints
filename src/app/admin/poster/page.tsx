@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
+import { Suspense } from "react";
 import { PosterA4 } from "@/components/admin/PosterA4";
+import { PosterAutoPrint } from "@/components/admin/PosterAutoPrint";
 import { PosterPrintControls } from "@/components/admin/PosterPrintControls";
 import { requireAdmin } from "@/lib/auth/server";
 import { getInfoLocal } from "@/lib/huellitas/localService";
@@ -25,10 +27,13 @@ export default async function AdminPosterPage() {
 
   return (
     <div className="poster-page">
+      <Suspense fallback={null}>
+        <PosterAutoPrint />
+      </Suspense>
       <PosterPrintControls />
       <PosterA4
         nombreLocal={info.nombre}
-        localId={localId}
+        logoUrl={info.logoUrl}
         registroUrl={registroUrl}
       />
     </div>

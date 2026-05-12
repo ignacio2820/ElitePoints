@@ -45,7 +45,7 @@ export async function crearTicketCanje(
 
   const [clienteSnap, premioSnap] = await Promise.all([
     cols.cliente(db, input.localId, input.clienteId).get(),
-    db.doc(`Locales/${input.localId}/Premios/${input.premioId}`).get()
+    cols.premio(db, input.localId, input.premioId).get()
   ]);
 
   if (!clienteSnap.exists) throw new Error("Cliente inexistente");
@@ -315,9 +315,7 @@ export async function confirmarTicketCanje(
     });
 
     // Decrementar stock del premio si está limitado
-    const premioRef = db.doc(
-      `Locales/${input.localId}/Premios/${ticket.premioId}`
-    );
+    const premioRef = cols.premio(db, input.localId, ticket.premioId);
     const premioSnap = await tx.get(premioRef);
     if (premioSnap.exists) {
       const stock = (premioSnap.data() as Premio).stock;

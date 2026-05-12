@@ -14,6 +14,7 @@ import { buscarSlugDisponible, esSlugValido, nombreASlug } from "./slug";
 import {
   buscarClientePorEmailGlobal
 } from "./clientesService";
+import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
 
 /**
  * Catálogo inicial de premios que se siembra en cada Pet Shop nuevo.
@@ -299,10 +300,10 @@ export async function crearLocalYOnboarding(
 
   // 7. Magic link de primera entrada (lo manda el caller por email o lo
   //    devuelve directo en dev).
-  const baseUrl = (
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-  ).replace(/\/$/, "");
-  const continueUrl = `${baseUrl}/login/verify?intent=admin&redirect=/admin/pagos`;
+  const continueUrl = urlVerificacionLogin({
+    intent: "admin",
+    redirect: "/admin"
+  });
   const magicLink = await auth.generateSignInWithEmailLink(email, {
     url: continueUrl,
     handleCodeInApp: true

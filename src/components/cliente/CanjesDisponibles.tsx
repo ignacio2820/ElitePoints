@@ -9,7 +9,7 @@ import {
   type PremioAumentado
 } from "@/lib/huellitas/engine";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
-import { cn, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import { TicketCanjeModal, type TicketCanje } from "./TicketCanjeModal";
 
 export interface CanjesDisponiblesProps {
@@ -21,7 +21,6 @@ export interface CanjesDisponiblesProps {
   tema?: "premium" | "warm";
 }
 
-/** Texto corto para cards (una o dos líneas). */
 function descripcionCorta(text: string | undefined, max = 120): string {
   if (!text?.trim()) return "Canjealo en el local con tu cupón.";
   const t = text.trim();
@@ -34,8 +33,7 @@ export function CanjesDisponibles({
   saldoCliente,
   nivelCliente,
   niveles,
-  especiesCliente,
-  tema = "warm"
+  especiesCliente
 }: CanjesDisponiblesProps) {
   const [ticket, setTicket] = useState<TicketCanje | null>(null);
   const [pidiendoId, setPidiendoId] = useState<string | null>(null);
@@ -89,33 +87,14 @@ export function CanjesDisponibles({
     }
   }
 
-  const isPremium = tema === "premium";
-
   return (
     <>
-      <section
-        className={cn(
-          "rounded-2xl border p-5 sm:p-6",
-          isPremium
-            ? "border-amber-400/20 bg-gradient-to-b from-zinc-900/90 to-zinc-950"
-            : "border-bark-100 bg-white shadow-sm"
-        )}
-      >
+      <section className="surface-card rounded-2xl p-5 sm:p-6">
         <header className="mb-5">
-          <h2
-            className={cn(
-              "font-sans text-xl font-semibold tracking-tight sm:text-2xl",
-              isPremium ? "text-amber-50" : "text-bark-800"
-            )}
-          >
+          <h2 className="font-display text-2xl font-semibold tracking-tight text-bark-700">
             Tus Recompensas
           </h2>
-          <p
-            className={cn(
-              "mt-1 font-sans text-sm leading-snug",
-              isPremium ? "text-amber-100/80" : "text-bark-500"
-            )}
-          >
+          <p className="mt-1 text-sm leading-relaxed text-bark-500">
             Elegí un premio y obtené un cupón para retirarlo en el local. El
             descuento de Huellitas se aplica cuando el vendedor confirma el
             canje.
@@ -123,27 +102,13 @@ export function CanjesDisponibles({
         </header>
 
         {error ? (
-          <div
-            className={cn(
-              "mb-4 rounded-xl px-3 py-2 font-sans text-sm",
-              isPremium
-                ? "bg-red-950/50 text-red-200 ring-1 ring-red-500/20"
-                : "bg-red-50 text-red-700"
-            )}
-          >
+          <div className="mb-4 rounded-xl bg-red-50 px-3 py-2 font-sans text-sm text-red-700">
             {error}
           </div>
         ) : null}
 
         {ordenados.length === 0 ? (
-          <p
-            className={cn(
-              "rounded-xl border border-dashed px-4 py-8 text-center font-sans text-sm",
-              isPremium
-                ? "border-amber-400/25 text-amber-100/75"
-                : "border-bark-200 text-bark-500"
-            )}
-          >
+          <p className="rounded-xl border border-dashed border-bark-200 px-4 py-8 text-center font-sans text-sm text-bark-500">
             Todavía no hay premios disponibles.
           </p>
         ) : (
@@ -152,7 +117,6 @@ export function CanjesDisponibles({
               <PremioCard
                 key={item.premio.id ?? item.premio.nombre}
                 item={item}
-                isPremium={isPremium}
                 pidiendo={pidiendoId === item.premio.id}
                 onCupón={() => pedirTicket(item.premio)}
               />
@@ -168,23 +132,14 @@ export function CanjesDisponibles({
 
 function PremioCard({
   item,
-  isPremium,
   pidiendo,
   onCupón
 }: {
   item: PremioAumentado;
-  isPremium: boolean;
   pidiendo: boolean;
   onCupón: () => void;
 }) {
   const { premio, desbloqueado, motivo, nivelMinimo, faltanHuellitas } = item;
-
-  const cardCls = cn(
-    "flex h-full flex-col rounded-2xl border p-4 transition-shadow duration-200",
-    isPremium
-      ? "border-amber-400/20 bg-black/40 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.8)] hover:border-amber-400/35"
-      : "border-bark-100 bg-cream-50/80 hover:shadow-md"
-  );
 
   let boton: ReactNode;
   if (desbloqueado) {
@@ -193,12 +148,7 @@ function PremioCard({
         type="button"
         onClick={onCupón}
         disabled={pidiendo}
-        className={cn(
-          "mt-auto w-full rounded-xl py-3 font-sans text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
-          isPremium
-            ? "bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-zinc-950 shadow-lg shadow-amber-900/30 hover:from-amber-200 hover:to-amber-400"
-            : "bg-gradient-to-r from-amber-400 to-amber-600 text-white hover:from-amber-300 hover:to-amber-500"
-        )}
+        className="btn-primary mt-auto w-full justify-center py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pidiendo ? (
           <span className="inline-flex items-center justify-center gap-2">
@@ -214,12 +164,7 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className={cn(
-          "mt-auto w-full cursor-not-allowed rounded-xl py-3 font-sans text-sm font-medium",
-          isPremium
-            ? "border border-white/10 bg-white/5 text-amber-100/55"
-            : "border border-bark-100 bg-bark-50 text-bark-400"
-        )}
+        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
       >
         Te faltan {formatNumber(faltanHuellitas)} huellitas
       </button>
@@ -229,12 +174,7 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className={cn(
-          "mt-auto w-full cursor-not-allowed rounded-xl py-3 font-sans text-sm font-medium",
-          isPremium
-            ? "border border-white/10 bg-white/5 text-amber-100/55"
-            : "border border-bark-100 bg-bark-50 text-bark-400"
-        )}
+        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
       >
         <span className="inline-flex items-center justify-center gap-1.5">
           <Lock size={14} /> Subí a {nivelMinimo.nombre}
@@ -246,12 +186,7 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className={cn(
-          "mt-auto w-full cursor-not-allowed rounded-xl py-3 font-sans text-sm font-medium",
-          isPremium
-            ? "border border-white/10 bg-white/5 text-amber-100/55"
-            : "border border-bark-100 bg-bark-50 text-bark-400"
-        )}
+        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
       >
         Sin stock
       </button>
@@ -261,12 +196,7 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className={cn(
-          "mt-auto w-full cursor-not-allowed rounded-xl py-3 font-sans text-sm font-medium",
-          isPremium
-            ? "border border-white/10 bg-white/5 text-amber-100/55"
-            : "border border-bark-100 bg-bark-50 text-bark-400"
-        )}
+        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
       >
         No disponible
       </button>
@@ -274,43 +204,20 @@ function PremioCard({
   }
 
   return (
-    <article className={cardCls}>
-      <h3
-        className={cn(
-          "font-sans text-base font-semibold leading-snug tracking-tight",
-          isPremium ? "text-amber-50" : "text-bark-800"
-        )}
-      >
+    <article className="flex h-full flex-col rounded-2xl border border-bark-100 bg-cream-50/80 p-4 shadow-sm transition-shadow duration-200 hover:shadow-md">
+      <h3 className="font-sans text-base font-semibold leading-snug tracking-tight text-zinc-900">
         {premio.nombre}
       </h3>
-      <p
-        className={cn(
-          "mt-2 line-clamp-2 min-h-[2.5rem] font-sans text-sm leading-relaxed",
-          isPremium ? "text-amber-100/75" : "text-bark-500"
-        )}
-      >
+      <p className="mt-2 line-clamp-2 min-h-[2.5rem] font-sans text-sm leading-relaxed text-bark-500">
         {descripcionCorta(premio.descripcion)}
       </p>
 
-      <div
-        className={cn(
-          "mt-4 flex items-center gap-2 font-sans",
-          isPremium ? "text-amber-200" : "text-bark-700"
-        )}
-      >
-        <HuellitaIcon
-          size={22}
-          className={cn(
-            "shrink-0",
-            isPremium ? "text-amber-400" : "text-amber-500"
-          )}
-        />
+      <div className="mt-4 flex items-center gap-2 font-sans text-bark-700">
+        <HuellitaIcon size={22} className="shrink-0 text-bark-500" />
         <span className="text-lg font-bold tabular-nums tracking-tight">
           {formatNumber(premio.costoHuellitas)}
         </span>
-        <span className={cn("text-sm font-medium", isPremium ? "text-amber-100/70" : "text-bark-500")}>
-          huellitas
-        </span>
+        <span className="text-sm font-medium text-bark-500">huellitas</span>
       </div>
 
       <div className="mt-4">{boton}</div>

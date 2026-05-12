@@ -58,27 +58,16 @@ export async function buscarClientePorEmail(
 /**
  * Busca el primer cliente con el email dado.
  *
- * Estrategia:
- *  1. Primero intenta una búsqueda directa en el local default
- *     (NEXT_PUBLIC_DEFAULT_LOCAL_ID) — no requiere índice custom.
- *  2. Si no encuentra, hace fallback a una collection group query
- *     que escanea TODOS los locales — requiere índice custom en Firestore
- *     (la consola te ofrece crearlo automáticamente la primera vez).
+ * Usa una collection group query sobre la subcolección Clientes de cada local.
+ * Requiere índice custom en Firestore (la consola lo ofrece al primer uso).
  *
- * Si la collection group query falla (índice ausente), devolvemos null
- * en silencio — el llamador asume "no existe en otros locales".
+ * Si la query falla (índice ausente), devolvemos null en silencio.
  */
 export async function buscarClientePorEmailGlobal(
   email: string
 ): Promise<ClienteResumen | null> {
   const e = email.trim().toLowerCase();
   if (!e) return null;
-
-  const defaultLocal = process.env.NEXT_PUBLIC_DEFAULT_LOCAL_ID;
-  if (defaultLocal) {
-    const enDefault = await buscarClientePorEmail(defaultLocal, e);
-    if (enDefault) return enDefault;
-  }
 
   try {
     const db = adminDb();
@@ -128,15 +117,16 @@ export async function listarClientes(
   }
 
   const q = qRaw.toLowerCase();
-  const snap = await cols
-    .clientes(db, localId)
-    .orderBy("nombre")
-    .limit(limit)
-    .get();
+  let snap;
+  try {
+    snap = await cols.clientes(db, localId).orderBy("nombre").limit(limit).get();
+  } catch {
+    snap = await cols.clientes(db, localId).limit(limit).get();
+  }
 
-  const todos = snap.docs.map((d) =>
-    aResumen(d.id, d.data() as Partial<Cliente>, localId)
-  );
+  const todos = snap.docs
+    .map((d) => aResumen(d.id, d.data() as Partial<Cliente>, localId))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 
   if (!q) return todos;
 

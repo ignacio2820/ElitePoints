@@ -6,8 +6,10 @@ import {
   type User
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
+import { redirectDesdeUrl } from "@/lib/auth/continueUrl";
 
 const STORAGE_EMAIL_KEY = "huellitas:emailForSignIn";
+const STORAGE_REDIRECT_KEY = "huellitas:redirectPostLogin";
 
 /**
  * Helpers client-side para el flujo de magic link + session cookie.
@@ -46,6 +48,11 @@ export async function pedirMagicLink(
   // Guardamos el email para recuperarlo en /login/verify (Firebase lo requiere).
   if (typeof window !== "undefined") {
     window.localStorage.setItem(STORAGE_EMAIL_KEY, input.email);
+    if (input.redirect?.trim()) {
+      window.localStorage.setItem(STORAGE_REDIRECT_KEY, input.redirect.trim());
+    } else {
+      window.localStorage.removeItem(STORAGE_REDIRECT_KEY);
+    }
   }
 
   try {
@@ -65,6 +72,7 @@ export async function pedirMagicLink(
 }
 
 export interface RegistrarInput {
+  localId: string;
   email: string;
   nombre: string;
   telefono?: string;
@@ -148,11 +156,15 @@ export async function completarLogin(
   try {
     const cred = await signInWithEmailLink(auth, email, href);
     const idToken = await cred.user.getIdToken(true);
+    const redirect =
+      redirectDesdeUrl(href) ??
+      window.localStorage.getItem(STORAGE_REDIRECT_KEY) ??
+      undefined;
 
     const r = await fetch("/api/auth/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken })
+      body: JSON.stringify({ idToken, redirect })
     });
     const data = (await r.json()) as {
       ok: boolean;
@@ -165,6 +177,7 @@ export async function completarLogin(
     }
 
     window.localStorage.removeItem(STORAGE_EMAIL_KEY);
+    window.localStorage.removeItem(STORAGE_REDIRECT_KEY);
     return { ok: true, redirectTo: data.redirectTo ?? "/" };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error desconocido";

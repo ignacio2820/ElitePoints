@@ -13,6 +13,7 @@ import {
 import { crearClienteConReferido } from "@/lib/huellitas/referidosService";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
 import { EspecieSchema } from "@/lib/huellitas/types";
+import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
 
 export const runtime = "nodejs";
 
@@ -171,10 +172,10 @@ export async function POST(req: Request) {
     await vincularUsuarioACliente(localId, created.clienteId, uid);
 
     // 7. Generar magic link de primera entrada
-    const baseUrl = (
-      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-    ).replace(/\/$/, "");
-    const continueUrl = `${baseUrl}/login/verify?intent=cliente`;
+    const continueUrl = urlVerificacionLogin({
+      intent: "cliente",
+      redirect: "/mi-cuenta"
+    });
 
     const link = await auth.generateSignInWithEmailLink(data.email, {
       url: continueUrl,

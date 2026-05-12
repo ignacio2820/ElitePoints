@@ -36,16 +36,16 @@ export function CodigoClienteChip({
       className={cn(
         "group flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] transition active:scale-95",
         esTopTier
-          ? "border-amber-400/40 bg-amber-400/10 text-amber-100 hover:bg-amber-400/20"
-          : "border-white/20 bg-white/10 text-cream-50 hover:bg-white/20"
+          ? "border-terracotta-200 bg-terracotta-50 text-bark-700 hover:bg-terracotta-100"
+          : "border-bark-200 bg-cream-100 text-bark-700 hover:bg-cream-200"
       )}
     >
       <span className="opacity-70">Código</span>
-      <span className={cn("tabular-nums tracking-wider", esTopTier ? "text-amber-200" : "text-cream-50")}>
+      <span className={cn("tabular-nums tracking-wider", esTopTier ? "text-bark-700" : "text-bark-800")}>
         {codigo}
       </span>
       {copiado ? (
-        <Check size={12} className={esTopTier ? "text-emerald-300" : "text-emerald-200"} />
+        <Check size={12} className="text-emerald-600" />
       ) : (
         <Copy size={12} className="opacity-60 group-hover:opacity-100" />
       )}

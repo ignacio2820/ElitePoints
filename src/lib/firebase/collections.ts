@@ -37,6 +37,9 @@ export const cols = {
   premios: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/Premios`),
 
+  premio: (db: Firestore, localId: string, premioId: string) =>
+    db.doc(`Locales/${localId}/Premios/${premioId}`),
+
   /** Índice código → clienteId. El doc ID ES el código (uppercase). */
   referidos: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/Referidos`),

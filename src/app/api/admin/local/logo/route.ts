@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { getStorage } from "firebase-admin/storage";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
@@ -9,10 +10,12 @@ export const dynamic = "force-dynamic";
 const MAX_BYTES = 2 * 1024 * 1024;
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif"
+  "image/png": "png"
 };
+
+function downloadUrlFirebase(bucketName: string, objectPath: string, token: string) {
+  return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(objectPath)}?alt=media&token=${token}`;
+}
 
 export async function POST(req: Request) {
   try {
@@ -23,7 +26,7 @@ export async function POST(req: Request) {
         {
           ok: false,
           error:
-            "Firebase Storage no está configurado. Usá una URL de imagen o definí NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET."
+            "Firebase Storage no está configurado. Definí NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET."
         },
         { status: 500 }
       );
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
     const ext = MIME_TO_EXT[file.type];
     if (!ext) {
       return NextResponse.json(
-        { ok: false, error: "Formato no soportado. Usá JPG, PNG, WEBP o GIF." },
+        { ok: false, error: "Formato no soportado. Usá JPG o PNG." },
         { status: 400 }
       );
     }
@@ -55,20 +58,23 @@ export async function POST(req: Request) {
 
     const localId = sesion.claims.localId;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const objectPath = `Locales/${localId}/brand/logo.${ext}`;
+    const objectPath = `logos/${localId}/logo.${ext}`;
     const bucket = getStorage().bucket(bucketName);
     const object = bucket.file(objectPath);
+    const downloadToken = randomUUID();
 
     await object.save(buffer, {
       metadata: {
         contentType: file.type,
-        cacheControl: "public,max-age=31536000"
+        cacheControl: "public,max-age=31536000",
+        metadata: {
+          firebaseStorageDownloadTokens: downloadToken
+        }
       },
       resumable: false
     });
-    await object.makePublic();
 
-    const logoUrl = `https://storage.googleapis.com/${bucket.name}/${objectPath}`;
+    const logoUrl = downloadUrlFirebase(bucket.name, objectPath, downloadToken);
     await setInfoLocal(localId, { logoUrl });
     const info = await getInfoLocal(localId);
 

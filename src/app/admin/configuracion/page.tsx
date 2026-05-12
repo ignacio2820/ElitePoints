@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { ConfiguracionForm } from "@/components/ConfiguracionForm";
 import { DatosLocalForm } from "@/components/admin/DatosLocalForm";
+import { GenerarQrPosterButton } from "@/components/admin/GenerarQrPosterButton";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getSesion } from "@/lib/auth/server";
 import {
   CONFIGURACION_DEFAULT,
@@ -54,6 +56,18 @@ export default async function ConfiguracionPage() {
       </div>
 
       <DatosLocalForm initial={info} />
+
+      <Card>
+        <CardHeader>
+          <span className="label-elegant">Marketing del local</span>
+          <CardTitle className="mt-2">Póster con QR de registro</CardTitle>
+          <CardDescription>
+            Generá un póster A4 con el logo de tu comercio y un QR único para que
+            tus clientes se registren en Huellitas.
+          </CardDescription>
+        </CardHeader>
+        <GenerarQrPosterButton />
+      </Card>
 
       <ConfiguracionForm initial={cfg} onSave={guardarConfiguracion} />
     </div>

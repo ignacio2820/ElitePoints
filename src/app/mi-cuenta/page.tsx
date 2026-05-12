@@ -8,7 +8,7 @@ import { getSesion } from "@/lib/auth/server";
 import { getConfiguracion } from "@/lib/huellitas/service";
 import { getInfoLocal } from "@/lib/huellitas/localService";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
-import { asegurarLocalIdEnRuta, rutaConLocalId } from "@/lib/huellitas/tenant";
+import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { progresoNivel } from "@/lib/huellitas/engine";
 import { MascotaCard } from "@/components/MascotaCard";
@@ -17,7 +17,6 @@ import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
 import { MiCuentaStickyHeader } from "@/components/cliente/MiCuentaStickyHeader";
 import type { Cliente, Mascota, Premio } from "@/lib/huellitas/types";
-import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -41,8 +40,11 @@ export default async function MiCuentaPage({
     localId,
     searchParams?.localId
   );
-  if (destino !== rutaConLocalId("/mi-cuenta", localId)) {
+  if (destino !== rutaCliente("/mi-cuenta")) {
     redirect(destino);
+  }
+  if (searchParams?.localId) {
+    redirect("/mi-cuenta");
   }
   const db = adminDb();
 
@@ -83,13 +85,15 @@ export default async function MiCuentaPage({
     especie: m.especie,
     raza: m.raza ? String(m.raza) : undefined,
     fechaNacimiento:
-      typeof m.fechaNacimiento === "string" ? m.fechaNacimiento : undefined,
+      typeof m.fechaNacimiento === "string" && m.fechaNacimiento
+        ? m.fechaNacimiento
+        : "2000-01-01",
     notas: m.notas ? String(m.notas) : undefined,
     color: m.color ? String(m.color) : undefined,
     sexo: m.sexo,
     pesoKg: typeof m.pesoKg === "number" ? m.pesoKg : undefined,
-    castrado: typeof m.castrado === "boolean" ? m.castrado : undefined,
-    fotoUrl: m.fotoUrl ? String(m.fotoUrl) : undefined
+    esterilizado:
+      typeof m.esterilizado === "boolean" ? m.esterilizado : undefined
   }));
 
   // Idem para premios: solo campos primitivos requeridos por los componentes.
@@ -99,16 +103,14 @@ export default async function MiCuentaPage({
       id: d.id,
       localId: String(data.localId ?? localId),
       nombre: String(data.nombre ?? ""),
-      descripcion: data.descripcion ? String(data.descripcion) : undefined,
+      descripcion: data.descripcion ? String(data.descripcion) : "",
       costoHuellitas: Number(data.costoHuellitas ?? 0),
       nivelMinimoId: String(data.nivelMinimoId ?? "cachorro"),
       categoria: data.categoria,
       stock:
         typeof data.stock === "number"
           ? data.stock
-          : data.stock === null
-          ? null
-          : undefined,
+          : null,
       activo: data.activo !== false,
       especiesObjetivo: Array.isArray(data.especiesObjetivo)
         ? data.especiesObjetivo
@@ -128,24 +130,10 @@ export default async function MiCuentaPage({
   const esTopTier =
     idxActual >= 0 && idxActual === cfg.niveles.length - 1;
 
-  // Estética: el nivel más alto usa Premium Dark (Negro + Dorado WebElite).
-  // Los demás niveles usan los gradientes cálidos por tema.
   const temaNivel = progreso.nivelActual.tema;
-  const heroGradient = esTopTier
-    ? "from-black via-zinc-950 to-zinc-900"
-    : temaNivel === "guardian"
-    ? "from-purple-900 via-fuchsia-900 to-zinc-950"
-    : temaNivel === "explorador"
-    ? "from-sky-900 via-indigo-900 to-zinc-950"
-    : "from-bark-700 via-terracotta-600 to-zinc-900";
 
   return (
-    <div
-      className={cn(
-        "min-h-screen pb-28 font-sans antialiased",
-        esTopTier ? "bg-zinc-950 text-amber-50" : "bg-cream-50"
-      )}
-    >
+    <div className="pb-28 antialiased text-bark-800">
       <MiCuentaStickyHeader
         nombreLocal={nombreLocal}
         logoUrl={logoUrl}
@@ -161,11 +149,10 @@ export default async function MiCuentaPage({
         huellitasFaltantes={progreso.huellitasFaltantes}
         esLeyenda={!progreso.nivelSiguiente}
         esTopTier={esTopTier}
-        heroGradient={heroGradient}
         codigoCliente={cliente.codigoCliente}
       />
 
-      <div className="mx-auto max-w-6xl space-y-5 px-4 pb-14 pt-0">
+      <main className="mx-auto max-w-6xl space-y-5 px-6 py-10 pb-14">
         {membresiaExpirada ? (
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
         ) : null}
@@ -176,70 +163,37 @@ export default async function MiCuentaPage({
             nivelCliente={progreso.nivelActual}
             niveles={cfg.niveles}
             especiesCliente={mascotas.map((m) => m.especie)}
-            tema={esTopTier ? "premium" : "warm"}
           />
         )}
 
         <Link
-          href={rutaConLocalId("/mi-cuenta/qr", localId)}
-          className={cn(
-            "group block overflow-hidden rounded-3xl p-5 transition active:scale-[0.99]",
-            esTopTier
-              ? "border border-amber-400/40 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black shadow-[0_15px_50px_-20px_rgba(251,191,36,0.35)]"
-              : "bg-white shadow-[0_15px_40px_-15px_rgba(60,40,20,0.25)]"
-          )}
+          href="/mi-cuenta/qr"
+          className="surface-card group block overflow-hidden rounded-2xl p-5 transition active:scale-[0.99]"
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div
-                className={cn(
-                  "flex h-14 w-14 items-center justify-center rounded-2xl",
-                  esTopTier
-                    ? "bg-gradient-to-br from-amber-300 to-amber-500 text-zinc-950"
-                    : "bg-gradient-to-br from-bark-600 to-bark-800 text-cream-50"
-                )}
-              >
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-bark-500 to-terracotta-500 text-cream-50 shadow-soft">
                 <QrCode size={26} />
               </div>
               <div>
-                <p
-                  className={cn(
-                    "text-lg font-semibold tracking-tight",
-                    esTopTier ? "text-amber-50" : "text-bark-700"
-                  )}
-                >
+                <p className="font-display text-lg font-semibold tracking-tight text-bark-700">
                   Mostrar mi QR
                 </p>
-                <p
-                  className={cn(
-                    "text-xs",
-                    esTopTier ? "text-amber-100/70" : "text-bark-400"
-                  )}
-                >
+                <p className="text-sm text-bark-500">
                   El local lo escanea para sumar Huellitas
                 </p>
               </div>
             </div>
-            <ChevronRight
-              className={cn(
-                "transition group-hover:translate-x-1",
-                esTopTier ? "text-amber-300/60" : "text-bark-400"
-              )}
-            />
+            <ChevronRight className="text-bark-400 transition group-hover:translate-x-1" />
           </div>
         </Link>
 
         {mascotas.length > 0 && (
           <div>
-            <h2
-              className={cn(
-                "mb-3 px-1 text-lg font-semibold tracking-tight",
-                esTopTier ? "text-amber-100" : "text-bark-700"
-              )}
-            >
+            <h2 className="mb-3 px-1 font-display text-lg font-semibold tracking-tight text-bark-700">
               Mis mascotas
             </h2>
-            <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2">
+            <div className="-mx-6 flex snap-x gap-3 overflow-x-auto px-6 pb-2">
               {mascotas.map((m, i) => (
                 <div key={i} className="w-[260px] shrink-0 snap-start">
                   <MascotaCard mascota={m} />
@@ -266,14 +220,14 @@ export default async function MiCuentaPage({
             baseUrl={baseUrl}
           />
         )}
-      </div>
+      </main>
 
       <FloatingWhatsApp
         telefono={telefonoWhatsapp}
         nombreCliente={cliente.nombre.split(" ")[0]}
         saldoHuellitas={cliente.saldoHuellitas ?? 0}
         nombreLocal={nombreLocal}
-        premium={esTopTier}
+        premium={false}
       />
     </div>
   );

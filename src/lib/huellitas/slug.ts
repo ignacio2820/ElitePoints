@@ -27,7 +27,8 @@ const RESERVADOS = new Set([
   "mi-cuenta",
   "onboarding",
   "registro",
-  "verify"
+  "verify",
+  "veterinaria-ahibe"
 ]);
 
 /**

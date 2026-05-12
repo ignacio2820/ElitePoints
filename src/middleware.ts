@@ -4,9 +4,11 @@ import { COOKIE_SESION } from "@/lib/auth/types";
 /**
  * Middleware ligero — solo verifica la PRESENCIA de la session cookie.
  *
- * La verificación criptográfica completa (firma + claims + RBAC) se hace
- * en cada layout protegido con `getSesion()` (que usa Admin SDK, no
- * disponible en el runtime edge del middleware).
+ * La verificación criptográfica completa (firma + claims + RBAC) y el
+ * aislamiento multi-tenant por `localId` se hacen en layouts y APIs con
+ * `getSesion()` / `requireAdmin()` (Admin SDK, no disponible en edge).
+ * En `/admin`, el layout exige rol admin y cada handler usa
+ * `sesion.claims.localId` para leer y escribir solo en ese local.
  *
  * El gate de membresía para Caja y Clientes vive en el layout admin y en
  * `requireMembresiaActiva`, leyendo `estadoMembresia`, `trialHasta` y

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { getSesion } from "@/lib/auth/server";
 import { loginClienteRedirect } from "@/lib/huellitas/tenant";
 
@@ -16,5 +17,10 @@ export default async function MiCuentaLayout({
   if (sesion.claims.role !== "cliente" || !sesion.claims.clienteId) {
     redirect("/admin");
   }
-  return <>{children}</>;
+  return (
+    <div className="paw-bg flex min-h-screen flex-col">
+      <div className="flex-1">{children}</div>
+      <MascotPointsFooter className="print:hidden" />
+    </div>
+  );
 }

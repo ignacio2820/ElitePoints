@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { adminDb } from "@/lib/firebase/admin";
+import { cols } from "@/lib/firebase/collections";
 import {
   generarCodigoSugerido,
   normalizarCodigo
@@ -8,7 +10,7 @@ import {
 export const runtime = "nodejs";
 
 const Body = z.object({
-  localId: z.string().default("demo"),
+  localId: z.string().min(1, "localId requerido"),
   nombre: z.string().min(2).max(120),
   email: z.string().email().optional(),
   telefono: z.string().max(30).optional(),
@@ -33,6 +35,14 @@ export async function POST(req: Request) {
   const data = parsed.data;
 
   try {
+    const localSnap = await cols.local(adminDb(), data.localId).get();
+    if (!localSnap.exists) {
+      return NextResponse.json(
+        { ok: false, error: `El local "${data.localId}" no existe.` },
+        { status: 404 }
+      );
+    }
+
     const { crearClienteConReferido } = await import(
       "@/lib/huellitas/referidosService"
     );

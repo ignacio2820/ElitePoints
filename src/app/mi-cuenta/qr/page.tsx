@@ -6,10 +6,18 @@ import { ArrowLeft } from "lucide-react";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
-import { asegurarLocalIdEnRuta, rutaConLocalId } from "@/lib/huellitas/tenant";
+import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
-import { formatNumber } from "@/lib/utils";
+import { MascotPointsFooter } from "@/components/MascotPointsFooter";
+import { formatHuellitas } from "@/lib/utils";
 import type { Cliente } from "@/lib/huellitas/types";
+
+function nombreMascotaPrincipal(cliente: Cliente | undefined): string | null {
+  const mascotas = cliente?.mascotas;
+  if (!Array.isArray(mascotas) || mascotas.length === 0) return null;
+  const nombre = mascotas[0]?.nombre?.trim();
+  return nombre || null;
+}
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -29,8 +37,11 @@ export default async function MiQRPage({
     localId,
     searchParams?.localId
   );
-  if (destino !== rutaConLocalId("/mi-cuenta/qr", localId)) {
+  if (destino !== rutaCliente("/mi-cuenta/qr")) {
     redirect(destino);
+  }
+  if (searchParams?.localId) {
+    redirect("/mi-cuenta/qr");
   }
 
   const db = adminDb();
@@ -40,6 +51,7 @@ export default async function MiQRPage({
   ]);
 
   const cliente = clienteSnap.data() as Cliente | undefined;
+  const nombreMascota = nombreMascotaPrincipal(cliente);
   const nombreLocal =
     (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
@@ -58,11 +70,10 @@ export default async function MiQRPage({
   });
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-50">
-      {/* Top bar */}
+    <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between px-4 py-4">
         <Link
-          href={rutaConLocalId("/mi-cuenta", localId)}
+          href="/mi-cuenta"
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-bark-600 shadow-sm transition hover:bg-cream-100"
         >
           <ArrowLeft size={18} />
@@ -84,12 +95,20 @@ export default async function MiQRPage({
               <h1 className="mt-1 font-display text-2xl font-semibold text-bark-700">
                 {cliente?.nombre ?? "Cliente"}
               </h1>
+              {nombreMascota ? (
+                <p className="mt-1 font-sans text-sm text-zinc-600">
+                  Mascota: {nombreMascota}
+                </p>
+              ) : null}
 
-              <div
-                className="mx-auto mt-6 rounded-2xl border-[3px] border-bark-700/10 bg-white p-2"
-                style={{ width: 320 + 24, height: 320 + 24 }}
-                dangerouslySetInnerHTML={{ __html: qrSvg }}
-              />
+              <div className="mt-6 flex justify-center">
+                <div className="rounded-2xl border-[3px] border-bark-700/10 bg-white p-2">
+                  <div
+                    className="flex w-[20rem] max-w-full items-center justify-center [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
+                    dangerouslySetInnerHTML={{ __html: qrSvg }}
+                  />
+                </div>
+              </div>
 
               <div className="mt-6 flex items-center justify-center gap-3 rounded-2xl bg-cream-50 px-4 py-3">
                 <HuellitaIcon size={24} className="text-bark-500" />
@@ -98,10 +117,10 @@ export default async function MiQRPage({
                     Tu saldo
                   </p>
                   <p className="font-display text-2xl font-bold tabular-nums text-bark-700">
-                    {formatNumber(cliente?.saldoHuellitas ?? 0)}
-                    <span className="ml-1 text-sm font-medium text-bark-400">
-                      Huellitas
-                    </span>
+                    {formatHuellitas(cliente?.saldoHuellitas ?? 0)}
+                  </p>
+                  <p className="text-[11px] font-semibold text-bark-600">
+                    Huellitas acumuladas
                   </p>
                 </div>
               </div>
@@ -113,7 +132,6 @@ export default async function MiQRPage({
               )}
             </div>
 
-            {/* Decorative pet badge */}
             <div className="absolute -top-4 left-1/2 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-gradient-to-br from-bark-700 to-terracotta-500 ring-4 ring-cream-50">
               <HuellitaIcon size={22} className="text-cream-50" />
             </div>
@@ -122,6 +140,10 @@ export default async function MiQRPage({
           <p className="mt-6 text-center text-xs text-bark-400">
             Mostrale esta pantalla al local para que sume tus Huellitas.
           </p>
+          <MascotPointsFooter
+            creditLabel="Producido por"
+            className="mt-4 hidden border-0 px-0 py-3 print:block"
+          />
         </div>
       </div>
     </div>

@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
-import {
-  activarMembresiaSimulada,
-  esPlanPagoPublico
-} from "@/lib/huellitas/membresia";
+import { esPlanPagoPublico } from "@/lib/huellitas/membresia.shared";
+import { activarMembresiaSimulada } from "@/lib/huellitas/membresia.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

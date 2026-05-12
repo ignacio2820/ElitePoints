@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft, ScanLine } from "lucide-react";
+import { getSesion } from "@/lib/auth/server";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { NivelBadge } from "@/components/NivelBadge";
 import { FichaMascota } from "@/components/FichaMascota";
@@ -11,8 +13,6 @@ import {
   type Mascota
 } from "@/lib/huellitas/types";
 import { formatARS, formatNumber } from "@/lib/utils";
-
-const LOCAL_DEMO_ID = "demo";
 
 interface DatosScan {
   cliente: {
@@ -74,24 +74,32 @@ const DEMO_DATA: DatosScan = {
       }
     ]
   },
-  cfg: { ...CONFIGURACION_DEFAULT, localId: LOCAL_DEMO_ID }
+  cfg: { ...CONFIGURACION_DEFAULT, localId: "demo" }
 };
 
-async function loadScan(clienteId: string): Promise<DatosScan | null> {
-  if (clienteId === "demo") return DEMO_DATA;
+async function loadScan(
+  localId: string,
+  clienteId: string
+): Promise<DatosScan | null> {
+  if (clienteId === "demo") {
+    return {
+      ...DEMO_DATA,
+      cfg: { ...DEMO_DATA.cfg, localId }
+    };
+  }
   try {
     const { adminDb } = await import("@/lib/firebase/admin");
     const { cols } = await import("@/lib/firebase/collections");
     const { getConfiguracion } = await import("@/lib/huellitas/service");
     const db = adminDb();
-    const cliSnap = await cols.cliente(db, LOCAL_DEMO_ID, clienteId).get();
+    const cliSnap = await cols.cliente(db, localId, clienteId).get();
     if (!cliSnap.exists) return null;
     const cli = cliSnap.data() as DatosScan["cliente"];
-    const mascotasSnap = await cols.mascotas(db, LOCAL_DEMO_ID, clienteId).get();
+    const mascotasSnap = await cols.mascotas(db, localId, clienteId).get();
     const mascotas = mascotasSnap.docs.map(
       (d) => ({ id: d.id, ...(d.data() as Mascota) })
     );
-    const cfg = await getConfiguracion(LOCAL_DEMO_ID);
+    const cfg = await getConfiguracion(localId);
     return {
       cliente: {
         id: cliSnap.id,
@@ -115,7 +123,11 @@ export default async function ScanClientePage({
 }: {
   params: { clienteId: string };
 }) {
-  const data = await loadScan(params.clienteId);
+  const sesion = await getSesion();
+  if (!sesion?.claims.localId || sesion.claims.role !== "admin") {
+    redirect("/login?intent=admin&redirect=/admin");
+  }
+  const data = await loadScan(sesion.claims.localId, params.clienteId);
   if (!data) {
     return (
       <div className="paw-bg min-h-screen p-10">

@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/auth/server";
 import { listarClientes } from "@/lib/huellitas/clientesService";
-import { requireMembresiaActiva } from "@/lib/huellitas/requireMembresiaActiva";
 import { getConfiguracion } from "@/lib/huellitas/service";
+import { CONFIGURACION_DEFAULT } from "@/lib/huellitas/types";
 import { BuscadorClientes } from "@/components/admin/BuscadorClientes";
 
 export const dynamic = "force-dynamic";
@@ -9,12 +9,24 @@ export const dynamic = "force-dynamic";
 export default async function ClientesPage() {
   const sesion = await requireAdmin();
   const localId = sesion.claims.localId;
-  await requireMembresiaActiva(localId);
 
-  const [clientesIniciales, cfg] = await Promise.all([
-    listarClientes(localId, "", 100),
-    getConfiguracion(localId)
-  ]);
+  let clientesIniciales: Awaited<ReturnType<typeof listarClientes>> = [];
+  let avisoCarga: string | null = null;
+  try {
+    clientesIniciales = await listarClientes(localId, "", 100);
+  } catch (err) {
+    avisoCarga =
+      err instanceof Error
+        ? err.message
+        : "No pudimos cargar la cartera de clientes.";
+  }
+
+  let cfg = { ...CONFIGURACION_DEFAULT, localId };
+  try {
+    cfg = await getConfiguracion(localId);
+  } catch {
+    // Mantenemos defaults para que el panel se renderice aunque falle la config.
+  }
 
   return (
     <div>
@@ -28,6 +40,14 @@ export default async function ClientesPage() {
           el cliente no tenga el celular a mano.
         </p>
       </div>
+
+      {avisoCarga ? (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          No pudimos sincronizar la lista inicial. Podés buscar igual; si el
+          problema persiste, revisá la conexión con Firestore.
+          <span className="mt-1 block text-xs text-amber-800/80">{avisoCarga}</span>
+        </div>
+      ) : null}
 
       <BuscadorClientes
         clientesIniciales={clientesIniciales}

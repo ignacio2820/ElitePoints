@@ -9,7 +9,7 @@ import {
   PLANES_MEMBRESIA,
   PLANES_PAGO_PUBLICO,
   type PlanPagoPublico
-} from "@/lib/huellitas/membresia";
+} from "@/lib/huellitas/membresia.shared";
 
 export interface MembresiaCheckoutProps {
   membresiaActiva: boolean;
@@ -78,7 +78,7 @@ export function MembresiaCheckout({
 
       {!membresiaActiva ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-5 py-4 text-sm text-bark-700">
-          Activá tu membresía para usar la caja y gestionar clientes. El pago es
+          Activá tu membresía para usar la caja registradora. El pago es
           simulado por ahora; más adelante conectamos Mercado Pago o Stripe.
         </div>
       ) : null}

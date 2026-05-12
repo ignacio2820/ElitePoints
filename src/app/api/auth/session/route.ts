@@ -1,17 +1,46 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import type { DecodedIdToken } from "firebase-admin/auth";
 import { adminAuth } from "@/lib/firebase/admin";
+import { destinoPostLogin } from "@/lib/auth/redirect";
 import {
   crearSesionCookie,
   SESSION_COOKIE_OPTIONS
 } from "@/lib/auth/server";
-import { esRolValido } from "@/lib/auth/types";
+import { esRolValido, type Rol } from "@/lib/auth/types";
 
 export const runtime = "nodejs";
 
 const Body = z.object({
-  idToken: z.string().min(10)
+  idToken: z.string().min(10),
+  redirect: z.string().optional()
 });
+
+async function claimsDesdeSesion(decoded: DecodedIdToken): Promise<{
+  role: Rol;
+  localId: string;
+  clienteId?: string;
+}> {
+  let role = decoded.role;
+  let localId = typeof decoded.localId === "string" ? decoded.localId : undefined;
+  let clienteId =
+    typeof decoded.clienteId === "string" ? decoded.clienteId : undefined;
+
+  if (!esRolValido(role) || !localId) {
+    const user = await adminAuth().getUser(decoded.uid);
+    const claims = user.customClaims ?? {};
+    role = claims.role;
+    localId = typeof claims.localId === "string" ? claims.localId : undefined;
+    clienteId =
+      typeof claims.clienteId === "string" ? claims.clienteId : undefined;
+  }
+
+  if (!esRolValido(role) || !localId) {
+    throw new Error("claims-missing");
+  }
+
+  return { role, localId, clienteId };
+}
 
 /**
  * Recibe un ID token recién emitido por Firebase Auth (en el cliente)
@@ -35,14 +64,17 @@ export async function POST(req: Request) {
 
   try {
     const decoded = await adminAuth().verifyIdToken(parsed.data.idToken, true);
-    if (!esRolValido(decoded.role) || typeof decoded.localId !== "string") {
+    let claims: Awaited<ReturnType<typeof claimsDesdeSesion>>;
+    try {
+      claims = await claimsDesdeSesion(decoded);
+    } catch {
       return NextResponse.json(
         {
           ok: false,
           error:
             "Este usuario no tiene un rol asignado todavía. " +
             "Si sos cliente, asegurate de estar registrado en un local. " +
-            "Si sos dueño, pedí acceso con `npm run set-admin`."
+            "Si sos dueño, completá el onboarding o pedí acceso con `npm run set-admin`."
         },
         { status: 403 }
       );
@@ -51,13 +83,10 @@ export async function POST(req: Request) {
     const cookie = await crearSesionCookie(parsed.data.idToken);
     const res = NextResponse.json({
       ok: true,
-      role: decoded.role,
-      localId: decoded.localId,
-      clienteId: decoded.clienteId ?? null,
-      redirectTo:
-        decoded.role === "admin"
-          ? "/admin"
-          : `/mi-cuenta?localId=${encodeURIComponent(decoded.localId)}`
+      role: claims.role,
+      localId: claims.localId,
+      clienteId: claims.clienteId ?? null,
+      redirectTo: destinoPostLogin(claims.role, parsed.data.redirect)
     });
     res.cookies.set({ ...SESSION_COOKIE_OPTIONS, value: cookie });
     return res;
