@@ -65,40 +65,46 @@ export function MargenWarning({
               {formatPercent(costoEfectivoPct, 2)} del ticket
             </Badge>
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-bark-500">{mensaje}</p>
+          <p className="mt-2 text-sm leading-relaxed text-bark-600">{mensaje}</p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl bg-white/70 p-4 ring-1 ring-bark-100">
-              <div className="text-[11px] uppercase tracking-widest text-bark-400">
+            <div className="rounded-xl bg-white p-4 ring-1 ring-bark-100">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-terracotta-500">
                 Costo de Acumulación
               </div>
-              <div className="mt-1 font-display text-xl font-semibold text-bark-700">
+              <div className="mt-1 font-display text-xl font-bold text-bark-700">
                 {formatARS(cfg.montoParaUnaHuellita)}
               </div>
-              <div className="text-xs text-[color:var(--muted)]">
+              <div className="mt-1 text-xs text-bark-600">
                 el cliente debe gastar esto para sumar 1 huellita
               </div>
             </div>
-            <div className="rounded-xl bg-white/70 p-4 ring-1 ring-bark-100">
-              <div className="text-[11px] uppercase tracking-widest text-bark-400">
+            <div className="rounded-xl bg-white p-4 ring-1 ring-bark-100">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-terracotta-500">
                 Valor de Canje
               </div>
-              <div className="mt-1 font-display text-xl font-semibold text-bark-700">
+              <div className="mt-1 font-display text-xl font-bold text-bark-700">
                 {formatARS(cfg.valorMonetarioHuellita)}
               </div>
-              <div className="text-xs text-[color:var(--muted)]">
+              <div className="mt-1 text-xs text-bark-600">
                 lo que descontás por cada huellita canjeada
               </div>
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-dashed border-bark-200 bg-white/50 p-4 text-sm text-bark-500">
+          <div className="mt-4 rounded-xl border border-dashed border-bark-200 bg-white p-4 text-sm leading-relaxed text-bark-600">
             <strong className="text-bark-700">Ejemplo:</strong> en un ticket de{" "}
-            <strong>{formatARS(ticketEjemplo)}</strong> el cliente suma{" "}
-            <strong>{huellitasEjemplo} huellitas</strong>. Cuando las canjee, le
-            estarás descontando{" "}
-            <strong>{formatARS(descuentoEjemplo)}</strong> ({formatPercent(costoEfectivoPct, 2)}{" "}
-            del ticket). Asegurate de que tu margen lo soporte.
+            <strong className="text-bark-700">{formatARS(ticketEjemplo)}</strong>{" "}
+            el cliente suma{" "}
+            <strong className="text-bark-700">
+              {huellitasEjemplo} huellitas
+            </strong>
+            . Cuando las canjee, le estarás descontando{" "}
+            <strong className="text-bark-700">
+              {formatARS(descuentoEjemplo)}
+            </strong>{" "}
+            ({formatPercent(costoEfectivoPct, 2)} del ticket). Asegurate de que
+            tu margen lo soporte.
           </div>
         </div>
       </div>

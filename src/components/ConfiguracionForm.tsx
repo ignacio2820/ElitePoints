@@ -54,14 +54,18 @@ export function ConfiguracionForm({
       <div className="lg:col-span-7 space-y-6">
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2 text-bark-400">
+            <div className="flex items-center gap-2 text-terracotta-500">
               <Sparkles size={16} />
-              <span className="label-elegant">Reglas del programa</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em]">
+                Reglas del programa
+              </span>
             </div>
-            <CardTitle className="mt-2">Configurá tu programa Huellitas</CardTitle>
-            <CardDescription>
-              Ajustá cuánto cuesta acumular, cuánto vale cada canje y el plazo de
-              vencimiento. Los cambios afectan a las próximas ventas.
+            <CardTitle className="mt-2 text-2xl font-bold text-bark-700">
+              Configurá tu programa Huellitas
+            </CardTitle>
+            <CardDescription className="text-bark-600">
+              Ajustá cuánto cuesta acumular, cuánto vale cada canje y el plazo
+              de vencimiento. Los cambios afectan a las próximas ventas.
             </CardDescription>
           </CardHeader>
 
@@ -97,9 +101,16 @@ export function ConfiguracionForm({
                   />
                 </div>
               </Field>
-              <div className="mt-2 text-sm text-[color:var(--muted)]">
-                Hoy: cada <strong>{formatARS(cfg.montoParaUnaHuellita)}</strong> = 1{" "}
-                <HuellitaIcon size={14} className="text-bark-400 -mt-0.5" />
+              <div className="mt-2 text-sm text-bark-600">
+                Hoy: cada{" "}
+                <strong className="text-bark-700">
+                  {formatARS(cfg.montoParaUnaHuellita)}
+                </strong>{" "}
+                = 1{" "}
+                <HuellitaIcon
+                  size={14}
+                  className="-mt-0.5 inline-block text-terracotta-400"
+                />
               </div>
             </div>
 
@@ -164,7 +175,7 @@ export function ConfiguracionForm({
                     value={Math.min(cfg.diasVencimiento, 730)}
                     onChange={(v) => setField("diasVencimiento", v)}
                   />
-                  <span className="text-sm text-[color:var(--muted)] min-w-[80px]">
+                  <span className="min-w-[80px] text-sm font-medium text-bark-600">
                     {cfg.diasVencimiento} días
                   </span>
                 </div>
@@ -451,17 +462,19 @@ export function ConfiguracionForm({
           </div>
 
           <div className="mt-8 flex items-center justify-between border-t border-bark-100 pt-6">
-            <div className="text-xs text-[color:var(--muted)]">
-              {error
-                ? <span className="text-terracotta-500">⚠ {error}</span>
-                : savedAt
-                ? `Guardado a las ${savedAt}`
-                : "Cambios sin guardar"}
+            <div className="text-xs font-medium text-bark-600">
+              {error ? (
+                <span className="text-terracotta-500">⚠ {error}</span>
+              ) : savedAt ? (
+                `Guardado a las ${savedAt}`
+              ) : (
+                "Cambios sin guardar"
+              )}
             </div>
             <button
               onClick={handleSave}
               disabled={pending}
-              className="btn-primary inline-flex items-center gap-2"
+              className="btn-primary inline-flex items-center gap-2 text-white"
             >
               <Save size={16} />
               {pending ? "Guardando…" : "Guardar configuración"}
@@ -475,40 +488,46 @@ export function ConfiguracionForm({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Vista previa de una venta</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl font-bold text-bark-700">
+              Vista previa de una venta
+            </CardTitle>
+            <CardDescription className="text-bark-600">
               Así se verá el ticket con tu configuración actual.
             </CardDescription>
           </CardHeader>
           <div className="rounded-2xl bg-cream-50 p-5">
             <div className="flex items-baseline justify-between">
-              <span className="text-sm text-[color:var(--muted)]">
+              <span className="text-sm font-medium text-bark-600">
                 Total venta
               </span>
-              <span className="font-display text-xl text-bark-700">
+              <span className="font-display text-xl font-bold text-bark-700">
                 {formatARS(previewTicket)}
               </span>
             </div>
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm text-[color:var(--muted)]">
+              <span className="text-sm font-medium text-bark-600">
                 Huellitas que suma
               </span>
-              <span className="inline-flex items-center gap-2 font-display text-2xl font-semibold text-bark-700">
+              <span className="inline-flex items-center gap-2 font-display text-2xl font-extrabold text-bark-700">
                 +{formatNumber(preview.huellitasGeneradas)}
-                <HuellitaIcon size={18} className="text-bark-400" />
+                <HuellitaIcon size={18} className="text-terracotta-400" />
               </span>
             </div>
             <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-sm text-[color:var(--muted)]">
+              <span className="text-sm font-medium text-bark-600">
                 Equivalen a (cuando canjee)
               </span>
-              <span className="font-medium text-bark-500">
-                {formatARS(preview.huellitasGeneradas * cfg.valorMonetarioHuellita)}
+              <span className="font-semibold text-bark-700">
+                {formatARS(
+                  preview.huellitasGeneradas * cfg.valorMonetarioHuellita
+                )}
               </span>
             </div>
-            <div className="mt-3 flex items-baseline justify-between text-xs text-[color:var(--muted)]">
+            <div className="mt-3 flex items-baseline justify-between text-xs text-bark-600">
               <span>Vencen el</span>
-              <span>{preview.fechaVencimiento}</span>
+              <span className="font-medium text-bark-700">
+                {preview.fechaVencimiento}
+              </span>
             </div>
             <HuellitasStack
               count={Math.min(preview.huellitasGeneradas, 6)}

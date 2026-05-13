@@ -21,20 +21,22 @@ export default async function CanjesPendientesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <div className="flex items-center gap-2 text-bark-400">
-          <Ticket size={16} />
-          <span className="label-elegant">Caja · Canjes</span>
+      <header>
+        <div className="inline-flex items-center gap-2 rounded-full bg-terracotta-50 px-3 py-1 text-terracotta-500">
+          <Ticket size={14} />
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em]">
+            Caja · Canjes
+          </span>
         </div>
-        <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
+        <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight text-bark-700 sm:text-5xl">
           Tickets pendientes
         </h1>
-        <p className="mt-2 max-w-2xl text-[color:var(--muted)]">
-          Aca aparecen los canjes que solicitaron tus clientes. Pedi el codigo
-          al cliente y confirma para descontarle las Huellitas y entregarle el
-          premio.
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-bark-600">
+          Acá aparecen los canjes que solicitaron tus clientes. Pedíle el
+          código (o escaneále el QR) y confirmá para descontarle las Huellitas
+          y entregarle el premio.
         </p>
-      </div>
+      </header>
 
       <CanjesPendientesPanel ticketsIniciales={tickets} />
     </div>

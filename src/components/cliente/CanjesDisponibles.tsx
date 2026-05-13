@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Bone, Gift, Loader2, Lock, Package, Stethoscope } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
@@ -11,15 +11,25 @@ import {
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { formatNumber } from "@/lib/utils";
 import { TicketCanjeModal, type TicketCanje } from "./TicketCanjeModal";
+import { ConfirmarCanjeModal } from "./ConfirmarCanjeModal";
 
 export interface CanjesDisponiblesProps {
   premios: Premio[];
+  /**
+   * Saldo DISPONIBLE del cliente (saldoHuellitas - huellitasReservadas).
+   * Es lo que se compara contra el costo del premio para decidir si está
+   * desbloqueado y para el mensaje "te faltan X huellitas".
+   */
   saldoCliente: number;
+  /** Valor en pesos de 1 huellita, para mostrar equivalencias. */
+  valorMonetarioHuellita?: number;
   nivelCliente: NivelLealtad;
   niveles: NivelLealtad[];
   especiesCliente?: string[];
   tema?: "premium" | "warm";
   embedded?: boolean;
+  /** Si es false, no se llama a la API (p. ej. vista demo pública). */
+  puedeCanjear?: boolean;
 }
 
 function descripcionCorta(text: string | undefined, max = 120): string {
@@ -32,17 +42,25 @@ function descripcionCorta(text: string | undefined, max = 120): string {
 export function CanjesDisponibles({
   premios,
   saldoCliente,
+  valorMonetarioHuellita = 0,
   nivelCliente,
   niveles,
   especiesCliente,
-  embedded = false
+  embedded = false,
+  puedeCanjear = true
 }: CanjesDisponiblesProps) {
   const [ticket, setTicket] = useState<TicketCanje | null>(null);
   const [pidiendoId, setPidiendoId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saldoLocal, setSaldoLocal] = useState(saldoCliente);
+  const [confirmando, setConfirmando] = useState<Premio | null>(null);
+
+  useEffect(() => {
+    setSaldoLocal(saldoCliente);
+  }, [saldoCliente]);
 
   const aumentado = aumentarCatalogo(premios, {
-    saldoCliente,
+    saldoCliente: saldoLocal,
     nivelCliente,
     niveles,
     especiesCliente
@@ -61,8 +79,12 @@ export function CanjesDisponibles({
     return a.premio.costoHuellitas - b.premio.costoHuellitas;
   });
 
-  async function pedirTicket(premio: Premio) {
+  async function confirmarYPedirTicket(premio: Premio) {
     if (!premio.id) return;
+    if (!puedeCanjear) {
+      setError("Iniciá sesión en Mi cuenta para generar cupones de canje.");
+      return;
+    }
     setError(null);
     setPidiendoId(premio.id);
     try {
@@ -80,8 +102,18 @@ export function CanjesDisponibles({
         expiraEn: data.expiraEn,
         premioNombre: data.premio.nombre,
         costoHuellitas: data.premio.costoHuellitas,
+        valorDescuento:
+          typeof data.premio.valorDescuento === "number"
+            ? data.premio.valorDescuento
+            : undefined,
         clienteNombre: data.clienteNombre
       });
+      if (typeof data.saldoDisponibleFinal === "number") {
+        setSaldoLocal(data.saldoDisponibleFinal);
+      } else {
+        setSaldoLocal((s) => Math.max(0, s - premio.costoHuellitas));
+      }
+      setConfirmando(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ocurrió un error");
     } finally {
@@ -89,51 +121,94 @@ export function CanjesDisponibles({
     }
   }
 
+  function abrirConfirmacion(premio: Premio) {
+    setError(null);
+    if (!puedeCanjear) {
+      setError("Iniciá sesión en Mi cuenta para canjear premios.");
+      return;
+    }
+    setConfirmando(premio);
+  }
+
   return (
     <>
-      <section className="surface-card rounded-2xl p-5 sm:p-6">
-        <header className="mb-5">
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-bark-700">
-            Tus Recompensas
-          </h2>
-          <p className="mt-1 text-sm leading-relaxed text-bark-500">
-            Elegí un premio y obtené un cupón para retirarlo en el local. El
-            descuento de Huellitas se aplica cuando el vendedor confirma el
-            canje.
-          </p>
-        </header>
+      {embedded ? (
+        <div>
+          {error ? (
+            <div className="mb-4 rounded-2xl bg-red-50 px-3 py-2 font-sans text-sm text-red-700">
+              {error}
+            </div>
+          ) : null}
+          {ordenados.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-white/25 px-4 py-8 text-center font-sans text-sm text-white/80">
+              Todavía no hay premios disponibles.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {ordenados.map((item, index) => (
+                <PremioCard
+                  key={item.premio.id ?? item.premio.nombre}
+                  item={item}
+                  pidiendo={pidiendoId === item.premio.id}
+                  onCupón={() => abrirConfirmacion(item.premio)}
+                  embedded
+                  tone={index % 2 === 0 ? "green" : "orange"}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <section className="surface-card rounded-3xl p-5 sm:p-6">
+          <header className="mb-5">
+            <h2 className="font-display text-2xl font-semibold tracking-tight text-bark-700">
+              Tus Recompensas
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-bark-500">
+              Elegí un premio y obtené un cupón con código para mostrar en caja.
+              Las huellitas se descuentan al generar el cupón; el local confirma
+              la entrega cuando te entrega el premio o el descuento.
+            </p>
+          </header>
 
-        {error ? (
-          <div className="mb-4 rounded-xl bg-red-50 px-3 py-2 font-sans text-sm text-red-700">
-            {error}
-          </div>
-        ) : null}
+          {error ? (
+            <div className="mb-4 rounded-2xl bg-red-50 px-3 py-2 font-sans text-sm text-red-700">
+              {error}
+            </div>
+          ) : null}
 
-        {ordenados.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-bark-200 px-4 py-8 text-center font-sans text-sm text-bark-500">
-            Todavía no hay premios disponibles.
-          </p>
-        ) : (
-          <div
-            className={
-              embedded
-                ? "grid grid-cols-1 gap-4 sm:grid-cols-2"
-                : "grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4"
-            }
-          >
-            {ordenados.map((item, index) => (
-              <PremioCard
-                key={item.premio.id ?? item.premio.nombre}
-                item={item}
-                pidiendo={pidiendoId === item.premio.id}
-                onCupón={() => pedirTicket(item.premio)}
-                embedded={embedded}
-                tone={index % 2 === 0 ? "green" : "orange"}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+          {ordenados.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-bark-200 px-4 py-8 text-center font-sans text-sm text-bark-500">
+              Todavía no hay premios disponibles.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4">
+              {ordenados.map((item, index) => (
+                <PremioCard
+                  key={item.premio.id ?? item.premio.nombre}
+                  item={item}
+                  pidiendo={pidiendoId === item.premio.id}
+                  onCupón={() => abrirConfirmacion(item.premio)}
+                  embedded={false}
+                  tone={index % 2 === 0 ? "green" : "orange"}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      <ConfirmarCanjeModal
+        premio={confirmando}
+        saldoDisponible={saldoLocal}
+        valorMonetarioHuellita={valorMonetarioHuellita}
+        pidiendo={!!confirmando && pidiendoId === confirmando.id}
+        onConfirmar={() => confirmando && confirmarYPedirTicket(confirmando)}
+        onCancelar={() => {
+          if (pidiendoId) return;
+          setConfirmando(null);
+        }}
+      />
 
       <TicketCanjeModal ticket={ticket} onClose={() => setTicket(null)} />
     </>
@@ -157,13 +232,8 @@ function PremioCard({
   const Icono = iconoPremio(premio.categoria);
   const cardTone =
     tone === "green"
-      ? "bg-bark-900 text-white"
+      ? "bg-bark-800 ring-1 ring-white/10 text-white"
       : "bg-terracotta-400 text-white";
-  
-  const btnColor =
-    tone === "green"
-      ? "bg-terracotta-400 hover:bg-terracotta-500 text-white border-transparent"
-      : "bg-bark-900 hover:bg-bark-800 text-white border-transparent";
 
   let boton: ReactNode;
   if (desbloqueado) {
@@ -174,7 +244,7 @@ function PremioCard({
         disabled={pidiendo}
         className={
           embedded
-            ? `mt-auto inline-flex w-full items-center justify-center rounded-full border px-4 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${btnColor}`
+            ? "btn-primary mt-auto w-full justify-center text-sm uppercase tracking-[0.1em] disabled:cursor-not-allowed disabled:opacity-60"
             : "btn-primary mt-auto w-full justify-center py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
         }
       >
@@ -182,8 +252,10 @@ function PremioCard({
           <span className="inline-flex items-center justify-center gap-2">
             <Loader2 size={16} className="animate-spin" /> Generando…
           </span>
+        ) : embedded ? (
+          "Canjear"
         ) : (
-          embedded ? "Canjear" : "Obtener Cupón"
+          "Obtener Cupón"
         )}
       </button>
     );
@@ -192,7 +264,11 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        className={
+          embedded
+            ? "mt-auto w-full cursor-not-allowed rounded-full border border-white/25 bg-white/10 py-2.5 font-sans text-sm font-semibold text-white/80"
+            : "mt-auto w-full cursor-not-allowed rounded-full border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        }
       >
         Te faltan {formatNumber(faltanHuellitas)} huellitas
       </button>
@@ -202,7 +278,11 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        className={
+          embedded
+            ? "mt-auto w-full cursor-not-allowed rounded-full border border-white/25 bg-white/10 py-2.5 font-sans text-sm font-semibold text-white/80"
+            : "mt-auto w-full cursor-not-allowed rounded-full border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        }
       >
         <span className="inline-flex items-center justify-center gap-1.5">
           <Lock size={14} /> Subí a {nivelMinimo.nombre}
@@ -214,7 +294,11 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        className={
+          embedded
+            ? "mt-auto w-full cursor-not-allowed rounded-full border border-white/25 bg-white/10 py-2.5 font-sans text-sm font-semibold text-white/80"
+            : "mt-auto w-full cursor-not-allowed rounded-full border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        }
       >
         Sin stock
       </button>
@@ -224,7 +308,11 @@ function PremioCard({
       <button
         type="button"
         disabled
-        className="mt-auto w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        className={
+          embedded
+            ? "mt-auto w-full cursor-not-allowed rounded-full border border-white/25 bg-white/10 py-2.5 font-sans text-sm font-semibold text-white/80"
+            : "mt-auto w-full cursor-not-allowed rounded-full border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
+        }
       >
         No disponible
       </button>
@@ -235,13 +323,13 @@ function PremioCard({
     <article
       className={
         embedded
-          ? `flex h-full min-h-[15rem] flex-col rounded-[1.5rem] p-5 shadow-soft ${cardTone}`
-          : "surface-card flex h-full flex-col p-5 transition-shadow duration-200 hover:shadow-soft"
+          ? `flex h-full min-h-[15rem] flex-col rounded-3xl p-5 shadow-soft ${cardTone}`
+          : "surface-card flex h-full flex-col rounded-3xl p-5 transition-shadow duration-200 hover:shadow-soft"
       }
     >
       {embedded ? (
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
-          <Icono size={24} className="text-white" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-white">
+          <Icono size={24} />
         </div>
       ) : null}
       <h3
@@ -270,7 +358,11 @@ function PremioCard({
             : "mt-4 flex items-center gap-2 font-sans text-bark-700"
         }
       >
-        {embedded ? null : <HuellitaIcon size={22} className="shrink-0 text-bark-500" />}
+        {embedded ? (
+          <HuellitaIcon size={22} className="shrink-0 text-white" />
+        ) : (
+          <HuellitaIcon size={22} className="shrink-0 text-bark-500" />
+        )}
         <span className={embedded ? "text-2xl font-extrabold tabular-nums" : "text-lg font-bold tabular-nums tracking-tight"}>
           {formatNumber(premio.costoHuellitas)}
         </span>

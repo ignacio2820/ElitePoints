@@ -10,6 +10,12 @@ const Body = z.object({
   nombre: z.string().min(1).max(80),
   descripcion: z.string().max(280).optional(),
   costoHuellitas: z.number().int().positive(),
+  valorDescuento: z
+    .number()
+    .nonnegative()
+    .max(10_000_000)
+    .nullable()
+    .optional(),
   stock: z.number().int().nonnegative().nullable().optional(),
   nivelMinimoId: z.string().max(40).nullable().optional(),
   categoria: z

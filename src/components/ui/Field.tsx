@@ -13,10 +13,12 @@ export function Field({
 }) {
   return (
     <label className={cn("block", className)}>
-      <span className="label-elegant">{label}</span>
+      <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-bark-600">
+        {label}
+      </span>
       <div className="mt-2">{children}</div>
       {hint ? (
-        <span className="mt-1.5 block text-xs text-[color:var(--muted)]">
+        <span className="mt-1.5 block text-xs leading-relaxed text-bark-600">
           {hint}
         </span>
       ) : null}

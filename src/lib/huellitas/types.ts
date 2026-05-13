@@ -244,6 +244,17 @@ export const ClienteSchema = z.object({
   saldoHuellitas: z.number().int().nonnegative().default(0),
 
   /**
+   * Huellitas RESERVADAS por tickets pendientes (canjes que el cliente
+   * solicitó pero el local todavía no confirmó). Se restan visualmente del
+   * saldo para evitar que el cliente intente canjear dos premios que en
+   * conjunto exceden lo que realmente tiene.
+   *
+   * Invariante: huellitasReservadas <= saldoHuellitas en todo momento
+   * (la transacción de crearTicketCanje lo asegura).
+   */
+  huellitasReservadas: z.number().int().nonnegative().default(0),
+
+  /**
    * Acumulado histórico de huellitas EMITIDAS (incluye multiplicador de nivel).
    * Nunca decrece al canjear: es la métrica que define el rango.
    */
@@ -334,6 +345,14 @@ export const PremioSchema = z.object({
   descripcion: z.string().max(280).default(""),
   /** Huellitas requeridas para canjear este premio. */
   costoHuellitas: z.number().int().positive(),
+  /**
+   * Valor del descuento en pesos al canjear este premio (snapshot informativo).
+   * Si no se setea, la UI lo calcula como
+   * `costoHuellitas * valorMonetarioHuellita` usando la configuración vigente.
+   * Útil cuando el premio es un "5% off", "shampoo de regalo", "2x1", etc.
+   * donde el costo en pesos no es la simple multiplicación.
+   */
+  valorDescuento: z.number().nonnegative().optional(),
   /** ID del nivel mínimo requerido para canjear (referencia a NivelLealtad.id). */
   nivelMinimoId: z.string().default("cachorro"),
   /** Categoría libre para filtrar (alimento, juguete, accesorio, servicio). */
@@ -382,13 +401,32 @@ export const CanjePendienteSchema = z.object({
   premioId: z.string(),
   premioNombre: z.string(),
   costoHuellitas: z.number().int().positive(),
+  /**
+   * Valor en pesos del descuento que representa este canje (snapshot al
+   * momento de generar el ticket, usando `Premio.valorDescuento` si está,
+   * o `costoHuellitas * valorMonetarioHuellita` como fallback).
+   * El admin lo ve para saber qué descuento aplicar / qué producto entregar.
+   */
+  valorDescuento: z.number().nonnegative().optional(),
   codigo: z.string().min(4).max(20),
   estado: EstadoCanjeSchema.default("pendiente"),
   creadoEn: z.union([z.date(), z.string()]).optional(),
   expiraEn: z.string(), // ISO yyyy-mm-ddTHH:mm:ss
   confirmadoEn: z.union([z.date(), z.string()]).optional(),
   confirmadoPor: z.string().optional(), // uid del admin
-  ventaId: z.string().optional() // si se ata a una venta concreta
+  ventaId: z.string().optional(), // si se ata a una venta concreta
+  /**
+   * Plan FIFO de consumo de lotes (solo canjes nuevos en /Canjes).
+   * Sirve para revertir si el cliente cancela o el ticket expira.
+   */
+  plan: z
+    .array(
+      z.object({
+        loteId: z.string(),
+        consumidas: z.number().int().positive()
+      })
+    )
+    .optional()
 });
 export type CanjePendiente = z.infer<typeof CanjePendienteSchema>;
 

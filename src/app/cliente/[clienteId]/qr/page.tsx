@@ -1,8 +1,9 @@
 import { headers } from "next/headers";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import QRCode from "qrcode";
 import { ArrowLeft } from "lucide-react";
+import { requiereAccesoClientePublico } from "@/lib/auth/clientePortal";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
@@ -26,6 +27,8 @@ export default async function ClienteQrPage({
 }) {
   const localId = searchParams?.localId?.trim();
   if (!localId) notFound();
+
+  await requiereAccesoClientePublico(localId, params.clienteId);
 
   const db = adminDb();
   const [clienteSnap, localSnap] = await Promise.all([

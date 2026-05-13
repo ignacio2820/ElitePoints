@@ -7,6 +7,7 @@ export type PremioInput = {
   nombre: string;
   descripcion?: string;
   costoHuellitas: number;
+  valorDescuento?: number | null;
   stock?: number | null;
   nivelMinimoId?: string | null;
   categoria?: Premio["categoria"];
@@ -15,12 +16,17 @@ export type PremioInput = {
 };
 
 function mapDoc(id: string, data: Record<string, unknown>, localId: string): Premio {
+  const valorDescuento =
+    typeof data.valorDescuento === "number" && data.valorDescuento >= 0
+      ? data.valorDescuento
+      : undefined;
   return PremioSchema.parse({
     id,
     localId,
     nombre: data.nombre,
     descripcion: data.descripcion ?? "",
     costoHuellitas: data.costoHuellitas,
+    valorDescuento,
     nivelMinimoId: data.nivelMinimoId ?? "cachorro",
     categoria: data.categoria ?? "otro",
     stock: data.stock ?? null,
@@ -49,7 +55,7 @@ export async function obtenerPremio(
 export async function crearPremio(localId: string, input: PremioInput): Promise<Premio> {
   const ahora = Timestamp.now();
   const ref = cols.premios(adminDb(), localId).doc();
-  const payload = {
+  const payload: Record<string, unknown> = {
     localId,
     nombre: input.nombre.trim(),
     descripcion: (input.descripcion ?? "").trim(),
@@ -63,6 +69,13 @@ export async function crearPremio(localId: string, input: PremioInput): Promise<
     creadoEn: ahora,
     actualizadoEn: ahora
   };
+  if (
+    typeof input.valorDescuento === "number" &&
+    Number.isFinite(input.valorDescuento) &&
+    input.valorDescuento >= 0
+  ) {
+    payload.valorDescuento = input.valorDescuento;
+  }
   PremioSchema.parse({ ...payload, id: ref.id });
   await ref.set(payload);
   return mapDoc(ref.id, payload, localId);
@@ -88,6 +101,17 @@ export async function actualizarPremio(
   if (typeof input.nombre === "string") patch.nombre = input.nombre.trim();
   if (typeof input.descripcion === "string") patch.descripcion = input.descripcion.trim();
   if (typeof input.costoHuellitas === "number") patch.costoHuellitas = input.costoHuellitas;
+  if (input.valorDescuento !== undefined) {
+    if (input.valorDescuento === null) {
+      patch.valorDescuento = null;
+    } else if (
+      typeof input.valorDescuento === "number" &&
+      Number.isFinite(input.valorDescuento) &&
+      input.valorDescuento >= 0
+    ) {
+      patch.valorDescuento = input.valorDescuento;
+    }
+  }
   if (input.nivelMinimoId !== undefined) {
     patch.nivelMinimoId = input.nivelMinimoId?.trim() || "cachorro";
   }

@@ -118,14 +118,18 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2 text-bark-400">
+        <div className="flex items-center gap-2 text-terracotta-500">
           <Store size={16} />
-          <span className="label-elegant">Datos del local</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em]">
+            Datos del local
+          </span>
         </div>
-        <CardTitle className="mt-2">Identidad y contacto</CardTitle>
-        <CardDescription>
-          Estos datos se muestran al cliente en su portal. El WhatsApp habilita el
-          boton flotante de consultas.
+        <CardTitle className="mt-2 text-2xl font-bold text-bark-700">
+          Identidad y contacto
+        </CardTitle>
+        <CardDescription className="text-bark-600">
+          Estos datos se muestran al cliente en su portal. El WhatsApp habilita
+          el botón flotante de consultas.
         </CardDescription>
       </CardHeader>
 
@@ -171,7 +175,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
                   e.target.value = "";
                 }}
               />
-              <p className="text-xs text-bark-400">
+              <p className="text-xs text-bark-600">
                 {uploadingLogo
                   ? "Subiendo logo a Firebase Storage…"
                   : logoUrl
@@ -225,7 +229,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
       </div>
 
       <div className="mt-6 flex items-center justify-between border-t border-bark-100 pt-5">
-        <div className="text-xs text-[color:var(--muted)]">
+        <div className="text-xs font-medium text-bark-600">
           {error ? (
             <span className="text-terracotta-500">⚠ {error}</span>
           ) : savedAt ? (

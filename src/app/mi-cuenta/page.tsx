@@ -61,10 +61,18 @@ export default async function MiCuentaPage({
   }
 
   const clienteRaw = clienteSnap.data() as Cliente;
+  const saldoBruto = Number(clienteRaw.saldoHuellitas ?? 0);
+  const reservadas = Number(clienteRaw.huellitasReservadas ?? 0);
   const cliente = {
     id: clienteSnap.id,
     nombre: String(clienteRaw.nombre ?? ""),
-    saldoHuellitas: Number(clienteRaw.saldoHuellitas ?? 0),
+    saldoHuellitas: saldoBruto,
+    huellitasReservadas: reservadas,
+    /**
+     * Lo que el cliente puede gastar AHORA. Si tiene tickets pendientes,
+     * esas huellitas están reservadas y no las puede volver a canjear.
+     */
+    saldoDisponible: Math.max(0, saldoBruto - reservadas),
     acumuladoHistorico: Number(clienteRaw.acumuladoHistorico ?? 0),
     codigoCliente: clienteRaw.codigoCliente,
     codigoReferido: clienteRaw.codigoReferido,
@@ -105,6 +113,10 @@ export default async function MiCuentaPage({
       nombre: String(data.nombre ?? ""),
       descripcion: data.descripcion ? String(data.descripcion) : "",
       costoHuellitas: Number(data.costoHuellitas ?? 0),
+      valorDescuento:
+        typeof data.valorDescuento === "number" && data.valorDescuento >= 0
+          ? data.valorDescuento
+          : undefined,
       nivelMinimoId: String(data.nivelMinimoId ?? "cachorro"),
       categoria: data.categoria,
       stock:
@@ -127,7 +139,8 @@ export default async function MiCuentaPage({
         nombreLocal={nombreLocal}
         logoUrl={logoUrl}
         nombreCliente={cliente.nombre}
-        saldoHuellitas={cliente.saldoHuellitas}
+        saldoHuellitas={cliente.saldoDisponible}
+        huellitasReservadas={cliente.huellitasReservadas}
         valorMonetarioHuellita={cfg.valorMonetarioHuellita}
         nivelActual={progreso.nivelActual}
         pctTramo={progreso.pctTramo}
@@ -143,7 +156,8 @@ export default async function MiCuentaPage({
             <CanjesDisponibles
               embedded
               premios={premios}
-              saldoCliente={cliente.saldoHuellitas ?? 0}
+              saldoCliente={cliente.saldoDisponible}
+              valorMonetarioHuellita={cfg.valorMonetarioHuellita}
               nivelCliente={progreso.nivelActual}
               niveles={cfg.niveles}
               especiesCliente={mascotas.map((m) => m.especie)}

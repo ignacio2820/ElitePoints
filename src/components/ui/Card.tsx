@@ -4,7 +4,9 @@ export function Card({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("surface-card p-6", className)} {...props} />;
+  return (
+    <div className={cn("surface-card rounded-3xl p-6", className)} {...props} />
+  );
 }
 
 export function CardHeader({
@@ -20,7 +22,7 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("font-display text-2xl text-bark-700", className)}
+      className={cn("font-display text-2xl font-bold text-bark-700", className)}
       {...props}
     />
   );
@@ -32,7 +34,7 @@ export function CardDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-sm leading-relaxed text-[color:var(--muted)] mt-1", className)}
+      className={cn("mt-1 text-sm leading-relaxed text-bark-600", className)}
       {...props}
     />
   );

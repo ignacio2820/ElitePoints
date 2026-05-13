@@ -44,26 +44,32 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <span className="label-elegant">Reglas del local</span>
-        <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
-          Configuracion del programa
+      <header>
+        <span className="inline-block rounded-full bg-terracotta-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
+          Reglas del local
+        </span>
+        <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight text-bark-700 sm:text-5xl">
+          Configuración del programa
         </h1>
-        <p className="mt-2 max-w-2xl text-[color:var(--muted)]">
-          Defini como funciona Huellitas en tu local. Los cambios afectan solo a
-          las proximas ventas y se versionan automaticamente.
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-bark-600">
+          Definí cómo funciona Huellitas en tu local. Los cambios afectan solo a
+          las próximas ventas y se versionan automáticamente.
         </p>
-      </div>
+      </header>
 
       <DatosLocalForm initial={info} />
 
       <Card>
         <CardHeader>
-          <span className="label-elegant">Marketing del local</span>
-          <CardTitle className="mt-2">Póster con QR de registro</CardTitle>
-          <CardDescription>
-            Generá un póster A4 con el logo de tu comercio y un QR único para que
-            tus clientes se registren en Huellitas.
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
+            Marketing del local
+          </span>
+          <CardTitle className="mt-2 text-2xl font-bold text-bark-700">
+            Póster con QR de registro
+          </CardTitle>
+          <CardDescription className="text-bark-600">
+            Generá un póster A4 con el logo de tu comercio y un QR único para
+            que tus clientes se registren en Huellitas.
           </CardDescription>
         </CardHeader>
         <GenerarQrPosterButton />

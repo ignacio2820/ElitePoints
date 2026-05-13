@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap");
 
 :root {
   --bg: #1b4332;
@@ -11,19 +11,24 @@
   --forest-soft: #2d6a4f;
   --accent: #fb8500;
   --ink: #f8f9fa;
-  --muted: #d8f3dc;
+  --ink-on-surface: #1b4332;
+  /* Texto secundario LEGIBLE sobre fondo crema/blanco (~5.5:1 vs #F8F9FA). */
+  --muted: #2d6a4f;
+  --muted-on-surface: #2d6a4f;
+  /* Variante clara para usar sobre fondo verde oscuro: usar Tailwind
+     text-white/80 o text-bark-100 directo, no esta var. */
 }
 
 html,
 body {
   background-color: var(--bg);
   color: var(--ink);
-  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .font-display {
-  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -37,13 +42,29 @@ body {
   background-size: 18px 18px;
 }
 
-.surface-card {
+.surface-card,
+.card {
   background: var(--surface);
-  border: 1px solid rgba(27, 67, 50, 0.1);
-  border-radius: 2rem;
+  color: var(--ink-on-surface);
+  border: 1px solid rgba(27, 67, 50, 0.08);
+  border-radius: 1.5rem;
   box-shadow:
-    0 1px 2px rgba(27, 67, 50, 0.05),
-    0 10px 28px -10px rgba(27, 67, 50, 0.14);
+    0 1px 2px rgba(27, 67, 50, 0.04),
+    0 12px 32px -12px rgba(13, 40, 24, 0.18);
+}
+
+.surface-card .label-elegant {
+  color: var(--muted-on-surface);
+}
+
+.surface-card .btn-ghost {
+  background: transparent;
+  color: var(--ink-on-surface);
+  border: 1px solid rgba(27, 67, 50, 0.16);
+}
+
+.surface-card .btn-ghost:hover {
+  background: rgba(27, 67, 50, 0.06);
 }
 
 input[type="range"] {
@@ -93,17 +114,18 @@ input[type="range"]:focus::-webkit-slider-thumb {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  background: linear-gradient(180deg, #fb8500 0%, #e67700 100%);
+  background: #fb8500;
   color: #ffffff;
   border-radius: 9999px;
   padding: 0.8rem 1.35rem;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: 0.01em;
-  transition: transform 0.12s ease, box-shadow 0.2s ease;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
   box-shadow: 0 8px 18px -8px rgba(251, 133, 0, 0.55);
 }
 .btn-primary:hover {
+  background: #e67700;
   transform: translateY(-1px);
   box-shadow: 0 12px 24px -10px rgba(251, 133, 0, 0.65);
 }
@@ -133,7 +155,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
   background: #fff;
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
-  color: var(--ink);
+  color: var(--ink-on-surface);
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -147,7 +169,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #fb8500;
 }
 
 .lucide {
@@ -185,7 +207,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
   }
 
   .modal-panel {
-    border-radius: 2rem;
+    border-radius: 1.5rem;
   }
 }
 

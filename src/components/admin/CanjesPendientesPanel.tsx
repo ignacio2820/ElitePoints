@@ -6,7 +6,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import type { CanjePendienteResumen } from "@/lib/huellitas/canjeService";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn, formatARS, formatNumber } from "@/lib/utils";
 
 export interface CanjesPendientesPanelProps {
   ticketsIniciales: CanjePendienteResumen[];
@@ -164,15 +164,27 @@ export function CanjesPendientesPanel({
                       {fechaCorta(t.creadoEn)}
                       {t.expirado ? <span className="text-red-500">expirado</span> : null}
                     </div>
-                    <h4 className="mt-1 truncate font-display text-lg font-semibold text-bark-700">
+                    <h4 className="mt-1 truncate font-display text-lg font-bold text-bark-700">
                       {t.premioNombre}
                     </h4>
-                    <p className="text-xs text-bark-500">
-                      Cliente: <strong>{t.clienteNombre}</strong>
+                    <p className="text-xs font-medium text-bark-600">
+                      Cliente:{" "}
+                      <strong className="text-bark-700">
+                        {t.clienteNombre}
+                      </strong>
                     </p>
                     <div className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-bark-700">
                       {formatNumber(t.costoHuellitas)}
-                      <HuellitaIcon size={12} className="text-bark-400" />
+                      <HuellitaIcon
+                        size={12}
+                        className="text-terracotta-500"
+                      />
+                      {typeof t.valorDescuento === "number" &&
+                      t.valorDescuento > 0 ? (
+                        <span className="ml-1 rounded-full bg-terracotta-50 px-2 py-0.5 text-[11px] font-bold text-terracotta-500">
+                          {formatARS(t.valorDescuento)} OFF
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">

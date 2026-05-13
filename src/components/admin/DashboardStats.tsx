@@ -37,16 +37,18 @@ export async function DashboardStats({ localId }: { localId: string }) {
     return (
       <section className="mb-10">
         <CabeceraSeccion />
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-          <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+        <div className="flex items-start gap-3 rounded-3xl border border-terracotta-200 bg-terracotta-50 p-5 text-sm text-bark-700 shadow-soft">
+          <AlertTriangle size={18} className="mt-0.5 shrink-0 text-terracotta-500" />
           <div>
-            <p className="font-semibold">No pudimos cargar las métricas.</p>
+            <p className="font-bold text-bark-700">
+              No pudimos cargar las métricas.
+            </p>
             {errorMsg && (
-              <p className="mt-1 text-xs text-amber-700/80">
+              <p className="mt-1 text-xs text-bark-600">
                 Detalle: {errorMsg}
               </p>
             )}
-            <p className="mt-2 text-xs text-amber-700/80">
+            <p className="mt-2 text-xs text-bark-600">
               Si tu local es nuevo, todavía no hay ventas registradas. Cargá la
               primera desde la Caja.
             </p>
@@ -72,17 +74,19 @@ function CabeceraSeccion() {
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <span className="label-elegant">Pulse del local</span>
-        <h2 className="mt-1 font-display text-2xl font-semibold text-bark-700">
+        <span className="inline-block rounded-full bg-terracotta-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-terracotta-500">
+          Pulse del local
+        </span>
+        <h2 className="mt-2 font-display text-2xl font-bold text-bark-700 sm:text-3xl">
           Métricas en vivo
         </h2>
       </div>
-      <p className="text-xs text-bark-400">
-        <code className="rounded bg-bark-50 px-1.5 py-0.5 font-mono text-[10px] text-bark-500">
+      <p className="text-xs text-bark-500">
+        <code className="rounded bg-bark-50 px-1.5 py-0.5 font-mono text-[10px] text-bark-600">
           /Ventas
         </code>{" "}
         y{" "}
-        <code className="rounded bg-bark-50 px-1.5 py-0.5 font-mono text-[10px] text-bark-500">
+        <code className="rounded bg-bark-50 px-1.5 py-0.5 font-mono text-[10px] text-bark-600">
           /Canjes
         </code>{" "}
         de tu local (Admin SDK en servidor).
@@ -106,13 +110,13 @@ function CardEmisionCanje({ stats }: { stats: EmisionVsCanjeStats }) {
     : "text-rose-600 bg-rose-50 border-rose-200";
 
   return (
-    <article className="card flex flex-col gap-5 p-5">
+    <article className="card flex flex-col gap-5 rounded-3xl p-6">
       <header className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-bark-400">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
             Salud financiera · {stats.diasVentana}d
           </p>
-          <h3 className="mt-1 font-display text-lg font-semibold text-bark-700">
+          <h3 className="mt-1 font-display text-xl font-bold text-bark-700">
             Emisión vs Canje
           </h3>
         </div>
@@ -144,14 +148,14 @@ function CardEmisionCanje({ stats }: { stats: EmisionVsCanjeStats }) {
       </div>
 
       {/* Detalle */}
-      <p className="text-[11px] leading-relaxed text-bark-400">
-        <strong className="text-bark-500">Canjeadas</strong> = descuento con
+      <p className="text-[11px] leading-relaxed text-bark-600">
+        <strong className="text-bark-700">Canjeadas</strong> = descuento con
         Huellitas en caja (campo de cada venta) + canjes de premios
         confirmados en <code className="font-mono">/Canjes</code>.
       </p>
-      <footer className="grid grid-cols-2 gap-3 border-t border-bark-100 pt-3 text-xs text-bark-500">
+      <footer className="grid grid-cols-2 gap-3 border-t border-bark-100 pt-3 text-xs text-bark-600">
         <div>
-          <p className="font-semibold uppercase tracking-widest text-bark-400">
+          <p className="font-bold uppercase tracking-widest text-bark-500">
             Docs en /Ventas
           </p>
           <p className="mt-0.5 font-display text-base font-bold text-bark-700">
@@ -159,7 +163,7 @@ function CardEmisionCanje({ stats }: { stats: EmisionVsCanjeStats }) {
           </p>
         </div>
         <div>
-          <p className="font-semibold uppercase tracking-widest text-bark-400">
+          <p className="font-bold uppercase tracking-widest text-bark-500">
             Docs en /Canjes
           </p>
           <p className="mt-0.5 font-display text-base font-bold text-bark-700">
@@ -217,27 +221,27 @@ function Barra({
 
 function CardTopMascotas({ mascotas }: { mascotas: MascotaRanking[] }) {
   return (
-    <article className="card flex flex-col gap-4 p-5">
+    <article className="card flex flex-col gap-4 rounded-3xl p-6">
       <header className="flex items-start justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-bark-400">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
             Lealtad
           </p>
-          <h3 className="mt-1 font-display text-lg font-semibold text-bark-700">
+          <h3 className="mt-1 font-display text-xl font-bold text-bark-700">
             Top 5 Mascotas
           </h3>
-          <p className="mt-0.5 text-[11px] text-bark-400">
+          <p className="mt-0.5 text-[11px] text-bark-600">
             Por acumulado histórico de huellitas (atribución por hogar si hay
             varias mascotas).
           </p>
         </div>
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
-          <Heart size={15} />
+        <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-terracotta-50 text-terracotta-500">
+          <Heart size={16} />
         </span>
       </header>
 
       {mascotas.length === 0 ? (
-        <p className="rounded-xl bg-cream-50 p-4 text-center text-xs text-bark-400">
+        <p className="rounded-2xl bg-cream-50 p-4 text-center text-xs text-bark-600">
           Cuando registres ventas con clientes que tengan mascotas,
           aparecerán acá.
         </p>
@@ -246,36 +250,36 @@ function CardTopMascotas({ mascotas }: { mascotas: MascotaRanking[] }) {
           {mascotas.map((m, i) => (
             <li
               key={`${m.clienteId}-${m.nombreMascota}-${i}`}
-              className="flex items-center gap-3 rounded-xl bg-cream-50/60 px-3 py-2 transition hover:bg-cream-50"
+              className="flex items-center gap-3 rounded-2xl bg-cream-50 px-3 py-2 transition hover:bg-cream-100"
             >
               <span
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-display text-xs font-bold ${
                   i === 0
-                    ? "bg-amber-300 text-bark-800 shadow-sm"
+                    ? "bg-terracotta-400 text-white shadow-sm"
                     : i === 1
-                    ? "bg-amber-200/70 text-bark-700"
+                    ? "bg-terracotta-100 text-bark-700"
                     : i === 2
-                    ? "bg-amber-100 text-bark-600"
-                    : "bg-bark-50 text-bark-500"
+                    ? "bg-bark-100 text-bark-700"
+                    : "bg-bark-50 text-bark-600"
                 }`}
               >
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-sm font-semibold text-bark-700">
+                <p className="truncate font-display text-sm font-bold text-bark-700">
                   {m.nombreMascota}{" "}
-                  <span className="text-xs font-normal text-bark-400">
+                  <span className="text-xs font-medium text-bark-500">
                     · de {m.dueno}
                   </span>
                 </p>
-                <p className="truncate text-[11px] text-bark-400">
+                <p className="truncate text-[11px] text-bark-600">
                   {especieLabel(m.especie)}
                   {m.raza ? ` · ${m.raza}` : ""}
                   {m.compartido ? " · acumulado del hogar" : ""}
                 </p>
               </div>
               <span className="flex shrink-0 items-center gap-1 tabular-nums text-bark-700">
-                <HuellitaIcon size={11} />
+                <HuellitaIcon size={11} className="text-terracotta-400" />
                 <span className="font-display text-sm font-bold">
                   {formatNumber(m.huellitasAcumuladas)}
                 </span>
@@ -313,52 +317,52 @@ function CardRetencion({ stats }: { stats: RetencionStats }) {
   const saludable = stats.tasaRetencion >= 0.7;
 
   return (
-    <article className="card flex flex-col gap-4 p-5">
+    <article className="card flex flex-col gap-4 rounded-3xl p-6">
       <header className="flex items-start justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-bark-400">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
             Retención / Churn · {stats.diasVentana} días
           </p>
-          <h3 className="mt-1 font-display text-lg font-semibold text-bark-700">
+          <h3 className="mt-1 font-display text-xl font-bold text-bark-700">
             ¿Vuelven tus clientes?
           </h3>
-          <p className="mt-0.5 text-[11px] text-bark-400">
+          <p className="mt-0.5 text-[11px] text-bark-600">
             Clientes con historial de compra sin ventas registradas en los
             últimos {stats.diasVentana} días cuentan como{" "}
-            <strong className="text-bark-600">en riesgo</strong>.
+            <strong className="text-bark-700">en riesgo</strong>.
           </p>
         </div>
         <span
-          className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+          className={`flex h-9 w-9 items-center justify-center rounded-2xl ${
             saludable
               ? "bg-emerald-50 text-emerald-600"
               : "bg-rose-50 text-rose-500"
           }`}
         >
-          {saludable ? <Sparkles size={15} /> : <AlertTriangle size={15} />}
+          {saludable ? <Sparkles size={16} /> : <AlertTriangle size={16} />}
         </span>
       </header>
 
       {/* Tasa principal */}
-      <div className="rounded-2xl border border-bark-100 bg-gradient-to-br from-cream-50 to-white p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-bark-400">
+      <div className="rounded-2xl border border-bark-100 bg-cream-50 p-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-bark-600">
           Tasa de retención
         </p>
         <div className="mt-1 flex items-baseline gap-2">
           <span
-            className={`font-display text-4xl font-bold tabular-nums ${
+            className={`font-display text-4xl font-extrabold tabular-nums ${
               saludable ? "text-emerald-600" : "text-rose-600"
             }`}
           >
             {stats.totalConHistorial > 0 ? `${tasaPct}%` : "—"}
           </span>
           {stats.totalConHistorial > 0 && (
-            <span className="text-xs text-bark-400">
+            <span className="text-xs font-medium text-bark-600">
               · churn {churnPct}%
             </span>
           )}
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-bark-500">
+        <p className="mt-2 text-xs leading-relaxed text-bark-700">
           {stats.totalConHistorial === 0
             ? "Aún no tenés clientes con historial de compras."
             : `${stats.activos} de ${stats.totalConHistorial} clientes con historial volvieron a comprar en los últimos ${stats.diasVentana} días.`}

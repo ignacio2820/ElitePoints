@@ -14,73 +14,91 @@ import { getInfoLocal } from "@/lib/huellitas/localService";
 
 export const dynamic = "force-dynamic";
 
-const CAJA_CARD_CLASS =
-  "rounded-2xl border border-amber-200/80 bg-gradient-to-br from-[#FFFCF4] via-cream-50 to-cream-100/80 p-6 shadow-soft ring-1 ring-amber-100/60 transition hover:-translate-y-0.5 hover:border-amber-300/80 hover:shadow-soft";
-
 export default async function AdminDashboard() {
   const sesion = await requireAdmin();
   const localId = sesion.claims.localId;
   const info = await getInfoLocal(localId);
+  const tieneNombre = info.nombre.trim().length > 0 && info.nombre !== localId;
+  const saludo = tieneNombre ? info.nombre : "tu Pet Shop";
 
   return (
     <div>
-      <div className="mb-10">
-        <span className="label-elegant">Panel del local</span>
-        <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
-          Bienvenido de vuelta, {info.nombre}
+      <section className="mb-10">
+        <span className="inline-block rounded-full bg-bark-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-bark-700">
+          Panel del local
+        </span>
+        <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight text-bark-700 sm:text-5xl">
+          Bienvenido de vuelta,
+          <br className="hidden sm:block" />
+          <span className="text-terracotta-400">{saludo}</span>
         </h1>
-        <p className="mt-2 max-w-xl text-[color:var(--muted)]">
-          Acá podés registrar ventas, configurar tu programa, ver clientes y
-          monitorear cumpleaños próximos.
+        <p className="mt-3 max-w-xl text-base leading-relaxed text-bark-600">
+          Registrá ventas en caja, configurá tu programa, monitoreá clientes y
+          cumpleaños desde un solo lugar.
         </p>
-      </div>
+      </section>
 
-      <DashboardStats localId={localId} />
-
-      <Link href="/admin/nueva-venta" className="group mb-6 block">
-        <div className={CAJA_CARD_CLASS}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200/70 bg-cream-50 text-amber-700">
-                <ScanLine size={20} />
+      <Link
+        href="/admin/nueva-venta"
+        className="group mb-10 block focus:outline-none"
+      >
+        <div className="relative overflow-hidden rounded-3xl bg-terracotta-400 p-6 text-white shadow-soft ring-1 ring-terracotta-500/20 transition hover:-translate-y-0.5 hover:bg-terracotta-500 sm:p-8">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/15 blur-2xl"
+          />
+          <div className="relative flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-5">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white">
+                <ScanLine size={26} />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700/80">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/85">
                   Caja registradora
                 </p>
-                <h2 className="font-display text-2xl font-semibold text-bark-700">
+                <h2 className="font-display text-2xl font-extrabold text-white sm:text-3xl">
                   Registrar nueva venta
                 </h2>
-                <p className="mt-1 text-sm text-[color:var(--muted)]">
+                <p className="mt-1 max-w-md text-sm text-white/90">
                   Acreditá huellitas al instante y subí el nivel del cliente.
                 </p>
               </div>
             </div>
-            <ArrowRight className="text-amber-600/70 transition group-hover:translate-x-1 group-hover:text-amber-700" />
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-terracotta-500 shadow-soft transition group-hover:gap-3">
+              Abrir caja
+              <ArrowRight size={16} />
+            </span>
           </div>
         </div>
       </Link>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <DashboardCard
-          href="/admin/configuracion"
-          title="Configuración"
-          description="Ajustá costo de acumulación, valor de canje y vencimiento."
-          Icon={Settings2}
-        />
-        <DashboardCard
-          href="/admin/clientes"
-          title="Clientes y mascotas"
-          description="Gestioná clientes, mascotas, saldos y movimientos."
-          Icon={Users}
-        />
-        <DashboardCard
-          href="/admin/clientes"
-          title="Cumpleaños"
-          description="Quiénes cumplen pronto y a quiénes ya saludamos."
-          Icon={Cake}
-        />
-      </div>
+      <DashboardStats localId={localId} />
+
+      <section>
+        <h2 className="mb-5 font-display text-2xl font-bold text-bark-700">
+          Accesos rápidos
+        </h2>
+        <div className="grid gap-5 md:grid-cols-3">
+          <DashboardCard
+            href="/admin/configuracion"
+            title="Configuración"
+            description="Costo de acumulación, valor de canje y vencimiento."
+            Icon={Settings2}
+          />
+          <DashboardCard
+            href="/admin/clientes"
+            title="Clientes y mascotas"
+            description="Saldos, movimientos y mascotas registradas."
+            Icon={Users}
+          />
+          <DashboardCard
+            href="/admin/clientes"
+            title="Cumpleaños"
+            description="Quiénes cumplen pronto y a quiénes saludamos."
+            Icon={Cake}
+          />
+        </div>
+      </section>
     </div>
   );
 }
@@ -98,17 +116,21 @@ function DashboardCard({
 }) {
   return (
     <Link href={href} className="group">
-      <Card className="h-full transition hover:-translate-y-0.5 hover:shadow-soft">
+      <Card className="h-full rounded-3xl transition hover:-translate-y-0.5 hover:shadow-soft">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cream-100 text-bark-500">
-              <Icon size={18} />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-terracotta-50 text-terracotta-500">
+              <Icon size={20} />
             </div>
-            <CardTitle className="text-xl">{title}</CardTitle>
+            <CardTitle className="text-xl font-bold text-bark-700">
+              {title}
+            </CardTitle>
           </div>
-          <CardDescription>{description}</CardDescription>
+          <CardDescription className="text-bark-600">
+            {description}
+          </CardDescription>
         </CardHeader>
-        <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-bark-500 transition group-hover:gap-2.5 group-hover:text-bark-700">
+        <div className="inline-flex items-center gap-1.5 text-sm font-bold text-terracotta-500 transition group-hover:gap-2.5">
           Abrir
           <ArrowRight size={14} />
         </div>

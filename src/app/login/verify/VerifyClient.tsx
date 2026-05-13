@@ -44,13 +44,16 @@ export function VerifyClient() {
 
   return (
     <div className="paw-bg flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-bark-500 to-terracotta-500 shadow-soft">
-          <HuellitaIcon size={32} className="text-cream-50" />
+      <div className="w-full max-w-md">
+        <div className="mb-6 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-terracotta-400 shadow-soft">
+            <HuellitaIcon size={32} className="text-white" />
+          </div>
         </div>
 
+        <div className="surface-card rounded-3xl p-6 sm:p-8">
         {estado === "verificando" && (
-          <div className="mt-6">
+          <div className="text-center">
             <Loader2 className="mx-auto h-8 w-8 animate-spin text-bark-500" />
             <h1 className="mt-4 font-display text-2xl font-semibold text-bark-700">
               Verificando tu acceso…
@@ -62,7 +65,7 @@ export function VerifyClient() {
         )}
 
         {estado === "ok" && (
-          <div className="mt-6">
+          <div className="text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
               <Sparkles size={24} />
             </div>
@@ -118,7 +121,7 @@ export function VerifyClient() {
         )}
 
         {estado === "error" && (
-          <div className="mt-6">
+          <div className="text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-700">
               <AlertTriangle size={24} />
             </div>
@@ -131,6 +134,7 @@ export function VerifyClient() {
             </a>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

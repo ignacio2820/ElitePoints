@@ -1,15 +1,16 @@
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { ClienteView } from "./ClienteView";
+import { ClienteView, type HistorialPuntoCliente } from "./ClienteView";
+import { requiereAccesoClientePublico } from "@/lib/auth/clientePortal";
 import { getInfoLocal } from "@/lib/huellitas/localService";
-import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import {
   CONFIGURACION_DEFAULT,
   type ConfiguracionLocal,
   type Cliente,
-  type Mascota
+  type Mascota,
+  type Premio
 } from "@/lib/huellitas/types";
+import { PREMIOS_DEMO } from "@/components/CatalogoPremios";
 
 const NOMBRE_LOCAL_DEMO = "Pet Shop Patitas";
 
@@ -17,15 +18,11 @@ const CLIENTE_DEMO = {
   id: "demo",
   nombre: "Lucía Romero",
   saldoHuellitas: 142,
-  /**
-   * 1340 huellitas históricas → Explorador (umbral 500), faltan 660
-   * para Gran Guardián. Ideal para ver la barra de progreso a mitad de camino.
-   */
+  huellitasReservadas: 0,
   acumuladoHistorico: 1340,
   codigoReferido: "LUC-K3MP",
   referidosTotales: 4,
   referidosActivados: 2,
-  /** Estimación: 2 activos × 30 huellitas bonus por defecto. */
   huellitasGanadasReferidos: 60,
   mascotas: [
     {
@@ -54,12 +51,104 @@ const CLIENTE_DEMO = {
   ] satisfies Mascota[]
 };
 
+function fechaVentaIso(val: unknown): string {
+  if (
+    val != null &&
+    typeof val === "object" &&
+    "toDate" in val &&
+    typeof (val as { toDate: unknown }).toDate === "function"
+  ) {
+    const d = (val as { toDate: () => Date }).toDate();
+    if (d instanceof Date && !Number.isNaN(d.getTime())) {
+      return d.toISOString();
+    }
+  }
+  if (typeof val === "string" && val) return val;
+  return "";
+}
+
+async function historialVentasCliente(
+  localId: string,
+  clienteId: string
+): Promise<HistorialPuntoCliente[]> {
+  const { adminDb } = await import("@/lib/firebase/admin");
+  const { cols } = await import("@/lib/firebase/collections");
+  const db = adminDb();
+  try {
+    const snap = await cols
+      .ventas(db, localId)
+      .where("clienteId", "==", clienteId)
+      .orderBy("fecha", "desc")
+      .limit(20)
+      .get();
+    return snap.docs.map((d) => {
+      const data = d.data() as Record<string, unknown>;
+      return {
+        id: d.id,
+        fecha: fechaVentaIso(data.fecha),
+        huellitasGeneradas: Math.max(0, Number(data.huellitasGeneradas ?? 0))
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+async function premiosActivosCliente(
+  localId: string
+): Promise<Premio[]> {
+  const { adminDb } = await import("@/lib/firebase/admin");
+  const { cols } = await import("@/lib/firebase/collections");
+  const db = adminDb();
+  const premiosSnap = await cols
+    .premios(db, localId)
+    .where("activo", "==", true)
+    .get();
+  return premiosSnap.docs.map((d) => {
+    const data = d.data() as Omit<Premio, "id">;
+    return {
+      id: d.id,
+      localId: String(data.localId ?? localId),
+      nombre: String(data.nombre ?? ""),
+      descripcion: data.descripcion ? String(data.descripcion) : "",
+      costoHuellitas: Number(data.costoHuellitas ?? 0),
+      valorDescuento:
+        typeof data.valorDescuento === "number" && data.valorDescuento >= 0
+          ? data.valorDescuento
+          : undefined,
+      nivelMinimoId: String(data.nivelMinimoId ?? "cachorro"),
+      categoria: data.categoria,
+      stock:
+        typeof data.stock === "number"
+          ? data.stock
+          : null,
+      activo: data.activo !== false,
+      especiesObjetivo: Array.isArray(data.especiesObjetivo)
+        ? data.especiesObjetivo
+        : []
+    };
+  });
+}
+
 async function loadCliente(localId: string, clienteId: string) {
   if (clienteId === "demo") {
     return {
       cliente: CLIENTE_DEMO,
       cfg: { ...CONFIGURACION_DEFAULT, localId } as ConfiguracionLocal,
-      nombreLocal: NOMBRE_LOCAL_DEMO
+      nombreLocal: NOMBRE_LOCAL_DEMO,
+      historial: [
+        {
+          id: "demo-v1",
+          fecha: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+          huellitasGeneradas: 12
+        },
+        {
+          id: "demo-v2",
+          fecha: new Date(Date.now() - 10 * 86_400_000).toISOString(),
+          huellitasGeneradas: 8
+        }
+      ] satisfies HistorialPuntoCliente[],
+      premios: PREMIOS_DEMO
     };
   }
   try {
@@ -70,31 +159,33 @@ async function loadCliente(localId: string, clienteId: string) {
     const cliSnap = await cols.cliente(db, localId, clienteId).get();
     if (!cliSnap.exists) return null;
     const cliente = cliSnap.data() as Cliente;
-    const mascotasSnap = await cols.mascotas(db, localId, clienteId).get();
-    const mascotas = mascotasSnap.docs.map((d) => ({
-      id: d.id,
-      ...(d.data() as Mascota)
-    }));
     const cfg = await getConfiguracion(localId);
     const localSnap = await cols.local(db, localId).get();
     const nombreLocal =
       (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
       "tu Pet Shop";
+    const [historial, premios] = await Promise.all([
+      historialVentasCliente(localId, clienteId),
+      premiosActivosCliente(localId)
+    ]);
     return {
       cliente: {
         id: cliSnap.id,
         nombre: cliente.nombre,
         saldoHuellitas: cliente.saldoHuellitas ?? 0,
+        huellitasReservadas: Number(cliente.huellitasReservadas ?? 0),
         acumuladoHistorico: cliente.acumuladoHistorico ?? 0,
         codigoReferido: cliente.codigoReferido ?? "",
         referidosTotales: cliente.referidosTotales ?? 0,
         referidosActivados: cliente.referidosActivados ?? 0,
         huellitasGanadasReferidos:
           (cliente.referidosActivados ?? 0) * cfg.referidos.bonusReferente,
-        mascotas
+        mascotas: [] as Mascota[]
       },
       cfg,
-      nombreLocal
+      nombreLocal,
+      historial,
+      premios
     };
   } catch {
     return null;
@@ -111,14 +202,18 @@ export default async function ClientePage({
   const localId = searchParams?.localId?.trim();
   if (!localId) notFound();
 
+  await requiereAccesoClientePublico(localId, params.clienteId);
+
   const data = await loadCliente(localId, params.clienteId);
   if (!data) notFound();
 
   const infoLocal = await getInfoLocal(localId);
   const membresiaExpirada = isMembresiaExpirada(infoLocal);
 
-  const h = headers();
-  const baseUrl = resolvePublicBaseUrl(h);
+  const saldoBruto = data.cliente.saldoHuellitas;
+  const reservadas = data.cliente.huellitasReservadas ?? 0;
+  const saldoDisponible = Math.max(0, saldoBruto - reservadas);
+  const modoDemo = params.clienteId === "demo";
 
   return (
     <ClienteView
@@ -126,8 +221,12 @@ export default async function ClientePage({
       cliente={data.cliente}
       cfg={data.cfg}
       nombreLocal={data.nombreLocal}
-      baseUrl={baseUrl}
       membresiaExpirada={membresiaExpirada}
+      historialPuntos={data.historial}
+      premios={data.premios}
+      saldoDisponible={saldoDisponible}
+      huellitasReservadas={reservadas}
+      modoDemo={modoDemo}
     />
   );
 }

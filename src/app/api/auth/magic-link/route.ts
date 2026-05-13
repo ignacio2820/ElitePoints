@@ -4,7 +4,6 @@ import { adminAuth } from "@/lib/firebase/admin";
 import { getOrCreateUserByEmail, setCustomClaims } from "@/lib/auth/server";
 import { buscarClientePorEmailGlobal } from "@/lib/huellitas/clientesService";
 import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
-import { enviarEmailMagicLink } from "@/lib/email/magicLink";
 import { cols } from "@/lib/firebase/collections";
 import { adminDb } from "@/lib/firebase/admin";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
@@ -183,35 +182,46 @@ export async function POST(req: Request) {
       handleCodeInApp: true
     });
 
-    // En desarrollo sin Resend, devolvemos el link en la respuesta para
-    // poder copiar/pegar y testear el flujo de inmediato.
-    const enviarPorEmail = !!process.env.RESEND_API_KEY;
-    if (enviarPorEmail) {
-      try {
-        await enviarEmailMagicLink({
-          to: email,
-          url: link,
-          nombreLocal,
-          rol: rolFinal
-        });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error enviando email";
-        return NextResponse.json(
-          { ok: false, error: `No pude enviar el email: ${msg}` },
-          { status: 500 }
-        );
-      }
-    }
+    // ─── MODO DEV: log del link en terminal, sin Resend ─────────────────
+    // Imprimimos el magic-link en la terminal donde corre `npm run dev`
+    // para poder copiarlo/pegarlo en el navegador sin necesidad de SMTP.
+    console.log("\n\n========== MAGIC LINK (DEV) ==========");
+    console.log(`Para: ${email} (${rolFinal})`);
+    console.log(link);
+    console.log("======================================\n\n");
+
+    // Resend deshabilitado temporalmente para destrabar el diseño.
+    // Para reactivarlo, descomentá el bloque de abajo y restaurá
+    // `sent: enviarPorEmail` / `devLink: !enviarPorEmail ? link : undefined`.
+    //
+    // const enviarPorEmail = !!process.env.RESEND_API_KEY;
+    // if (enviarPorEmail) {
+    //   try {
+    //     await enviarEmailMagicLink({
+    //       to: email,
+    //       url: link,
+    //       nombreLocal,
+    //       rol: rolFinal
+    //     });
+    //   } catch (err) {
+    //     const msg = err instanceof Error ? err.message : "Error enviando email";
+    //     return NextResponse.json(
+    //       { ok: false, error: `No pude enviar el email: ${msg}` },
+    //       { status: 500 }
+    //     );
+    //   }
+    // }
+    void nombreLocal;
 
     return NextResponse.json({
       ok: true,
-      sent: enviarPorEmail,
+      sent: false,
       role: rolFinal,
-      // Sólo en dev para poder hacer copy-paste rápido del link.
-      devLink: !enviarPorEmail ? link : undefined
+      devLink: link
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error desconocido";
+    console.error("[magic-link] error generando link:", err);
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

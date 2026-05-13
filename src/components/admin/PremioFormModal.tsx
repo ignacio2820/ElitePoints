@@ -10,6 +10,7 @@ export interface PremioFormValues {
   nombre: string;
   descripcion: string;
   costoHuellitas: number;
+  valorDescuento: number | null;
   stock: number | null;
   nivelMinimoId: string | null;
 }
@@ -32,6 +33,7 @@ export function PremioFormModal({
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [costoHuellitas, setCostoHuellitas] = useState("");
+  const [valorDescuento, setValorDescuento] = useState("");
   const [stock, setStock] = useState("");
   const [nivelMinimoId, setNivelMinimoId] = useState("");
   const [imagenFile, setImagenFile] = useState<File | null>(null);
@@ -45,6 +47,11 @@ export function PremioFormModal({
     setDescripcion(initial?.descripcion ?? "");
     setCostoHuellitas(
       initial?.costoHuellitas ? String(initial.costoHuellitas) : ""
+    );
+    setValorDescuento(
+      typeof initial?.valorDescuento === "number"
+        ? String(initial.valorDescuento)
+        : ""
     );
     setStock(
       initial?.stock === null || initial?.stock === undefined
@@ -82,10 +89,20 @@ export function PremioFormModal({
         throw new Error("El stock debe ser un número entero o vacío.");
       }
 
+      let valorDescuentoValue: number | null = null;
+      if (valorDescuento.trim() !== "") {
+        const v = Number(valorDescuento);
+        if (!Number.isFinite(v) || v < 0) {
+          throw new Error("El valor del descuento debe ser un número ≥ 0.");
+        }
+        valorDescuentoValue = Math.round(v * 100) / 100;
+      }
+
       const payload = {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
         costoHuellitas: costo,
+        valorDescuento: valorDescuentoValue,
         stock: stockValue,
         nivelMinimoId: nivelMinimoId || null
       };
@@ -179,6 +196,21 @@ export function PremioFormModal({
                 value={costoHuellitas}
                 onChange={(e) => setCostoHuellitas(e.target.value)}
                 required
+              />
+            </Field>
+
+            <Field
+              label="Valor del descuento ($)"
+              hint="Lo que descuenta este premio al canjearse. Vacío = se calcula automático con la configuración del local."
+            >
+              <input
+                className="input-elegant"
+                type="number"
+                min={0}
+                step="0.01"
+                value={valorDescuento}
+                onChange={(e) => setValorDescuento(e.target.value)}
+                placeholder="Ej: 2500"
               />
             </Field>
 
