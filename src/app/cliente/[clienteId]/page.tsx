@@ -1,5 +1,7 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ClienteView, type HistorialPuntoCliente } from "./ClienteView";
+import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { requiereAccesoClientePublico } from "@/lib/auth/clientePortal";
 import { getInfoLocal } from "@/lib/huellitas/localService";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
@@ -214,6 +216,7 @@ export default async function ClientePage({
   const reservadas = data.cliente.huellitasReservadas ?? 0;
   const saldoDisponible = Math.max(0, saldoBruto - reservadas);
   const modoDemo = params.clienteId === "demo";
+  const baseUrl = resolvePublicBaseUrl(headers());
 
   return (
     <ClienteView
@@ -221,6 +224,7 @@ export default async function ClientePage({
       cliente={data.cliente}
       cfg={data.cfg}
       nombreLocal={data.nombreLocal}
+      baseUrl={baseUrl}
       membresiaExpirada={membresiaExpirada}
       historialPuntos={data.historial}
       premios={data.premios}

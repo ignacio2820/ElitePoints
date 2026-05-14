@@ -155,12 +155,15 @@ export function BuscadorClientes({
                     <NivelBadge nivel={nivel} size="sm" />
                   </div>
 
-                  <div className="mt-3 flex items-center gap-3 rounded-xl bg-cream-50 px-3 py-2">
-                    <HuellitaIcon size={18} className="text-bark-500" />
-                    <div className="flex-1">
-                      <p className="font-display text-lg font-bold tabular-nums text-bark-700">
+                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-bark-100 bg-white px-3 py-2 shadow-sm">
+                    <HuellitaIcon
+                      size={18}
+                      className="shrink-0 text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-display text-lg font-black tabular-nums text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255),0_0_20px_rgba(255_255_255,0.75)]">
                         {formatNumber(c.saldoHuellitas)}
-                        <span className="ml-1 text-xs font-normal text-bark-400">
+                        <span className="ml-1 text-xs font-semibold text-bark-600">
                           / {formatARS(valorPesos)}
                         </span>
                       </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Upload, X } from "lucide-react";
+import { Camera, Loader2, X } from "lucide-react";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
 import { Field } from "@/components/ui/Field";
@@ -245,30 +245,44 @@ export function PremioFormModal({
             label="Imagen del premio"
             hint="Se comprime automáticamente antes de subirse."
           >
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="btn-ghost inline-flex cursor-pointer items-center gap-2">
-                <Upload size={16} />
-                Elegir imagen
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] ?? null;
-                    setImagenFile(file);
-                    setImagenPreview(file ? URL.createObjectURL(file) : initial?.imagen ?? null);
-                  }}
-                />
-              </label>
+            <label className="group relative flex min-h-[148px] cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-neutral-300 bg-emerald-50/40 px-4 py-6 text-center transition-colors hover:border-[#FB8500]">
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  setImagenFile(file);
+                  setImagenPreview(
+                    file ? URL.createObjectURL(file) : initial?.imagen ?? null
+                  );
+                }}
+              />
               {imagenPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={imagenPreview}
-                  alt="Vista previa"
-                  className="h-16 w-16 rounded-xl border border-bark-100 object-cover"
+                  alt="Vista previa del premio"
+                  className="max-h-40 w-full max-w-[200px] rounded-lg border border-bark-100 object-contain shadow-sm"
                 />
+              ) : (
+                <>
+                  <Camera
+                    className="h-10 w-10 text-neutral-400 transition-colors group-hover:text-[#FB8500]"
+                    strokeWidth={1.5}
+                    aria-hidden
+                  />
+                  <span className="max-w-[260px] text-sm font-medium text-neutral-700">
+                    Haz clic para subir imagen del premio
+                  </span>
+                </>
+              )}
+              {imagenPreview ? (
+                <span className="text-xs text-neutral-500 group-hover:text-[#FB8500]">
+                  Haz clic para cambiar la imagen
+                </span>
               ) : null}
-            </div>
+            </label>
           </Field>
 
           {error ? (

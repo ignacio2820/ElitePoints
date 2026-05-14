@@ -174,7 +174,7 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
               )}
               <p className="mt-1 text-xs text-bark-500">
                 Saldo:{" "}
-                <span className="font-semibold text-bark-700">
+                <span className="font-black text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255)]">
                   {formatNumber(seleccionado.saldoHuellitas)} Huellitas
                 </span>
                 {seleccionado.email && (
@@ -287,9 +287,9 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
                         {c.email || c.telefono || "—"}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs tabular-nums text-bark-400">
+                    <span className="shrink-0 text-xs font-black tabular-nums text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255)]">
                       {formatNumber(c.saldoHuellitas)}{" "}
-                      <span className="text-bark-300">Huellitas</span>
+                      <span className="font-semibold text-bark-500">Huellitas</span>
                     </span>
                   </button>
                 </li>

@@ -10,6 +10,34 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore";
 let _app: App | null = null;
 let _db: Firestore | null = null;
 
+/**
+ * Vercel y otros hosts suelen guardar la clave en una sola línea con `\n`
+ * literales (barra invertida + n). A veces viene entre comillas o con
+ * doble escape. Sin esto, `cert()` falla y parece "Admin no configurado".
+ */
+function normalizeFirebaseAdminPrivateKey(
+  raw: string | undefined
+): string | undefined {
+  if (raw == null) return undefined;
+  let key = String(raw).trim();
+  if (!key) return undefined;
+
+  if (
+    (key.startsWith('"') && key.endsWith('"')) ||
+    (key.startsWith("'") && key.endsWith("'"))
+  ) {
+    key = key.slice(1, -1).trim();
+  }
+
+  key = key.replace(/\\r\\n/g, "\n").replace(/\\r/g, "\n");
+  key = key.replace(/\\\\n/g, "\n");
+  key = key.replace(/\\n/g, "\n");
+  key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  key = key.trim();
+
+  return key || undefined;
+}
+
 function getAdminApp(): App {
   if (_app) return _app;
   const existing = getApps()[0];
@@ -20,7 +48,9 @@ function getAdminApp(): App {
 
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const privateKey = normalizeFirebaseAdminPrivateKey(
+    process.env.FIREBASE_ADMIN_PRIVATE_KEY
+  );
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(

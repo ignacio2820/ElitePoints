@@ -174,10 +174,13 @@ export default async function ScanClientePage({
             <CardDescription>Para canjear hoy.</CardDescription>
           </CardHeader>
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-4xl font-semibold text-bark-700">
+            <span className="font-display text-4xl font-black tabular-nums text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255),0_0_20px_rgba(255_255_255,0.9)]">
               {formatNumber(cliente.saldoHuellitas)}
             </span>
-            <HuellitaIcon size={20} className="text-bark-400" />
+            <HuellitaIcon
+              size={20}
+              className="text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
+            />
           </div>
           <div className="mt-1 text-sm text-bark-500">
             Equivalen a{" "}

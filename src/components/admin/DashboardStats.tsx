@@ -278,9 +278,12 @@ function CardTopMascotas({ mascotas }: { mascotas: MascotaRanking[] }) {
                   {m.compartido ? " · acumulado del hogar" : ""}
                 </p>
               </div>
-              <span className="flex shrink-0 items-center gap-1 tabular-nums text-bark-700">
-                <HuellitaIcon size={11} className="text-terracotta-400" />
-                <span className="font-display text-sm font-bold">
+              <span className="flex shrink-0 items-center gap-1 tabular-nums">
+                <HuellitaIcon
+                  size={11}
+                  className="text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
+                />
+                <span className="font-display text-sm font-black text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255),0_0_12px_rgba(255_255_255,0.85)]">
                   {formatNumber(m.huellitasAcumuladas)}
                 </span>
               </span>

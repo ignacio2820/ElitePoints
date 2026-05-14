@@ -102,6 +102,7 @@ export async function crearClienteConReferido(input: {
     email: (input.cliente.email ?? "").trim().toLowerCase(),
     telefono: input.cliente.telefono ?? "",
     saldoHuellitas: 0,
+    huellitasReservadas: 0,
     acumuladoHistorico: 0,
     nivelId: "cachorro",
     referidoActivado: false,

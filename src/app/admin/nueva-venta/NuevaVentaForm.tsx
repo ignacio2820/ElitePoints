@@ -460,20 +460,20 @@ function ResultadoVenta({
       </div>
 
       {/* Saldo destacado */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-amber-800/80">
+      <div className="rounded-2xl border-2 border-bark-100 bg-white p-6 text-center shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-widest text-bark-600">
           Nuevo saldo del cliente
         </p>
         <div className="mt-2 flex items-center justify-center gap-3">
           <HuellitaIcon
             size={36}
-            className="text-amber-600 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]"
+            className="text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
           />
-          <span className="font-display text-6xl font-bold text-amber-800 tabular-nums">
+          <span className="font-display text-6xl font-black tabular-nums text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255),0_0_28px_rgba(255_255_255,0.95)]">
             {formatNumber(resultado.saldoFinal ?? 0)}
           </span>
         </div>
-        <p className="mt-1 text-sm text-amber-800/80">
+        <p className="mt-1 text-sm text-bark-600">
           Huellitas vigentes (acumulado histórico:{" "}
           {formatNumber(resultado.acumuladoHistorico ?? 0)})
         </p>

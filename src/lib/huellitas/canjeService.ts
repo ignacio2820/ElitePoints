@@ -27,6 +27,11 @@ import type {
   Premio
 } from "./types";
 
+/**
+ * Canjes mutantes: crear ticket, cancelar y confirmar entrega usan siempre
+ * `Firestore.runTransaction` para leer saldo/lotes/premio y escribir en un
+ * solo commit atómico (sin doble descuento ni saldo negativo por carrera).
+ */
 const MAX_INTENTOS_CODIGO = 6;
 
 function calcularValorDescuento(
