@@ -1,18 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Fingerprint, Loader2 } from "lucide-react";
 import { startRegistration } from "@simplewebauthn/browser";
+import {
+  consultarPasskeySesionActual,
+  passkeysHabilitadosEnApp,
+  webAuthnDisponibleEnDispositivo
+} from "@/lib/auth/passkeys.client";
 
-export function RegistrarPasskeyButton() {
+interface Props {
+  onRegistrada?: () => void;
+  className?: string;
+}
+
+export function RegistrarPasskeyButton({
+  onRegistrada,
+  className
+}: Props = {}) {
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const [yaTiene, setYaTiene] = useState(false);
 
-  if (process.env.NEXT_PUBLIC_WEBAUTHN_ENABLED !== "true") {
+  useEffect(() => {
+    if (!passkeysHabilitadosEnApp()) return;
+    void consultarPasskeySesionActual().then((res) => {
+      if (res.tieneCredenciales) setYaTiene(true);
+    });
+  }, []);
+
+  if (!passkeysHabilitadosEnApp()) {
     return null;
   }
 
   async function registrar() {
+    const web = webAuthnDisponibleEnDispositivo();
+    if (!web.disponible) {
+      setMensaje(web.mensaje ?? "Huella no disponible en este dispositivo.");
+      return;
+    }
+
     setCargando(true);
     setMensaje(null);
     try {
@@ -37,7 +64,11 @@ export function RegistrarPasskeyButton() {
       if (!verifyRes.ok || !verifyData.ok) {
         throw new Error(verifyData.error ?? "Registro fallido.");
       }
-      setMensaje("Passkey registrada. La próxima vez podés ingresar con huella.");
+      setYaTiene(true);
+      setMensaje(
+        "Huella registrada y vinculada a tu cuenta. La próxima vez podés ingresar desde el login."
+      );
+      onRegistrada?.();
     } catch (err) {
       setMensaje(err instanceof Error ? err.message : "Error");
     } finally {
@@ -45,23 +76,45 @@ export function RegistrarPasskeyButton() {
     }
   }
 
+  if (yaTiene) {
+    return (
+      <p className="text-sm text-emerald-700">
+        Ya tenés una huella o passkey activa en esta cuenta. Podés registrar otra
+        desde otro dispositivo si lo necesitás.
+      </p>
+    );
+  }
+
   return (
-    <div className="mt-2">
+    <div className={className}>
       <button
         type="button"
         onClick={() => void registrar()}
         disabled={cargando}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-bark-600 hover:text-terracotta-500"
+        className="btn-primary inline-flex items-center gap-2"
       >
         {cargando ? (
-          <Loader2 size={12} className="animate-spin" />
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Registrando…
+          </>
         ) : (
-          <Fingerprint size={12} />
+          <>
+            <Fingerprint size={16} />
+            Activar huella / passkey
+          </>
         )}
-        Activar huella / passkey
       </button>
       {mensaje ? (
-        <p className="mt-1 text-[11px] text-bark-500">{mensaje}</p>
+        <p
+          className={`mt-2 text-sm ${
+            mensaje.includes("registrada") || mensaje.includes("vinculada")
+              ? "text-emerald-700"
+              : "text-rose-700"
+          }`}
+        >
+          {mensaje}
+        </p>
       ) : null}
     </div>
   );

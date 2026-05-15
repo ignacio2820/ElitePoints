@@ -73,7 +73,7 @@ export default async function ConfiguracionPage() {
             email del magic link.
           </CardDescription>
         </CardHeader>
-        <RegistrarPasskeyButton />
+        <RegistrarPasskeyButton className="px-1 pb-2" />
       </Card>
 
       <Card>

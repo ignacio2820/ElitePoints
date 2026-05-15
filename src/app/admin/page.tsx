@@ -8,6 +8,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ActivarPasskeyAviso } from "@/components/admin/ActivarPasskeyAviso";
 import { AlertasCanjeDashboard } from "@/components/admin/AlertasCanjeDashboard";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { requireAdmin } from "@/lib/auth/server";
@@ -72,6 +73,8 @@ export default async function AdminDashboard() {
           </div>
         </div>
       </Link>
+
+      <ActivarPasskeyAviso uid={sesion.uid} />
 
       <AlertasCanjeDashboard localId={localId} />
 

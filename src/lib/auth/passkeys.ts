@@ -42,6 +42,34 @@ function passkeysCol() {
   return adminDb().collection("Passkeys");
 }
 
+/** ID estable en base64url (mismo formato que envía el navegador en login). */
+export function normalizarCredentialId(id: string | Uint8Array | ArrayBuffer): string {
+  if (typeof id === "string") return id;
+  const buf = id instanceof ArrayBuffer ? Buffer.from(id) : Buffer.from(id);
+  return buf.toString("base64url");
+}
+
+export async function contarPasskeysPorEmail(email: string): Promise<number> {
+  const normalized = email.trim().toLowerCase();
+  const snap = await passkeysCol().where("email", "==", normalized).get();
+  return snap.size;
+}
+
+export async function contarPasskeysPorUid(uid: string): Promise<number> {
+  const snap = await passkeysCol().where("uid", "==", uid).get();
+  return snap.size;
+}
+
+export class PasskeyFlowError extends Error {
+  constructor(
+    message: string,
+    public readonly code: "NO_CREDENTIALS" | "WEBAUTHN_DISABLED"
+  ) {
+    super(message);
+    this.name = "PasskeyFlowError";
+  }
+}
+
 export async function passkeyRegistrationOptions(uid: string, email: string) {
   const existing = await passkeysCol().where("uid", "==", uid).get();
   const excludeCredentials = existing.docs.map((d) => {
@@ -99,7 +127,7 @@ export async function passkeyRegistrationVerify(
 
   const { credential, credentialDeviceType, credentialBackedUp } =
     verification.registrationInfo;
-  const credentialId = Buffer.from(credential.id).toString("base64url");
+  const credentialId = normalizarCredentialId(response.id);
 
   await passkeysCol().doc(credentialId).set({
     uid,
@@ -120,7 +148,10 @@ export async function passkeyLoginOptions(email: string) {
   const normalized = email.trim().toLowerCase();
   const snap = await passkeysCol().where("email", "==", normalized).get();
   if (snap.empty) {
-    throw new Error("No hay passkeys registradas para este email.");
+    throw new PasskeyFlowError(
+      "No hay passkeys registradas para este email.",
+      "NO_CREDENTIALS"
+    );
   }
 
   const allowCredentials = snap.docs.map((d) => {
@@ -151,12 +182,16 @@ export async function passkeyLoginVerify(
   response: AuthenticationResponseJSON
 ): Promise<{ customToken: string; uid: string }> {
   const normalized = email.trim().toLowerCase();
-  const credentialId = response.id;
+  const credentialId = normalizarCredentialId(response.id);
   const credSnap = await passkeysCol().doc(credentialId).get();
   if (!credSnap.exists) {
     throw new Error("Passkey no reconocida.");
   }
   const cred = credSnap.data() as PasskeyDoc;
+
+  if (cred.email !== normalized) {
+    throw new Error("Esta passkey no corresponde al email ingresado.");
+  }
 
   const chSnap = await adminDb()
     .collection("PasskeyChallenges")

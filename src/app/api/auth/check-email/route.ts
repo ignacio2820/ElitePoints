@@ -3,6 +3,7 @@ import { z } from "zod";
 import { adminAuth } from "@/lib/firebase/admin";
 import { assertAllowedAuthRequest } from "@/lib/auth/allowedOrigins";
 import { buscarClientePorEmailGlobal } from "@/lib/huellitas/clientesService";
+import { contarPasskeysPorEmail, passkeysHabilitados } from "@/lib/auth/passkeys";
 
 export const runtime = "nodejs";
 
@@ -42,10 +43,13 @@ export async function POST(req: Request) {
       const u = await auth.getUserByEmail(email);
       const claims = u.customClaims ?? {};
       if (claims.role === "admin" && typeof claims.localId === "string") {
+        const passkeys =
+          passkeysHabilitados() ? await contarPasskeysPorEmail(email) : 0;
         return NextResponse.json({
           ok: true,
           role: "admin" as const,
-          tienePassword: u.providerData.some((p) => p.providerId === "password")
+          tienePassword: u.providerData.some((p) => p.providerId === "password"),
+          tienePasskey: passkeys > 0
         });
       }
     } catch {

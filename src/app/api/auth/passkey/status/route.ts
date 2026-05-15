@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAllowedAuthRequest } from "@/lib/auth/allowedOrigins";
 import {
-  PasskeyFlowError,
-  passkeyLoginOptions,
+  contarPasskeysPorEmail,
   passkeysHabilitados
 } from "@/lib/auth/passkeys";
 
@@ -18,10 +17,11 @@ const MENSAJE_SIN_PASSKEY =
 
 export async function POST(req: Request) {
   if (!passkeysHabilitados()) {
-    return NextResponse.json(
-      { ok: false, code: "NOT_ENABLED", error: "Passkeys no habilitadas." },
-      { status: 404 }
-    );
+    return NextResponse.json({
+      ok: false,
+      code: "NOT_ENABLED",
+      error: "Passkeys no habilitadas."
+    });
   }
 
   try {
@@ -40,28 +40,23 @@ export async function POST(req: Request) {
 
   const parsed = Body.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json(
-      { ok: false, error: parsed.error.issues[0]?.message ?? "Email inválido" },
-      { status: 400 }
-    );
+    return NextResponse.json({ ok: false, error: "Email inválido" }, { status: 400 });
   }
 
-  try {
-    const options = await passkeyLoginOptions(parsed.data.email);
-    return NextResponse.json({ ok: true, options, tieneCredenciales: true });
-  } catch (err) {
-    if (err instanceof PasskeyFlowError && err.code === "NO_CREDENTIALS") {
-      return NextResponse.json(
-        {
-          ok: false,
-          code: "NO_CREDENTIALS",
-          tieneCredenciales: false,
-          error: MENSAJE_SIN_PASSKEY
-        },
-        { status: 400 }
-      );
-    }
-    const msg = err instanceof Error ? err.message : "Error";
-    return NextResponse.json({ ok: false, error: msg }, { status: 400 });
+  const total = await contarPasskeysPorEmail(parsed.data.email);
+
+  if (total === 0) {
+    return NextResponse.json({
+      ok: false,
+      tieneCredenciales: false,
+      code: "NO_CREDENTIALS",
+      error: MENSAJE_SIN_PASSKEY
+    });
   }
+
+  return NextResponse.json({
+    ok: true,
+    tieneCredenciales: true,
+    webAuthnDisponible: true
+  });
 }
