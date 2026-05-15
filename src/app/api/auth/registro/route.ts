@@ -11,6 +11,7 @@ import {
   vincularUsuarioACliente
 } from "@/lib/huellitas/clientesService";
 import { crearClienteConReferido } from "@/lib/huellitas/referidosService";
+import { mayExposeDevMagicLink } from "@/lib/auth/allowedOrigins";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
 import { EspecieSchema } from "@/lib/huellitas/types";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
@@ -207,7 +208,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       sent: enviarPorEmail,
-      devLink: !enviarPorEmail ? link : undefined,
+      devLink:
+        !enviarPorEmail && mayExposeDevMagicLink() ? link : undefined,
       clienteId: created.clienteId,
       codigoReferido: created.codigoReferido,
       localId,

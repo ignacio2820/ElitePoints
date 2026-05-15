@@ -1,3 +1,4 @@
+import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 
 export interface MascotPointsFooterProps {
@@ -34,6 +35,14 @@ export function MascotPointsFooter({
     >
       <p>
         {creditLabel} <MascotPointsBrand /> · Agencia WebElite SOLUTIONS
+      </p>
+      <p className="mt-1">
+        <a
+          href={mailtoContact()}
+          className="font-medium text-bark-600 underline-offset-2 hover:underline"
+        >
+          {CONTACT_EMAIL}
+        </a>
       </p>
     </footer>
   );

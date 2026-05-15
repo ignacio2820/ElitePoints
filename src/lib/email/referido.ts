@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { emailFromAddress } from "@/lib/email/fromAddress";
 
 let _resend: Resend | null = null;
 function resend(): Resend {
@@ -76,7 +77,7 @@ export function renderEmailReferidoActivado(p: PayloadReferidoActivado): {
 export async function enviarEmailReferidoActivado(
   p: PayloadReferidoActivado
 ): Promise<void> {
-  const from = process.env.RESEND_FROM ?? "Huellitas <hola@huellitas.app>";
+  const from = emailFromAddress();
   const { subject, html, text } = renderEmailReferidoActivado(p);
   await resend().emails.send({
     from,

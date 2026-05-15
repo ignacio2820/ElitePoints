@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { ImageIcon, Phone, Save, Store } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
+import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
 import type { InfoLocal } from "@/lib/huellitas/localService";
 
 const LOGO_ACCEPT = "image/jpeg,image/png,.jpg,.jpeg,.png";
@@ -92,8 +93,9 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
     setUploadingLogo(true);
 
     try {
+      const comprimida = await comprimirImagenEnCliente(file);
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", comprimida);
       const res = await fetch("/api/admin/local/logo", {
         method: "POST",
         body: form

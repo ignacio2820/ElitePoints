@@ -16,9 +16,12 @@
     "check-user": "tsx scripts/check-admin.ts",
     "migrar-codigos": "tsx scripts/migrar-codigos-clientes.ts",
     "listar-clientes": "tsx scripts/listar-clientes.ts",
-    "borrar-cliente": "tsx scripts/borrar-cliente.ts"
+    "borrar-cliente": "tsx scripts/borrar-cliente.ts",
+    "purgar-firestore": "tsx scripts/purgar-firestore.ts"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^11.0.0",
+    "@simplewebauthn/server": "^11.0.0",
     "clsx": "^2.1.1",
     "firebase": "^10.13.2",
     "firebase-admin": "^12.4.0",

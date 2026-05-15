@@ -16,8 +16,12 @@ import {
 } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { Field } from "@/components/ui/Field";
+import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
+import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
 import { nombreASlug } from "@/lib/huellitas/slug";
 import { registrarPetShop, type OnboardingState } from "./actions";
+
+const LOGO_ACCEPT = "image/jpeg,image/png,.jpg,.jpeg,.png";
 
 /**
  * Formulario de onboarding del Pet Shop.
@@ -47,7 +51,8 @@ function Formulario({
   formAction: (fd: FormData) => void;
 }) {
   const [nombreLocal, setNombreLocal] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
   const slugPreview = useMemo(() => nombreASlug(nombreLocal), [nombreLocal]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -122,7 +127,11 @@ function Formulario({
                 </p>
               </div>
 
-              <form action={formAction} className="mt-8 space-y-5 lg:mt-0">
+              <form
+                action={formAction}
+                encType="multipart/form-data"
+                className="mt-8 space-y-5 lg:mt-0"
+              >
                 <CampoConIcono
                   label="Nombre del local"
                   hint={
@@ -182,33 +191,68 @@ function Formulario({
 
                 <Field
                   label="Logo del local"
-                  hint="Pegá la URL pública de tu logo. Después podés subir un archivo desde Configuración."
+                  hint="JPG, JPEG o PNG. Se comprime automáticamente para cargar más rápido."
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-bark-100 bg-white px-3 py-3 transition focus-within:border-bark-400 focus-within:ring-2 focus-within:ring-bark-300/30">
-                      <ImageIcon size={16} className="shrink-0 text-bark-400" />
-                      <input
-                        type="url"
-                        name="logoUrl"
-                        value={logoUrl}
-                        onChange={(e) => setLogoUrl(e.target.value)}
-                        placeholder="https://..."
-                        required
-                        maxLength={500}
-                        className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300"
-                      />
-                    </div>
-                    {logoUrl && /^https?:\/\//.test(logoUrl) && (
+                  <div className="flex flex-wrap items-start gap-4">
+                    {logoPreview ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={logoUrl}
+                        src={logoPreview}
                         alt="Vista previa del logo"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = "none";
-                        }}
-                        className="h-12 w-12 shrink-0 rounded-xl border border-amber-200/70 bg-white object-cover shadow-soft"
+                        className="h-14 w-14 shrink-0 rounded-xl border border-amber-200/70 bg-white object-cover shadow-soft"
                       />
+                    ) : (
+                      <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-bark-200 bg-cream-50 text-bark-300">
+                        <ImageIcon size={22} />
+                      </div>
                     )}
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <input
+                        type="file"
+                        name="logo"
+                        accept={LOGO_ACCEPT}
+                        required
+                        className="block w-full cursor-pointer text-sm text-bark-600 file:mr-3 file:rounded-xl file:border file:border-amber-200/80 file:bg-cream-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-bark-700"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          setLogoError(null);
+                          if (!file) {
+                            setLogoPreview(null);
+                            return;
+                          }
+                          const tipo = file.type.toLowerCase();
+                          const nombre = file.name.toLowerCase();
+                          const ok =
+                            tipo === "image/jpeg" ||
+                            tipo === "image/png" ||
+                            nombre.endsWith(".jpg") ||
+                            nombre.endsWith(".jpeg") ||
+                            nombre.endsWith(".png");
+                          if (!ok) {
+                            setLogoError("Solo JPG, JPEG o PNG.");
+                            e.target.value = "";
+                            return;
+                          }
+                          try {
+                            const comprimida = await comprimirImagenEnCliente(file);
+                            setLogoPreview(URL.createObjectURL(comprimida));
+                            const dt = new DataTransfer();
+                            dt.items.add(comprimida);
+                            e.target.files = dt.files;
+                          } catch (err) {
+                            setLogoError(
+                              err instanceof Error
+                                ? err.message
+                                : "No pudimos procesar la imagen."
+                            );
+                            e.target.value = "";
+                          }
+                        }}
+                      />
+                      {logoError ? (
+                        <p className="text-xs text-rose-600">{logoError}</p>
+                      ) : null}
+                    </div>
                   </div>
                 </Field>
 
@@ -362,10 +406,10 @@ function ExitoPanel({
         <p className="mt-8 text-xs text-bark-400">
           ¿Necesitás ayuda? Escribinos a{" "}
           <a
-            href="mailto:hola@huellitas.app"
+            href={mailtoContact()}
             className="font-semibold text-bark-700 underline underline-offset-2"
           >
-            hola@huellitas.app
+            {CONTACT_EMAIL}
           </a>
           .
         </p>

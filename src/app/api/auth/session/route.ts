@@ -8,6 +8,7 @@ import {
   SESSION_COOKIE_OPTIONS
 } from "@/lib/auth/server";
 import { esRolValido, type Rol } from "@/lib/auth/types";
+import { assertAllowedAuthRequest } from "@/lib/auth/allowedOrigins";
 
 export const runtime = "nodejs";
 
@@ -48,6 +49,13 @@ async function claimsDesdeSesion(decoded: DecodedIdToken): Promise<{
  * navegador llevan la cookie automáticamente.
  */
 export async function POST(req: Request) {
+  try {
+    assertAllowedAuthRequest(req);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Origen no autorizado";
+    return NextResponse.json({ ok: false, error: msg }, { status: 403 });
+  }
+
   let raw: unknown;
   try {
     raw = await req.json();

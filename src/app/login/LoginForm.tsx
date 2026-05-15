@@ -13,6 +13,8 @@ import {
   User
 } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PasskeyLoginButton } from "@/components/auth/PasskeyLoginButton";
+import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
 import {
   pedirMagicLink,
   registrarseYRecibirMagicLink,
@@ -167,6 +169,7 @@ export function LoginForm() {
                 onSubmit={onLogin}
                 enviando={enviando}
                 error={error}
+                onError={setError}
                 onIrARegistro={() => {
                   reset();
                   if (!localId) {
@@ -206,7 +209,13 @@ export function LoginForm() {
         </div>
 
         <p className="mt-6 text-center text-xs text-bark-100">
-          Tenés problemas para entrar? Pedile al local que verifique tu email.
+          ¿Problemas para entrar?{" "}
+          <a
+            href={mailtoContact()}
+            className="font-semibold text-white underline underline-offset-2"
+          >
+            {CONTACT_EMAIL}
+          </a>
         </p>
 
         <div className="surface-card mt-4 rounded-3xl p-4 text-center">
@@ -235,6 +244,7 @@ function FormIngresar({
   onSubmit,
   enviando,
   error,
+  onError,
   onIrARegistro,
   registroDisponible
 }: {
@@ -243,6 +253,7 @@ function FormIngresar({
   onSubmit: (e: React.FormEvent) => void;
   enviando: boolean;
   error: string | null;
+  onError: (msg: string) => void;
   onIrARegistro: () => void;
   registroDisponible: boolean;
 }) {
@@ -279,6 +290,13 @@ function FormIngresar({
           </>
         )}
       </button>
+
+      <PasskeyLoginButton
+        email={email}
+        disabled={enviando}
+        onSuccess={() => undefined}
+        onError={onError}
+      />
 
       <div className="text-center text-sm text-bark-500">
         ¿No tenés cuenta?{" "}

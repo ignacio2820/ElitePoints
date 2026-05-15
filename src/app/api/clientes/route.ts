@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
-import {
-  generarCodigoSugerido,
-  normalizarCodigo
-} from "@/lib/huellitas/referidos";
+import { normalizarCodigo } from "@/lib/huellitas/referidos";
 
 export const runtime = "nodejs";
 
@@ -60,16 +57,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error desconocido";
-    // Modo demo: si Firebase Admin no está configurado, devolvemos OK con
-    // un código generado localmente para que el flujo de UI siga funcionando.
-    if (msg.includes("Firebase Admin")) {
-      return NextResponse.json({
-        ok: true,
-        clienteId: "demo-" + Math.floor(Math.random() * 1e6),
-        codigoReferido: generarCodigoSugerido(data.nombre),
-        referidoPor: data.codigoReferido
-      });
-    }
     return NextResponse.json({ ok: false, error: msg }, { status: 400 });
   }
 }

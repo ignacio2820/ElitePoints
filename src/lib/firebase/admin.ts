@@ -11,48 +11,83 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore";
 let _app: App | null = null;
 let _db: Firestore | null = null;
 
-function getAdminApp(): App {
-  if (getApps().length > 0) {
-    return getApp();
+function normalizePrivateKey(raw: string | undefined): string | undefined {
+  if (raw == null) return undefined;
+  let key = String(raw).trim();
+  if (!key) return undefined;
+
+  if (
+    (key.startsWith('"') && key.endsWith('"')) ||
+    (key.startsWith("'") && key.endsWith("'"))
+  ) {
+    key = key.slice(1, -1).trim();
   }
 
-  const base64Key = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  key = key.replace(/\\r\\n/g, "\n").replace(/\\r/g, "\n");
+  key = key.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n");
+  return key.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim() || undefined;
+}
 
+function initFromServiceAccountJson(serviceAccount: {
+  project_id: string;
+  client_email: string;
+  private_key: string;
+}): App {
+  const privateKey =
+    normalizePrivateKey(serviceAccount.private_key) ?? serviceAccount.private_key;
+
+  return initializeApp({
+    credential: cert({
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email,
+      privateKey
+    }),
+    projectId: serviceAccount.project_id,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+  });
+}
+
+function getAdminApp(): App {
+  if (_app) return _app;
+  if (getApps().length > 0) {
+    _app = getApp();
+    return _app;
+  }
+
+  const base64Key = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64?.trim();
   if (base64Key) {
     try {
-      // Decodificamos el JSON completo para evitar errores de caracteres o saltos de línea
       const serviceAccount = JSON.parse(
         Buffer.from(base64Key, "base64").toString("utf-8")
-      );
-      
-      _app = initializeApp({
-        credential: cert(serviceAccount),
-        // La URL se saca directamente del JSON decodificado
-        databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`,
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-      });
-      
-      console.log("Firebase Admin inicializado con éxito vía Base64");
+      ) as {
+        project_id: string;
+        client_email: string;
+        private_key: string;
+      };
+      _app = initFromServiceAccountJson(serviceAccount);
       return _app;
     } catch (error) {
-      console.error("Error decodificando la clave Base64:", error);
-      throw error;
+      const msg =
+        error instanceof Error ? error.message : "JSON de cuenta inválido";
+      throw new Error(
+        `FIREBASE_SERVICE_ACCOUNT_BASE64 inválido: ${msg}. En Vercel pegá el JSON del service account codificado en Base64.`
+      );
     }
   }
 
-  // Fallback por si la variable Base64 no está (mantiene compatibilidad temporal)
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID?.trim();
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL?.trim();
+  const privateKey = normalizePrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
 
   if (!projectId || !clientEmail || !privateKey) {
-    throw new Error("Falta la configuración de Firebase Admin (Base64 o Variables individuales).");
+    throw new Error(
+      "Firebase Admin no configurado. Definí FIREBASE_SERVICE_ACCOUNT_BASE64 (recomendado en Vercel) o FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL y FIREBASE_ADMIN_PRIVATE_KEY."
+    );
   }
 
   _app = initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
     projectId,
-    databaseURL: `https://${projectId}.firebaseio.com`,
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
   });
 
@@ -61,15 +96,12 @@ function getAdminApp(): App {
 
 export function adminDb(): Firestore {
   if (_db) return _db;
-  const app = getAdminApp();
-  const fs = getFirestore(app);
-  
+  const fs = getFirestore(getAdminApp());
   try {
     fs.settings({ ignoreUndefinedProperties: true });
-  } catch (e) {
-    // Ignorar si ya está inicializado
+  } catch {
+    // Ya configurado (HMR)
   }
-  
   _db = fs;
   return _db;
 }

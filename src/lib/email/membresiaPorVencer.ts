@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { emailFromAddress } from "@/lib/email/fromAddress";
 
 let _resend: Resend | null = null;
 function resend(): Resend {
@@ -53,7 +54,7 @@ export function renderEmailMembresiaPorVencer(p: PayloadMembresiaPorVencer): {
 export async function enviarEmailMembresiaPorVencer(
   payload: PayloadMembresiaPorVencer
 ): Promise<void> {
-  const from = process.env.RESEND_FROM ?? "Huellitas <onboarding@resend.dev>";
+  const from = emailFromAddress();
   const { subject, html, text } = renderEmailMembresiaPorVencer(payload);
   await resend().emails.send({
     from,

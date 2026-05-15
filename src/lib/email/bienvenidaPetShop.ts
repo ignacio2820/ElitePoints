@@ -1,4 +1,6 @@
 import { Resend } from "resend";
+import { CONTACT_EMAIL } from "@/lib/contact";
+import { emailFromAddress } from "@/lib/email/fromAddress";
 
 let _resend: Resend | null = null;
 function resend(): Resend {
@@ -106,7 +108,7 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
 
             <p style="font-size:13px;color:#54331A;line-height:1.5;margin:28px 0 0;">
               ¿Tenés dudas o querés que ajustemos algo? Respondé este email o escribinos a
-              <a href="mailto:hola@huellitas.app" style="color:#8B6914;font-weight:600;">hola@huellitas.app</a>.
+              <a href="mailto:${CONTACT_EMAIL}" style="color:#8B6914;font-weight:600;">${CONTACT_EMAIL}</a>.
             </p>
           </td></tr>
 
@@ -124,7 +126,7 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
   </body>
 </html>`;
 
-  const text = `¡Bienvenido a Huellitas!\n\n${p.nombreLocal} ya está activo.\n\nEntrá al panel:\n${p.magicLink}\n\nPrimeros 5 minutos:\n${tipsTexto.join("\n")}\n\nIdentificador de tu local: ${p.slugLocal}\nTus clientes acceden desde: ${p.baseUrl}/login\n\nSoporte: hola@huellitas.app\n\nSin contraseñas. El link expira en 1 hora y solo puede usarse una vez.\n`;
+  const text = `¡Bienvenido a Huellitas!\n\n${p.nombreLocal} ya está activo.\n\nEntrá al panel:\n${p.magicLink}\n\nPrimeros 5 minutos:\n${tipsTexto.join("\n")}\n\nIdentificador de tu local: ${p.slugLocal}\nTus clientes acceden desde: ${p.baseUrl}/login\n\nSoporte: ${CONTACT_EMAIL}\n\nSin contraseñas. El link expira en 1 hora y solo puede usarse una vez.\n`;
 
   return { subject, html, text };
 }
@@ -132,7 +134,7 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
 export async function enviarEmailBienvenidaPetShop(
   p: PayloadBienvenida
 ): Promise<void> {
-  const from = process.env.RESEND_FROM ?? "Huellitas <hola@huellitas.app>";
+  const from = emailFromAddress();
   const { subject, html, text } = renderEmailBienvenidaPetShop(p);
   await resend().emails.send({
     from,

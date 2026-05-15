@@ -7,6 +7,11 @@ import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
 import { cols } from "@/lib/firebase/collections";
 import { adminDb } from "@/lib/firebase/admin";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
+import {
+  assertAllowedAuthRequest,
+  mayExposeDevMagicLink
+} from "@/lib/auth/allowedOrigins";
+import { enviarEmailMagicLink } from "@/lib/email/magicLink";
 
 export const runtime = "nodejs";
 
@@ -23,6 +28,13 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  try {
+    assertAllowedAuthRequest(req);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Origen no autorizado";
+    return NextResponse.json({ ok: false, error: msg }, { status: 403 });
+  }
+
   let raw: unknown;
   try {
     raw = await req.json();
@@ -67,7 +79,6 @@ export async function POST(req: Request) {
     }
 
     if (intent === "admin") {
-      // Forzar admin: si no es admin, 403 sin crear cuenta fantasma.
       const chk = await chequearAdmin();
       if (!chk.admin) {
         return NextResponse.json(
@@ -87,8 +98,6 @@ export async function POST(req: Request) {
         (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
         chk.localId;
     } else if (intent === "cliente") {
-      // Protección crítica: si el user existente ya es admin en Auth,
-      // NUNCA pisamos sus claims con "cliente". Lo tratamos como admin.
       const chk = await chequearAdmin();
       if (chk.admin) {
         uid = chk.uid;
@@ -125,8 +134,6 @@ export async function POST(req: Request) {
           cli.localId;
       }
     } else {
-      // intent === "auto": detectamos el rol automáticamente.
-      // 1) Primero probamos admin (no requiere DB beyond Auth).
       const chk = await chequearAdmin();
       if (chk.admin) {
         uid = chk.uid;
@@ -136,7 +143,6 @@ export async function POST(req: Request) {
           (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
           chk.localId;
       } else {
-        // 2) Si no es admin, buscamos como cliente registrado.
         const cli = await buscarClientePorEmailGlobal(email);
         if (!cli) {
           return NextResponse.json(
@@ -166,9 +172,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // Genera el link de magic-link nativo de Firebase.
-    // El destino siempre es /login/verify para que el cliente complete el
-    // sign-in y el redirect post-login se decide ahí según el rol detectado.
     const redirectFinal =
       redirect ??
       (rolFinal === "admin" ? "/admin" : rolFinal === "cliente" ? "/mi-cuenta" : undefined);
@@ -182,42 +185,34 @@ export async function POST(req: Request) {
       handleCodeInApp: true
     });
 
-    // ─── MODO DEV: log del link en terminal, sin Resend ─────────────────
-    // Imprimimos el magic-link en la terminal donde corre `npm run dev`
-    // para poder copiarlo/pegarlo en el navegador sin necesidad de SMTP.
-    console.log("\n\n========== MAGIC LINK (DEV) ==========");
-    console.log(`Para: ${email} (${rolFinal})`);
-    console.log(link);
-    console.log("======================================\n\n");
-
-    // Resend deshabilitado temporalmente para destrabar el diseño.
-    // Para reactivarlo, descomentá el bloque de abajo y restaurá
-    // `sent: enviarPorEmail` / `devLink: !enviarPorEmail ? link : undefined`.
-    //
-    // const enviarPorEmail = !!process.env.RESEND_API_KEY;
-    // if (enviarPorEmail) {
-    //   try {
-    //     await enviarEmailMagicLink({
-    //       to: email,
-    //       url: link,
-    //       nombreLocal,
-    //       rol: rolFinal
-    //     });
-    //   } catch (err) {
-    //     const msg = err instanceof Error ? err.message : "Error enviando email";
-    //     return NextResponse.json(
-    //       { ok: false, error: `No pude enviar el email: ${msg}` },
-    //       { status: 500 }
-    //     );
-    //   }
-    // }
-    void nombreLocal;
+    const enviarPorEmail = !!process.env.RESEND_API_KEY;
+    if (enviarPorEmail) {
+      try {
+        await enviarEmailMagicLink({
+          to: email,
+          url: link,
+          nombreLocal,
+          rol: rolFinal
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error enviando email";
+        return NextResponse.json(
+          { ok: false, error: `No pude enviar el email: ${msg}` },
+          { status: 500 }
+        );
+      }
+    } else if (mayExposeDevMagicLink()) {
+      console.log("\n========== MAGIC LINK (DEV) ==========");
+      console.log(`Para: ${email} (${rolFinal})`);
+      console.log(link);
+      console.log("======================================\n");
+    }
 
     return NextResponse.json({
       ok: true,
-      sent: false,
+      sent: enviarPorEmail,
       role: rolFinal,
-      devLink: link
+      devLink: !enviarPorEmail && mayExposeDevMagicLink() ? link : undefined
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error desconocido";

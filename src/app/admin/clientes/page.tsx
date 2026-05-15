@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth/server";
 import { listarClientes } from "@/lib/huellitas/clientesService";
+import { listarPremiosAdmin } from "@/lib/huellitas/premiosService";
 import { getConfiguracion } from "@/lib/huellitas/service";
 import { CONFIGURACION_DEFAULT } from "@/lib/huellitas/types";
 import { BuscadorClientes } from "@/components/admin/BuscadorClientes";
@@ -22,10 +23,16 @@ export default async function ClientesPage() {
   }
 
   let cfg = { ...CONFIGURACION_DEFAULT, localId };
+  let premios: Awaited<ReturnType<typeof listarPremiosAdmin>> = [];
   try {
     cfg = await getConfiguracion(localId);
   } catch {
     // Mantenemos defaults para que el panel se renderice aunque falle la config.
+  }
+  try {
+    premios = await listarPremiosAdmin(localId);
+  } catch {
+    // El canje manual requiere premios; si falla, el modal mostrará lista vacía.
   }
 
   return (
@@ -51,6 +58,7 @@ export default async function ClientesPage() {
 
       <BuscadorClientes
         clientesIniciales={clientesIniciales}
+        premios={premios}
         niveles={cfg.niveles}
         valorMonetarioHuellita={cfg.valorMonetarioHuellita}
         montoParaUnaHuellita={cfg.montoParaUnaHuellita}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { ConfiguracionForm } from "@/components/ConfiguracionForm";
 import { DatosLocalForm } from "@/components/admin/DatosLocalForm";
 import { GenerarQrPosterButton } from "@/components/admin/GenerarQrPosterButton";
+import { RegistrarPasskeyButton } from "@/components/auth/RegistrarPasskeyButton";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getSesion } from "@/lib/auth/server";
 import {
@@ -58,6 +59,19 @@ export default async function ConfiguracionPage() {
       </header>
 
       <DatosLocalForm initial={info} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-bark-700">
+            Acceso con huella o passkey
+          </CardTitle>
+          <CardDescription className="text-bark-600">
+            Registrá una passkey en este dispositivo para entrar sin esperar el
+            email del magic link.
+          </CardDescription>
+        </CardHeader>
+        <RegistrarPasskeyButton />
+      </Card>
 
       <Card>
         <CardHeader>

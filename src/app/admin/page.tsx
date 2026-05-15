@@ -8,6 +8,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { AlertasCanjeDashboard } from "@/components/admin/AlertasCanjeDashboard";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { requireAdmin } from "@/lib/auth/server";
 import { getInfoLocal } from "@/lib/huellitas/localService";
@@ -71,6 +72,8 @@ export default async function AdminDashboard() {
           </div>
         </div>
       </Link>
+
+      <AlertasCanjeDashboard localId={localId} />
 
       <DashboardStats localId={localId} />
 

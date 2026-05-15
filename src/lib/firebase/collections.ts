@@ -66,5 +66,13 @@ export const cols = {
     db.collection(`Locales/${localId}/CodigosClientes`),
 
   codigoCliente: (db: Firestore, localId: string, codigoDocId: string) =>
-    db.doc(`Locales/${localId}/CodigosClientes/${codigoDocId}`)
+    db.doc(`Locales/${localId}/CodigosClientes/${codigoDocId}`),
+
+  /** Auditoría de canjes completados (app, manual, confirmación en caja). */
+  logsCanjes: (db: Firestore, localId: string) =>
+    db.collection(`Locales/${localId}/logs_canjes`),
+
+  /** Alertas en tiempo casi-real para el dashboard del dueño. */
+  notificacionesCanjes: (db: Firestore, localId: string) =>
+    db.collection(`Locales/${localId}/NotificacionesCanje`)
 };

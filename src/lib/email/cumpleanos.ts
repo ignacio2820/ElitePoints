@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { emailFromAddress } from "@/lib/email/fromAddress";
 import type { Mascota } from "@/lib/huellitas/types";
 import { edadMascotaAnios } from "@/lib/huellitas/engine";
 
@@ -66,7 +67,7 @@ export function renderEmailCumpleanos(p: PayloadCumpleanos): {
 }
 
 export async function enviarEmailCumpleanos(p: PayloadCumpleanos): Promise<void> {
-  const from = process.env.RESEND_FROM ?? "Huellitas <hola@huellitas.app>";
+  const from = emailFromAddress();
   const { subject, html, text } = renderEmailCumpleanos(p);
   await resend().emails.send({
     from,

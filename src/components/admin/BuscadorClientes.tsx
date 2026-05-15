@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  Gift,
   Loader2,
   Plus,
   ScanLine,
@@ -15,12 +16,14 @@ import { calcularNivel, progresoNivel } from "@/lib/huellitas/engine";
 import { NivelBadge } from "@/components/NivelBadge";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
-import type { NivelLealtad } from "@/lib/huellitas/types";
+import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { formatARS, formatNumber } from "@/lib/utils";
 import { AsignarHuellitasModal } from "./AsignarHuellitasModal";
+import { CanjeManualModal } from "./CanjeManualModal";
 
 interface Props {
   clientesIniciales: ClienteResumen[];
+  premios: Premio[];
   niveles: NivelLealtad[];
   valorMonetarioHuellita: number;
   montoParaUnaHuellita: number;
@@ -28,6 +31,7 @@ interface Props {
 
 export function BuscadorClientes({
   clientesIniciales,
+  premios,
   niveles,
   valorMonetarioHuellita,
   montoParaUnaHuellita
@@ -36,6 +40,7 @@ export function BuscadorClientes({
   const [resultados, setResultados] = useState<ClienteResumen[]>(clientesIniciales);
   const [buscando, setBuscando] = useState(false);
   const [seleccionado, setSeleccionado] = useState<ClienteResumen | null>(null);
+  const [canjeCliente, setCanjeCliente] = useState<ClienteResumen | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -182,6 +187,13 @@ export function BuscadorClientes({
                     >
                       <Plus size={13} /> Sumar Huellitas
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setCanjeCliente(c)}
+                      className="btn-ghost inline-flex items-center gap-1.5 text-xs"
+                    >
+                      <Gift size={13} /> Canjear premio
+                    </button>
                     <Link
                       href={`/admin/scan/${c.id}`}
                       className="btn-ghost inline-flex items-center gap-1.5 text-xs"
@@ -213,6 +225,30 @@ export function BuscadorClientes({
             setResultados((prev) =>
               prev.map((c) => (c.id === actualizado.id ? actualizado : c))
             );
+          }}
+        />
+      )}
+
+      {canjeCliente && (
+        <CanjeManualModal
+          cliente={canjeCliente}
+          premios={premios}
+          onClose={() => setCanjeCliente(null)}
+          onSuccess={() => {
+            void fetch(
+              `/api/admin/clientes/buscar?q=${encodeURIComponent(canjeCliente.email ?? canjeCliente.id)}`,
+              { cache: "no-store" }
+            )
+              .then((r) => r.json())
+              .then((data: { ok: boolean; clientes?: ClienteResumen[] }) => {
+                if (data.ok && data.clientes?.[0]) {
+                  const act = data.clientes[0];
+                  setResultados((prev) =>
+                    prev.map((c) => (c.id === act.id ? act : c))
+                  );
+                }
+              })
+              .catch(() => undefined);
           }}
         />
       )}

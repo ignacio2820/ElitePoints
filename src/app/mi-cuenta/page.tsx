@@ -17,6 +17,7 @@ import { InvitarAmigos } from "@/components/InvitarAmigos";
 import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
 import { CustomerPanel } from "@/components/cliente/CustomerPanel";
+import { MiCuentaPasskeyCard } from "@/components/cliente/MiCuentaPasskeyCard";
 import type { Cliente, Mascota, Premio } from "@/lib/huellitas/types";
 
 export const dynamic = "force-dynamic";
@@ -172,6 +173,8 @@ export default async function MiCuentaPage({
         {membresiaExpirada ? (
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
         ) : null}
+
+        <MiCuentaPasskeyCard />
 
         <Link
           href="/mi-cuenta/qr"

@@ -1,37 +1,16 @@
-import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { getStorage } from "firebase-admin/storage";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
-import { getInfoLocal, setInfoLocal } from "@/lib/huellitas/localService";
+import { getInfoLocal } from "@/lib/huellitas/localService";
+import { subirLogoLocal } from "@/lib/storage/uploadLogo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_BYTES = 2 * 1024 * 1024;
-const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png"
-};
-
-function downloadUrlFirebase(bucketName: string, objectPath: string, token: string) {
-  return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(objectPath)}?alt=media&token=${token}`;
-}
+const MAX_BYTES = 8 * 1024 * 1024;
 
 export async function POST(req: Request) {
   try {
     const sesion = await requireAdmin();
-    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-    if (!bucketName) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Firebase Storage no está configurado. Definí NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET."
-        },
-        { status: 500 }
-      );
-    }
-
     const form = await req.formData();
     const file = form.get("file");
     if (!(file instanceof File)) {
@@ -41,42 +20,37 @@ export async function POST(req: Request) {
       );
     }
 
-    const ext = MIME_TO_EXT[file.type];
-    if (!ext) {
+    const tipo = file.type.toLowerCase();
+    const nombre = file.name.toLowerCase();
+    const permitido =
+      tipo === "image/jpeg" ||
+      tipo === "image/png" ||
+      tipo === "image/webp" ||
+      nombre.endsWith(".jpg") ||
+      nombre.endsWith(".jpeg") ||
+      nombre.endsWith(".png");
+
+    if (!permitido) {
       return NextResponse.json(
-        { ok: false, error: "Formato no soportado. Usá JPG o PNG." },
+        { ok: false, error: "Formato no soportado. Usá JPG, JPEG o PNG." },
         { status: 400 }
       );
     }
 
     if (file.size > MAX_BYTES) {
       return NextResponse.json(
-        { ok: false, error: "El logo no puede superar 2 MB." },
+        { ok: false, error: "La imagen no puede superar 8 MB antes de comprimir." },
         { status: 400 }
       );
     }
 
-    const localId = sesion.claims.localId;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const objectPath = `logos/${localId}/logo.${ext}`;
-    const bucket = getStorage().bucket(bucketName);
-    const object = bucket.file(objectPath);
-    const downloadToken = randomUUID();
-
-    await object.save(buffer, {
-      metadata: {
-        contentType: file.type,
-        cacheControl: "public,max-age=31536000",
-        metadata: {
-          firebaseStorageDownloadTokens: downloadToken
-        }
-      },
-      resumable: false
-    });
-
-    const logoUrl = downloadUrlFirebase(bucket.name, objectPath, downloadToken);
-    await setInfoLocal(localId, { logoUrl });
-    const info = await getInfoLocal(localId);
+    const logoUrl = await subirLogoLocal(
+      sesion.claims.localId,
+      buffer,
+      file.type || undefined
+    );
+    const info = await getInfoLocal(sesion.claims.localId);
 
     return NextResponse.json({ ok: true, logoUrl, info });
   } catch (err) {
@@ -87,6 +61,6 @@ export async function POST(req: Request) {
       );
     }
     const msg = err instanceof Error ? err.message : "Error";
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+    return NextResponse.json({ ok: false, error: msg }, { status: 400 });
   }
 }

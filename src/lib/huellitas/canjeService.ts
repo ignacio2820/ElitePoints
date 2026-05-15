@@ -19,6 +19,10 @@ import {
   validarCanje
 } from "./canjes";
 import { getConfiguracion } from "./service";
+import {
+  crearNotificacionCanjeDueno,
+  registrarLogCanjeEnTx
+} from "./redemptionService";
 import type {
   CanjePendiente,
   Cliente,
@@ -229,6 +233,28 @@ export async function crearTicketCanje(
           saldoDisponibleFinal: saldoFinal
         } satisfies CrearTicketOutput;
       });
+
+      const premioSnap = await cols
+        .premio(db, input.localId, input.premioId)
+        .get();
+      const stockPremio = premioSnap.exists
+        ? (premioSnap.data() as Premio).stock
+        : null;
+      const stockRestante =
+        typeof stockPremio === "number" ? stockPremio : null;
+
+      void crearNotificacionCanjeDueno({
+        localId: input.localId,
+        clienteId: input.clienteId,
+        clienteNombre: out.clienteNombre,
+        premioId: input.premioId,
+        premioNombre: out.premio.nombre,
+        codigo: out.codigo,
+        costoHuellitas: out.premio.costoHuellitas,
+        stockRestante
+      }).catch((e) =>
+        console.error("[canje] notificación dueño:", e)
+      );
 
       return out;
     } catch (err) {
@@ -506,12 +532,29 @@ async function confirmarColaEntregaTx(
 
   const premioRef = cols.premio(db, localId, String(ticket.premioId));
   const premioSnap = await tx.get(premioRef);
+  let stockRestante: number | null = null;
   if (premioSnap.exists) {
     const stock = (premioSnap.data() as Premio).stock;
     if (typeof stock === "number" && stock > 0) {
+      stockRestante = stock - 1;
       tx.update(premioRef, { stock: FieldValue.increment(-1) });
+    } else if (typeof stock === "number") {
+      stockRestante = stock;
     }
   }
+
+  registrarLogCanjeEnTx(db, tx, localId, {
+    localId,
+    clienteId: String(ticket.clienteId),
+    clienteNombre: String(ticket.clienteNombre ?? cliente.nombre ?? ""),
+    premioId: String(ticket.premioId),
+    premioNombre: String(ticket.premioNombre ?? ""),
+    huellitasDescontadas: costo,
+    stockRestante,
+    origen: "confirmacion",
+    canjeId: codigo,
+    adminUid
+  });
 
   return {
     ok: true as const,
@@ -643,12 +686,29 @@ async function confirmarLegacyTicketTx(
 
   const premioRef = cols.premio(db, localId, ticket.premioId);
   const premioSnap = await tx.get(premioRef);
+  let stockRestante: number | null = null;
   if (premioSnap.exists) {
     const stock = (premioSnap.data() as Premio).stock;
     if (typeof stock === "number" && stock > 0) {
+      stockRestante = stock - 1;
       tx.update(premioRef, { stock: FieldValue.increment(-1) });
+    } else if (typeof stock === "number") {
+      stockRestante = stock;
     }
   }
+
+  registrarLogCanjeEnTx(db, tx, localId, {
+    localId,
+    clienteId: ticket.clienteId,
+    clienteNombre: ticket.clienteNombre,
+    premioId: ticket.premioId,
+    premioNombre: ticket.premioNombre,
+    huellitasDescontadas: ticket.costoHuellitas,
+    stockRestante,
+    origen: "confirmacion",
+    canjeId: canjeAudRef.id,
+    adminUid
+  });
 
   return {
     ok: true as const,
