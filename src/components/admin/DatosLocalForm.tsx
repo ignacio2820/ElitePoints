@@ -21,32 +21,52 @@ function esLogoPermitido(file: File): boolean {
   return nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png");
 }
 
+function esBlobUrl(url: string | null): url is string {
+  return !!url && url.startsWith("blob:");
+}
+
 export function DatosLocalForm({ initial }: DatosLocalFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [nombre, setNombre] = useState(initial.nombre);
-  const [logoUrl, setLogoUrl] = useState(initial.logoUrl ?? "");
-  const [previewSrc, setPreviewSrc] = useState<string | null>(initial.logoUrl ?? null);
+  /** URL del logo ya guardado en Firebase (persistido). */
+  const [savedLogoUrl, setSavedLogoUrl] = useState(initial.logoUrl ?? "");
+  /** Vista previa local (solo blob:); null = mostrar savedLogoUrl. */
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  /** Archivo elegido por el usuario; no se limpia salvo éxito o “Quitar logo”. */
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+
   const [telefonoWhatsapp, setTelefono] = useState(initial.telefonoWhatsapp ?? "");
   const [direccion, setDireccion] = useState(initial.direccion ?? "");
   const [pending, startTransition] = useTransition();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const previewObjectUrlRef = useRef<string | null>(null);
+
+  const displaySrc =
+    (previewUrl && previewUrl.length > 0 ? previewUrl : null) ??
+    (savedLogoUrl.trim() ? savedLogoUrl.trim() : null);
+
+  const previewUrlRef = useRef<string | null>(null);
+  previewUrlRef.current = previewUrl;
 
   useEffect(() => {
     return () => {
-      if (previewObjectUrlRef.current) {
-        URL.revokeObjectURL(previewObjectUrlRef.current);
+      const u = previewUrlRef.current;
+      if (esBlobUrl(u)) {
+        URL.revokeObjectURL(u);
       }
     };
   }, []);
 
-  function limpiarPreviewLocal() {
-    if (previewObjectUrlRef.current) {
-      URL.revokeObjectURL(previewObjectUrlRef.current);
-      previewObjectUrlRef.current = null;
-    }
+  function reemplazarPreviewBlob(nuevoBlobUrl: string | null) {
+    setPreviewUrl((prev) => {
+      if (esBlobUrl(prev)) {
+        URL.revokeObjectURL(prev);
+      }
+      return nuevoBlobUrl;
+    });
   }
 
   function guardar() {
@@ -58,7 +78,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nombre,
-            logoUrl: logoUrl.trim() || "",
+            logoUrl: savedLogoUrl.trim() || "",
             telefonoWhatsapp,
             direccion
           })
@@ -86,10 +106,9 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
     }
 
     setError(null);
-    limpiarPreviewLocal();
-    const objectUrl = URL.createObjectURL(file);
-    previewObjectUrlRef.current = objectUrl;
-    setPreviewSrc(objectUrl);
+    setLogoFile(file);
+    const blobUrl = URL.createObjectURL(file);
+    reemplazarPreviewBlob(blobUrl);
     setUploadingLogo(true);
 
     try {
@@ -104,16 +123,18 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
       if (!res.ok || !data.ok) {
         throw new Error(data.error ?? "No pudimos subir el logo");
       }
-      const url = data.logoUrl ?? "";
-      setLogoUrl(url);
-      setPreviewSrc(url);
-      limpiarPreviewLocal();
+      const url = (data.logoUrl as string) ?? "";
+      reemplazarPreviewBlob(null);
+      setSavedLogoUrl(url);
+      setLogoFile(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
-      setPreviewSrc(logoUrl || null);
-      limpiarPreviewLocal();
+      // Mantener preview blob y logoFile: no revocar ni pisar con saved vacío
     } finally {
       setUploadingLogo(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   }
 
@@ -150,15 +171,13 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
           hint="Subí un JPG o PNG. Se guarda en Firebase y se muestra en el panel y en Mi Cuenta."
         >
           <div className="flex flex-wrap items-start gap-4">
-            {previewSrc ? (
+            {displaySrc ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={previewSrc}
+                key={displaySrc}
+                src={displaySrc}
                 alt={`Logo de ${nombre || "tu local"}`}
                 className="h-16 w-16 rounded-xl border border-amber-200/70 bg-white object-cover shadow-soft"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
               />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-bark-200 bg-cream-50 text-bark-300">
@@ -167,6 +186,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
             )}
             <div className="min-w-0 flex-1 space-y-2">
               <input
+                ref={fileInputRef}
                 type="file"
                 accept={LOGO_ACCEPT}
                 disabled={uploadingLogo || pending}
@@ -174,23 +194,25 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   void onLogoSeleccionado(file);
-                  e.target.value = "";
                 }}
               />
               <p className="text-xs text-bark-600">
                 {uploadingLogo
                   ? "Subiendo logo a Firebase Storage…"
-                  : logoUrl
+                  : savedLogoUrl.trim()
                     ? "Logo listo. Podés cambiarlo o guardar el resto de los datos."
-                    : "Elegí una imagen para ver la vista previa y subirla."}
+                    : logoFile
+                      ? "Vista previa lista. Si falla la subida, la imagen se mantiene hasta que probés de nuevo."
+                      : "Elegí una imagen para ver la vista previa y subirla."}
               </p>
-              {logoUrl ? (
+              {savedLogoUrl.trim() ? (
                 <button
                   type="button"
                   onClick={() => {
-                    setLogoUrl("");
-                    setPreviewSrc(null);
-                    limpiarPreviewLocal();
+                    reemplazarPreviewBlob(null);
+                    setSavedLogoUrl("");
+                    setLogoFile(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
                   className="text-sm text-bark-500 transition hover:text-bark-700"
                 >
