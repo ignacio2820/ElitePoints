@@ -21,7 +21,7 @@ import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
 import { nombreASlug } from "@/lib/huellitas/slug";
 import { registrarPetShop, type OnboardingState } from "./actions";
 
-const LOGO_ACCEPT = "image/jpeg,image/png,.jpg,.jpeg,.png";
+const LOGO_ACCEPT = "image/*";
 
 /**
  * Formulario de onboarding del Pet Shop.
@@ -190,8 +190,8 @@ function Formulario({
                 </CampoConIcono>
 
                 <Field
-                  label="Logo del local"
-                  hint="JPG, JPEG o PNG. Se comprime automáticamente para cargar más rápido."
+                  label="Logo del local (opcional)"
+                  hint="Podés subirlo ahora o más tarde desde Configuración. Se comprime automáticamente."
                 >
                   <div className="flex flex-wrap items-start gap-4">
                     {logoPreview ? (
@@ -211,7 +211,6 @@ function Formulario({
                         type="file"
                         name="logo"
                         accept={LOGO_ACCEPT}
-                        required
                         className="block w-full cursor-pointer text-sm text-bark-600 file:mr-3 file:rounded-xl file:border file:border-amber-200/80 file:bg-cream-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-bark-700"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
@@ -220,17 +219,17 @@ function Formulario({
                             setLogoPreview(null);
                             return;
                           }
-                          const tipo = file.type.toLowerCase();
-                          const nombre = file.name.toLowerCase();
-                          const ok =
-                            tipo === "image/jpeg" ||
-                            tipo === "image/png" ||
-                            nombre.endsWith(".jpg") ||
-                            nombre.endsWith(".jpeg") ||
-                            nombre.endsWith(".png");
-                          if (!ok) {
-                            setLogoError("Solo JPG, JPEG o PNG.");
+                          const tipo = (file.type || "").toLowerCase();
+                          const esImagen =
+                            tipo.startsWith("image/") ||
+                            tipo === "" ||
+                            /\.(jpe?g|png|gif|webp|bmp|heic|heif|avif)$/i.test(
+                              file.name
+                            );
+                          if (!esImagen) {
+                            setLogoError("Elegí un archivo de imagen.");
                             e.target.value = "";
+                            setLogoPreview(null);
                             return;
                           }
                           try {
@@ -246,6 +245,7 @@ function Formulario({
                                 : "No pudimos procesar la imagen."
                             );
                             e.target.value = "";
+                            setLogoPreview(null);
                           }
                         }}
                       />

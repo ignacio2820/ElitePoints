@@ -227,7 +227,7 @@ export async function crearLocalYOnboarding(
         emailDueno: email,
         direccion: input.direccion.trim(),
         telefonoWhatsapp: input.telefonoWhatsapp.trim(),
-        logoUrl: input.logoUrl.trim(),
+        logoUrl: input.logoUrl?.trim() || null,
         estadoMembresia: "pendiente",
         membresiaEstado: "pendiente"
       },

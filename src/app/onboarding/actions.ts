@@ -35,29 +35,27 @@ export type OnboardingState =
   | { status: "ok"; localId: string; sent: boolean; devLink?: string }
   | { status: "error"; error: string };
 
+/** Acepta cualquier imagen (incl. WebP tras compresión en el cliente). */
 function esImagenLogo(file: File): boolean {
-  const tipo = file.type.toLowerCase();
-  if (tipo === "image/jpeg" || tipo === "image/png") return true;
+  const tipo = (file.type || "").toLowerCase();
+  if (tipo.startsWith("image/")) return true;
+  if (!tipo) return true;
   const nombre = file.name.toLowerCase();
-  return (
-    nombre.endsWith(".jpg") ||
-    nombre.endsWith(".jpeg") ||
-    nombre.endsWith(".png")
-  );
+  return /\.(jpe?g|png|gif|webp|bmp|heic|heif|avif)$/.test(nombre);
 }
 
 export async function registrarPetShop(
   _prev: OnboardingState,
   formData: FormData
 ): Promise<OnboardingState> {
-  const logoFile = formData.get("logo");
-  if (!(logoFile instanceof File) || logoFile.size === 0) {
-    return { status: "error", error: "Subí el logo del local (JPG, JPEG o PNG)." };
-  }
-  if (!esImagenLogo(logoFile)) {
+  const logoEntry = formData.get("logo");
+  const logoFile =
+    logoEntry instanceof File && logoEntry.size > 0 ? logoEntry : null;
+
+  if (logoFile && !esImagenLogo(logoFile)) {
     return {
       status: "error",
-      error: "El logo debe ser una imagen JPG, JPEG o PNG."
+      error: "El logo debe ser un archivo de imagen válido."
     };
   }
 
@@ -85,15 +83,17 @@ export async function registrarPetShop(
 
   const { localId, magicLink } = r;
 
-  try {
-    const buffer = Buffer.from(await logoFile.arrayBuffer());
-    await subirLogoLocal(localId, buffer, logoFile.type || undefined);
-  } catch (err) {
-    const msg =
-      err instanceof Error
-        ? err.message
-        : "No pudimos guardar el logo del local.";
-    return { status: "error", error: msg };
+  if (logoFile) {
+    try {
+      const buffer = Buffer.from(await logoFile.arrayBuffer());
+      await subirLogoLocal(localId, buffer, logoFile.type || undefined);
+    } catch (err) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "No pudimos guardar el logo del local.";
+      return { status: "error", error: msg };
+    }
   }
 
   const baseUrl = appBaseUrlForAuth();

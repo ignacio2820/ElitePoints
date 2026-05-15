@@ -3,7 +3,10 @@ import { getStorage } from "firebase-admin/storage";
 import { comprimirImagenPremio } from "@/lib/images/compressImage";
 import { setInfoLocal } from "@/lib/huellitas/localService";
 
-const MIME_PERMITIDOS = new Set(["image/jpeg", "image/png", "image/webp"]);
+function esMimeImagen(mime?: string): boolean {
+  const tipo = (mime ?? "").toLowerCase();
+  return !tipo || tipo.startsWith("image/");
+}
 
 function downloadUrlFirebase(
   bucketName: string,
@@ -32,9 +35,8 @@ export async function subirLogoLocal(
   input: Buffer,
   mime?: string
 ): Promise<string> {
-  const tipo = (mime ?? "").toLowerCase();
-  if (tipo && !MIME_PERMITIDOS.has(tipo)) {
-    throw new Error("Formato no soportado. Usá JPG, JPEG o PNG.");
+  if (!esMimeImagen(mime)) {
+    throw new Error("Formato no soportado. Subí un archivo de imagen.");
   }
 
   const bucketName = bucketNameOrThrow();
