@@ -13,9 +13,11 @@ import {
   User
 } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { LoginPasswordDueno } from "@/components/auth/LoginPasswordDueno";
 import { PasskeyLoginButton } from "@/components/auth/PasskeyLoginButton";
 import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
 import {
+  consultarRolEmail,
   pedirMagicLink,
   registrarseYRecibirMagicLink,
   type RegistrarInput
@@ -165,6 +167,7 @@ export function LoginForm() {
             ) : modo === "ingresar" ? (
               <FormIngresar
                 email={email}
+                redirect={redirect}
                 onEmailChange={setEmail}
                 onSubmit={onLogin}
                 enviando={enviando}
@@ -240,6 +243,7 @@ export function LoginForm() {
 
 function FormIngresar({
   email,
+  redirect,
   onEmailChange,
   onSubmit,
   enviando,
@@ -249,6 +253,7 @@ function FormIngresar({
   registroDisponible
 }: {
   email: string;
+  redirect?: string;
   onEmailChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   enviando: boolean;
@@ -257,6 +262,31 @@ function FormIngresar({
   onIrARegistro: () => void;
   registroDisponible: boolean;
 }) {
+  const [rolEmail, setRolEmail] = useState<"admin" | "cliente" | null>(null);
+  const [tienePassword, setTienePassword] = useState(false);
+
+  useEffect(() => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed)) {
+      setRolEmail(null);
+      setTienePassword(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      void consultarRolEmail(trimmed).then((res) => {
+        if (!res.ok) {
+          setRolEmail(null);
+          return;
+        }
+        setRolEmail(res.role ?? null);
+        setTienePassword(res.tienePassword === true);
+      });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [email]);
+
+  const esDueno = rolEmail === "admin";
+
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <div>
@@ -264,9 +294,15 @@ function FormIngresar({
           Ingresá a tu cuenta
         </h2>
         <p className="mt-1 text-sm text-bark-500">
-          Escribí tu email y te enviamos un link mágico. Detectamos
-          automáticamente si sos cliente del local o el dueño.
+          {esDueno
+            ? "Detectamos que sos dueño de un local. Podés usar link mágico o contraseña."
+            : "Escribí tu email y te enviamos un link mágico. Detectamos si sos cliente o dueño."}
         </p>
+        {esDueno ? (
+          <p className="mt-2 inline-block rounded-full bg-terracotta-50 px-2.5 py-0.5 text-xs font-medium text-terracotta-600">
+            Cuenta de dueño
+          </p>
+        ) : null}
       </div>
 
       <CampoEmail value={email} onChange={onEmailChange} />
@@ -290,6 +326,23 @@ function FormIngresar({
           </>
         )}
       </button>
+
+      {esDueno ? (
+        <>
+          <div className="relative flex items-center gap-3 py-1">
+            <div className="h-px flex-1 bg-bark-100" />
+            <span className="text-xs text-bark-400">o</span>
+            <div className="h-px flex-1 bg-bark-100" />
+          </div>
+          <LoginPasswordDueno
+            email={email}
+            redirect={redirect}
+            tienePassword={tienePassword}
+            disabled={enviando}
+            onError={onError}
+          />
+        </>
+      ) : null}
 
       <PasskeyLoginButton
         email={email}
@@ -317,7 +370,9 @@ function FormIngresar({
       ) : null}
 
       <p className="text-center text-xs text-bark-400">
-        Sin contraseñas. El link expira en 1 hora y solo se usa una vez.
+        {esDueno
+          ? "El link mágico expira en 1 hora. La contraseña la configurás en tu panel."
+          : "El link expira en 1 hora y solo se usa una vez."}
       </p>
     </form>
   );

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { ConfiguracionForm } from "@/components/ConfiguracionForm";
 import { DatosLocalForm } from "@/components/admin/DatosLocalForm";
 import { GenerarQrPosterButton } from "@/components/admin/GenerarQrPosterButton";
+import { PasswordAccesoForm } from "@/components/admin/PasswordAccesoForm";
 import { RegistrarPasskeyButton } from "@/components/auth/RegistrarPasskeyButton";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getSesion } from "@/lib/auth/server";
@@ -59,6 +60,8 @@ export default async function ConfiguracionPage() {
       </header>
 
       <DatosLocalForm initial={info} />
+
+      <PasswordAccesoForm />
 
       <Card>
         <CardHeader>

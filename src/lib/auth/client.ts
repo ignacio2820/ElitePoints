@@ -1,5 +1,6 @@
 import {
   isSignInWithEmailLink,
+  signInWithEmailAndPassword,
   signInWithEmailLink,
   signOut as fbSignOut,
   onIdTokenChanged,
@@ -40,6 +41,117 @@ export interface PedirMagicLinkResponse {
   role?: "admin" | "cliente";
   /** En dev sin Resend, el server devuelve el link aquí. */
   devLink?: string;
+}
+
+export interface CheckEmailResponse {
+  ok: boolean;
+  error?: string;
+  role?: "admin" | "cliente" | null;
+  tienePassword?: boolean;
+}
+
+/** Detecta si el email es dueño, cliente o no registrado (para el login). */
+export async function consultarRolEmail(
+  email: string
+): Promise<CheckEmailResponse> {
+  try {
+    const r = await fetch("/api/auth/check-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim().toLowerCase() })
+    });
+    const data = (await r.json()) as CheckEmailResponse;
+    if (!r.ok || !data.ok) {
+      return { ok: false, error: data.error ?? `Error ${r.status}` };
+    }
+    return data;
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Error de red"
+    };
+  }
+}
+
+async function intercambiarIdTokenPorSesion(
+  idToken: string,
+  redirect?: string
+): Promise<{ ok: true; redirectTo: string } | { ok: false; error: string }> {
+  const r = await fetch("/api/auth/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken, redirect })
+  });
+  const data = (await r.json()) as {
+    ok: boolean;
+    error?: string;
+    redirectTo?: string;
+  };
+  if (!r.ok || !data.ok) {
+    return { ok: false, error: data.error ?? "No se pudo crear la sesión" };
+  }
+  return { ok: true, redirectTo: data.redirectTo ?? "/" };
+}
+
+export interface IngresarPasswordInput {
+  email: string;
+  password: string;
+  redirect?: string;
+}
+
+export interface IngresarPasswordResponse {
+  ok: boolean;
+  error?: string;
+  redirectTo?: string;
+}
+
+/** Login del dueño con email + contraseña (Firebase Auth). */
+export async function ingresarConPassword(
+  input: IngresarPasswordInput
+): Promise<IngresarPasswordResponse> {
+  const email = input.email.trim().toLowerCase();
+  if (!email || !input.password) {
+    return { ok: false, error: "Email y contraseña requeridos." };
+  }
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, input.password);
+    const idToken = await cred.user.getIdToken(true);
+    const sesion = await intercambiarIdTokenPorSesion(idToken, input.redirect);
+    if (!sesion.ok) {
+      await fbSignOut(auth);
+      return { ok: false, error: sesion.error };
+    }
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STORAGE_EMAIL_KEY);
+      window.localStorage.removeItem(STORAGE_REDIRECT_KEY);
+    }
+    return { ok: true, redirectTo: sesion.redirectTo };
+  } catch (e) {
+    const code =
+      e && typeof e === "object" && "code" in e
+        ? String((e as { code: string }).code)
+        : "";
+    if (
+      code === "auth/invalid-credential" ||
+      code === "auth/wrong-password" ||
+      code === "auth/user-not-found"
+    ) {
+      return {
+        ok: false,
+        error:
+          "Email o contraseña incorrectos. Si nunca configuraste una contraseña, usá el link mágico o establecela en Configuración."
+      };
+    }
+    if (code === "auth/too-many-requests") {
+      return {
+        ok: false,
+        error: "Demasiados intentos. Esperá unos minutos e intentá de nuevo."
+      };
+    }
+    const msg = e instanceof Error ? e.message : "Error al ingresar";
+    return { ok: false, error: msg };
+  }
 }
 
 export async function pedirMagicLink(
@@ -161,24 +273,15 @@ export async function completarLogin(
       window.localStorage.getItem(STORAGE_REDIRECT_KEY) ??
       undefined;
 
-    const r = await fetch("/api/auth/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken, redirect })
-    });
-    const data = (await r.json()) as {
-      ok: boolean;
-      error?: string;
-      redirectTo?: string;
-    };
-    if (!r.ok || !data.ok) {
+    const sesion = await intercambiarIdTokenPorSesion(idToken, redirect);
+    if (!sesion.ok) {
       await fbSignOut(auth);
-      return { ok: false, error: data.error ?? "No se pudo crear la sesión" };
+      return { ok: false, error: sesion.error };
     }
 
     window.localStorage.removeItem(STORAGE_EMAIL_KEY);
     window.localStorage.removeItem(STORAGE_REDIRECT_KEY);
-    return { ok: true, redirectTo: data.redirectTo ?? "/" };
+    return { ok: true, redirectTo: sesion.redirectTo };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error desconocido";
     return { ok: false, error: msg };
