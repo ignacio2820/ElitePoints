@@ -10,6 +10,13 @@ interface BeforeInstallPromptEvent extends Event {
 
 const STORAGE_KEY = "mascotpoints:pwa-install-dismiss";
 
+function appYaInstalada(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia("(display-mode: standalone)").matches) return true;
+  const nav = window.navigator as Navigator & { standalone?: boolean };
+  return nav.standalone === true;
+}
+
 export function InstalarAppBanner() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
     null
@@ -18,14 +25,20 @@ export function InstalarAppBanner() {
   const [instalando, setInstalando] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (localStorage.getItem(STORAGE_KEY) === "1") return;
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
+    if (appYaInstalada()) {
+      setOculto(true);
+      return;
+    }
+    if (localStorage.getItem(STORAGE_KEY) === "1") {
+      setOculto(true);
+      return;
+    }
+
+    setOculto(false);
 
     function onBip(e: Event) {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
-      setOculto(false);
     }
 
     window.addEventListener("beforeinstallprompt", onBip);
@@ -38,40 +51,38 @@ export function InstalarAppBanner() {
   }
 
   async function instalar() {
-    if (!deferred) {
-      alert(
-        "Para instalar: en Chrome/Edge usá el menú ⋮ → «Instalar app». " +
-          "En iPhone: Compartir → «Agregar a pantalla de inicio»."
-      );
+    if (deferred) {
+      setInstalando(true);
+      try {
+        await deferred.prompt();
+        await deferred.userChoice;
+      } finally {
+        setInstalando(false);
+        setOculto(true);
+      }
       return;
     }
-    setInstalando(true);
-    try {
-      await deferred.prompt();
-      await deferred.userChoice;
-    } finally {
-      setInstalando(false);
-      setOculto(true);
-    }
+    alert(
+      "Para instalar: en Chrome/Edge usá el menú ⋮ → «Instalar app». " +
+        "En iPhone: tocá Compartir → «Agregar a pantalla de inicio»."
+    );
   }
 
-  if (oculto) return null;
-
-  const Box = "div" as const;
+  if (oculto || appYaInstalada()) return null;
 
   return (
-    <Box className="mb-6 overflow-hidden rounded-2xl border border-terracotta-200/40 bg-cream-50 p-4 shadow-soft">
-      <Box className="flex items-start gap-3">
-        <Box className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-terracotta-100 text-terracotta-500">
+    <div className="mb-6 overflow-hidden rounded-2xl border border-terracotta-200/40 bg-cream-50 p-4 shadow-soft">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-terracotta-100 text-terracotta-500">
           <Download size={18} />
-        </Box>
-        <Box className="min-w-0 flex-1">
+        </div>
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-bark-700">
             Instalar App de MascotPoints
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-bark-500">
-            Accedé a tus huellitas desde el ícono en la pantalla de inicio, sin
-            abrir el navegador cada vez.
+            Guardá el acceso en tu pantalla de inicio para ver tus huellitas más
+            rápido la próxima vez.
           </p>
           <button
             type="button"
@@ -82,7 +93,7 @@ export function InstalarAppBanner() {
             <Download size={14} />
             {instalando ? "Instalando…" : "Instalar ahora"}
           </button>
-        </Box>
+        </div>
         <button
           type="button"
           onClick={descartar}
@@ -91,7 +102,7 @@ export function InstalarAppBanner() {
         >
           <X size={16} />
         </button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
