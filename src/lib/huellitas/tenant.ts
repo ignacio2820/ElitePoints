@@ -19,7 +19,11 @@ export function rutaConLocalId(pathname: string, localId: string): string {
 
 export function loginClienteRedirect(destino: string, localId?: string): string {
   const path = rutaBase(destino);
-  const esPortalCliente = path === "/mi-cuenta" || path.startsWith("/mi-cuenta/");
+  const esPortalCliente =
+    path === "/mi-cuenta" ||
+    path.startsWith("/mi-cuenta/") ||
+    path === "/portal" ||
+    path.startsWith("/portal/");
   const redirectTarget = esPortalCliente
     ? rutaCliente(destino)
     : localId

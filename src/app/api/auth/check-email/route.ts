@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuth } from "@/lib/firebase/admin";
 import { assertAllowedAuthRequest } from "@/lib/auth/allowedOrigins";
-import { buscarClientePorEmailGlobal } from "@/lib/huellitas/clientesService";
+import { buscarIdentidadPorEmail } from "@/lib/auth/identityIndex";
 import { contarPasskeysPorEmail, passkeysHabilitados } from "@/lib/auth/passkeys";
 
 export const runtime = "nodejs";
@@ -13,7 +13,7 @@ const Body = z.object({
 
 /**
  * Detecta el rol del email para el login (sin enviar magic link).
- * Solo indica si es dueño (admin), cliente o desconocido.
+ * Consulta índices `owners` y `customers` con respaldo legacy.
  */
 export async function POST(req: Request) {
   try {
@@ -38,26 +38,27 @@ export async function POST(req: Request) {
   const { email } = parsed.data;
 
   try {
-    const auth = adminAuth();
-    try {
-      const u = await auth.getUserByEmail(email);
-      const claims = u.customClaims ?? {};
-      if (claims.role === "admin" && typeof claims.localId === "string") {
-        const passkeys =
-          passkeysHabilitados() ? await contarPasskeysPorEmail(email) : 0;
-        return NextResponse.json({
-          ok: true,
-          role: "admin" as const,
-          tienePassword: u.providerData.some((p) => p.providerId === "password"),
-          tienePasskey: passkeys > 0
-        });
+    const identidad = await buscarIdentidadPorEmail(email);
+
+    if (identidad?.tipo === "owner") {
+      let tienePassword = false;
+      try {
+        const u = await adminAuth().getUserByEmail(email);
+        tienePassword = u.providerData.some((p) => p.providerId === "password");
+      } catch {
+        // sin usuario Auth aún
       }
-    } catch {
-      // no es admin en Auth
+      const passkeys =
+        passkeysHabilitados() ? await contarPasskeysPorEmail(email) : 0;
+      return NextResponse.json({
+        ok: true,
+        role: "admin" as const,
+        tienePassword,
+        tienePasskey: passkeys > 0
+      });
     }
 
-    const cli = await buscarClientePorEmailGlobal(email);
-    if (cli) {
+    if (identidad?.tipo === "customer") {
       return NextResponse.json({ ok: true, role: "cliente" as const });
     }
 

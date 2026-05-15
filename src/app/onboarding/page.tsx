@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { RUTA_DASHBOARD, RUTA_PORTAL } from "@/lib/auth/redirect";
 import { getSesion } from "@/lib/auth/server";
 import { OnboardingForm } from "./OnboardingForm";
 
@@ -14,9 +15,9 @@ export const dynamic = "force-dynamic";
 export default async function OnboardingPage() {
   const sesion = await getSesion();
   if (sesion) {
-    if (sesion.claims.role === "admin") redirect("/admin");
+    if (sesion.claims.role === "admin") redirect(RUTA_DASHBOARD);
     if (sesion.claims.role === "cliente") {
-      redirect("/mi-cuenta");
+      redirect(RUTA_PORTAL);
     }
   }
   return <OnboardingForm />;

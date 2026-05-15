@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
+import { RUTA_PORTAL } from "@/lib/auth/redirect";
 import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
@@ -33,16 +34,13 @@ export default async function MiQRPage({
   const sesion = await getSesion();
   if (!sesion?.claims.clienteId) redirect("/login?intent=cliente");
   const { localId, clienteId } = sesion.claims;
-  const destino = asegurarLocalIdEnRuta(
-    "/mi-cuenta/qr",
-    localId,
-    searchParams?.localId
-  );
-  if (destino !== rutaCliente("/mi-cuenta/qr")) {
+  const rutaQr = `${RUTA_PORTAL}/qr`;
+  const destino = asegurarLocalIdEnRuta(rutaQr, localId, searchParams?.localId);
+  if (destino !== rutaCliente(rutaQr)) {
     redirect(destino);
   }
   if (searchParams?.localId) {
-    redirect("/mi-cuenta/qr");
+    redirect(rutaQr);
   }
 
   const db = adminDb();
@@ -72,7 +70,7 @@ export default async function MiQRPage({
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between px-4 py-4">
         <Link
-          href="/mi-cuenta"
+          href={RUTA_PORTAL}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-bark-600 shadow-sm transition hover:bg-cream-100"
         >
           <ArrowLeft size={18} />

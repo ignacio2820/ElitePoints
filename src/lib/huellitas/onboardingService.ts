@@ -15,6 +15,8 @@ import {
   buscarClientePorEmailGlobal
 } from "./clientesService";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
+import { upsertOwnerIndex } from "@/lib/auth/identityIndex";
+import { RUTA_DASHBOARD } from "@/lib/auth/redirect";
 
 /**
  * Catálogo inicial de premios que se siembra en cada Pet Shop nuevo.
@@ -290,6 +292,7 @@ export async function crearLocalYOnboarding(
   //    Esto es lo que vincula al usuario con su Pet Shop.
   try {
     await auth.setCustomUserClaims(uid!, { role: "admin", localId: slug });
+    await upsertOwnerIndex({ email, localId: slug, uid: uid! });
   } catch (e) {
     return {
       ok: false,
@@ -302,7 +305,7 @@ export async function crearLocalYOnboarding(
   //    devuelve directo en dev).
   const continueUrl = urlVerificacionLogin({
     intent: "admin",
-    redirect: "/admin"
+    redirect: RUTA_DASHBOARD
   });
   const magicLink = await auth.generateSignInWithEmailLink(email, {
     url: continueUrl,

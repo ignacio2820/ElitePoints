@@ -15,6 +15,8 @@ import { mayExposeDevMagicLink } from "@/lib/auth/allowedOrigins";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
 import { EspecieSchema } from "@/lib/huellitas/types";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
+import { upsertCustomerIndex } from "@/lib/auth/identityIndex";
+import { RUTA_PORTAL } from "@/lib/auth/redirect";
 
 export const runtime = "nodejs";
 
@@ -171,11 +173,17 @@ export async function POST(req: Request) {
       clienteId: created.clienteId
     });
     await vincularUsuarioACliente(localId, created.clienteId, uid);
+    await upsertCustomerIndex({
+      email: data.email,
+      localId,
+      clienteId: created.clienteId,
+      uid
+    });
 
     // 7. Generar magic link de primera entrada
     const continueUrl = urlVerificacionLogin({
       intent: "cliente",
-      redirect: "/mi-cuenta"
+      redirect: RUTA_PORTAL
     });
 
     const link = await auth.generateSignInWithEmailLink(data.email, {

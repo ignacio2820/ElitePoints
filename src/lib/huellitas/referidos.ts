@@ -133,7 +133,7 @@ export interface DatosShare {
 
 /** Construye la URL canónica de registro con el código preseleccionado. */
 export function urlRegistroConRef(d: DatosShare): string {
-  const url = new URL("/registro", d.baseUrl);
+  const url = new URL("/acceso", d.baseUrl);
   url.searchParams.set("localId", d.localId);
   url.searchParams.set("ref", d.codigo);
   return url.toString();

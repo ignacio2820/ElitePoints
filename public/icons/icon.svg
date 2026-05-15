@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MascotPoints">
+  <rect width="512" height="512" rx="96" fill="#0a0a0b"/>
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#D4A04C" stroke-width="24"/>
+  <path fill="#F0C674" d="M180 290c0-42 34-76 76-76s76 34 76 76v8H180v-8zm76-120c-28 0-50 22-50 50 0 12 4 23 11 32 14-28 42-46 73-46 31 0 59 18 73 46 7-9 11-20 11-32 0-28-22-50-50-50z"/>
+</svg>

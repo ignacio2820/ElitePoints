@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuth } from "@/lib/firebase/admin";
 import { getOrCreateUserByEmail, setCustomClaims } from "@/lib/auth/server";
-import { buscarClientePorEmailGlobal } from "@/lib/huellitas/clientesService";
 import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
 import { cols } from "@/lib/firebase/collections";
 import { adminDb } from "@/lib/firebase/admin";
@@ -12,18 +11,18 @@ import {
   mayExposeDevMagicLink
 } from "@/lib/auth/allowedOrigins";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
+import {
+  buscarIdentidadPorEmail,
+  upsertCustomerIndex,
+  upsertOwnerIndex
+} from "@/lib/auth/identityIndex";
+import { RUTA_DASHBOARD, RUTA_PORTAL } from "@/lib/auth/redirect";
 
 export const runtime = "nodejs";
 
 const Body = z.object({
   email: z.string().email().transform((s) => s.trim().toLowerCase()),
-  /**
-   * "auto" (recomendado): el server detecta el rol según custom claims y
-   * registro de cliente. "admin"/"cliente" se mantienen por compatibilidad
-   * y permiten forzar un intent específico (ej. desde un link interno).
-   */
   intent: z.enum(["auto", "cliente", "admin"]).default("auto"),
-  /** URL absoluta (de la app) a la que volver tras autenticar. */
   redirect: z.string().optional()
 });
 
@@ -51,135 +50,107 @@ export async function POST(req: Request) {
   const { email, intent, redirect } = parsed.data;
 
   try {
-    const auth = adminAuth();
-
-    let uid: string;
-    let nombreLocal: string | undefined;
-    /** Rol final detectado para esta sesión. Lo devolvemos al cliente. */
-    let rolFinal: "admin" | "cliente";
-
-    /**
-     * Detecta si el email es admin sin crear usuario en Auth.
-     * Devuelve { admin: true, ... } solo si ya existe en Auth con role:admin.
-     */
-    async function chequearAdmin(): Promise<
-      | { admin: true; uid: string; localId: string }
-      | { admin: false }
-    > {
-      try {
-        const u = await auth.getUserByEmail(email);
-        const claims = u.customClaims ?? {};
-        if (claims.role === "admin" && typeof claims.localId === "string") {
-          return { admin: true, uid: u.uid, localId: claims.localId };
-        }
-      } catch {
-        // No existe en Auth: no es admin
-      }
-      return { admin: false };
-    }
+    const identidad = await buscarIdentidadPorEmail(email);
 
     if (intent === "admin") {
-      const chk = await chequearAdmin();
-      if (!chk.admin) {
+      if (!identidad || identidad.tipo !== "owner") {
         return NextResponse.json(
           {
             ok: false,
             error:
-              "Este email no está autorizado como admin. " +
+              "Este email no está autorizado como dueño. " +
               "Pedile al super-admin que te asigne acceso."
           },
           { status: 403 }
         );
       }
-      uid = chk.uid;
+    } else if (intent === "cliente") {
+      if (!identidad) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "No encontramos una cuenta de cliente con ese email. " +
+              "Pedile al local que te registre primero."
+          },
+          { status: 404 }
+        );
+      }
+    } else if (!identidad) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "No encontramos una cuenta con ese email. " +
+            'Si nunca te registraste, elegí "Registrarme por primera vez". ' +
+            "Si sos dueño de un local, completá el onboarding o pedí acceso."
+        },
+        { status: 404 }
+      );
+    }
+
+    let rolFinal: "admin" | "cliente";
+    let uid: string;
+    let nombreLocal: string | undefined;
+
+    if (identidad?.tipo === "owner") {
+      const auth = adminAuth();
+      uid =
+        identidad.uid ??
+        (await auth.getUserByEmail(email)).uid;
+      await setCustomClaims(uid, {
+        role: "admin",
+        localId: identidad.localId
+      });
+      await upsertOwnerIndex({
+        email,
+        localId: identidad.localId,
+        uid
+      });
       rolFinal = "admin";
-      const localSnap = await cols.local(adminDb(), chk.localId).get();
+      const localSnap = await cols.local(adminDb(), identidad.localId).get();
       nombreLocal =
         (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
-        chk.localId;
-    } else if (intent === "cliente") {
-      const chk = await chequearAdmin();
-      if (chk.admin) {
-        uid = chk.uid;
-        rolFinal = "admin";
-        const localSnap = await cols.local(adminDb(), chk.localId).get();
-        nombreLocal =
-          (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
-          chk.localId;
-      } else {
-        const cli = await buscarClientePorEmailGlobal(email);
-        if (!cli) {
-          return NextResponse.json(
-            {
-              ok: false,
-              error:
-                "No encontramos una cuenta de cliente con ese email. " +
-                "Pedile al local que te registre primero."
-            },
-            { status: 404 }
-          );
-        }
-        uid = await getOrCreateUserByEmail(email);
-        await setCustomClaims(uid, {
-          role: "cliente",
-          localId: cli.localId,
-          clienteId: cli.id
-        });
-        await vincularUsuarioACliente(cli.localId, cli.id, uid);
-        rolFinal = "cliente";
-
-        const localSnap = await cols.local(adminDb(), cli.localId).get();
-        nombreLocal =
-          (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
-          cli.localId;
-      }
+        identidad.localId;
+    } else if (identidad?.tipo === "customer") {
+      uid = await getOrCreateUserByEmail(email);
+      await setCustomClaims(uid, {
+        role: "cliente",
+        localId: identidad.localId,
+        clienteId: identidad.clienteId
+      });
+      await vincularUsuarioACliente(
+        identidad.localId,
+        identidad.clienteId,
+        uid
+      );
+      await upsertCustomerIndex({
+        email,
+        localId: identidad.localId,
+        clienteId: identidad.clienteId,
+        uid
+      });
+      rolFinal = "cliente";
+      const localSnap = await cols.local(adminDb(), identidad.localId).get();
+      nombreLocal =
+        (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
+        identidad.localId;
     } else {
-      const chk = await chequearAdmin();
-      if (chk.admin) {
-        uid = chk.uid;
-        rolFinal = "admin";
-        const localSnap = await cols.local(adminDb(), chk.localId).get();
-        nombreLocal =
-          (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
-          chk.localId;
-      } else {
-        const cli = await buscarClientePorEmailGlobal(email);
-        if (!cli) {
-          return NextResponse.json(
-            {
-              ok: false,
-              error:
-                "No encontramos una cuenta con ese email. " +
-                "Si nunca te registraste, hacé click en \"Crear cuenta\". " +
-                "Si sos dueño de un local, pedí acceso al super-admin."
-            },
-            { status: 404 }
-          );
-        }
-        uid = await getOrCreateUserByEmail(email);
-        await setCustomClaims(uid, {
-          role: "cliente",
-          localId: cli.localId,
-          clienteId: cli.id
-        });
-        await vincularUsuarioACliente(cli.localId, cli.id, uid);
-        rolFinal = "cliente";
-
-        const localSnap = await cols.local(adminDb(), cli.localId).get();
-        nombreLocal =
-          (localSnap.data() as { nombre?: string } | undefined)?.nombre ??
-          cli.localId;
-      }
+      return NextResponse.json(
+        { ok: false, error: "No encontramos una cuenta con ese email." },
+        { status: 404 }
+      );
     }
 
     const redirectFinal =
       redirect ??
-      (rolFinal === "admin" ? "/admin" : rolFinal === "cliente" ? "/mi-cuenta" : undefined);
+      (rolFinal === "admin" ? RUTA_DASHBOARD : RUTA_PORTAL);
     const continueUrl = urlVerificacionLogin({
       intent: rolFinal,
       redirect: redirectFinal
     });
 
+    const auth = adminAuth();
     const link = await auth.generateSignInWithEmailLink(email, {
       url: continueUrl,
       handleCodeInApp: true

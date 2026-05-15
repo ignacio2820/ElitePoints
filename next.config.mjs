@@ -19,6 +19,14 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: serverActionOrigins
     }
+  },
+  async rewrites() {
+    return [
+      { source: "/dashboard", destination: "/admin" },
+      { source: "/dashboard/:path*", destination: "/admin/:path*" },
+      { source: "/portal", destination: "/mi-cuenta" },
+      { source: "/portal/:path*", destination: "/mi-cuenta/:path*" }
+    ];
   }
 };
 

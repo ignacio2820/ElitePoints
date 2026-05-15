@@ -9,6 +9,7 @@ import { getConfiguracion } from "@/lib/huellitas/service";
 import { getInfoLocal } from "@/lib/huellitas/localService";
 import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
+import { RUTA_PORTAL } from "@/lib/auth/redirect";
 import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { progresoNivel } from "@/lib/huellitas/engine";
@@ -38,15 +39,15 @@ export default async function MiCuentaPage({
 
   const { localId, clienteId } = sesion.claims;
   const destino = asegurarLocalIdEnRuta(
-    "/mi-cuenta",
+    RUTA_PORTAL,
     localId,
     searchParams?.localId
   );
-  if (destino !== rutaCliente("/mi-cuenta")) {
+  if (destino !== rutaCliente(RUTA_PORTAL)) {
     redirect(destino);
   }
   if (searchParams?.localId) {
-    redirect("/mi-cuenta");
+    redirect(RUTA_PORTAL);
   }
   const db = adminDb();
 
@@ -177,7 +178,7 @@ export default async function MiCuentaPage({
         <MiCuentaPasskeyCard />
 
         <Link
-          href="/mi-cuenta/qr"
+          href="/portal/qr"
           className="surface-card group block overflow-hidden rounded-2xl p-5 transition active:scale-[0.99]"
         >
           <div className="flex items-center justify-between gap-4">

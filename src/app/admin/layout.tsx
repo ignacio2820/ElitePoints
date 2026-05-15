@@ -25,10 +25,10 @@ export default async function AdminLayout({
 }) {
   const sesion = await getSesion();
   if (!sesion) {
-    redirect("/login?intent=admin&redirect=/admin");
+    redirect("/login?intent=admin&redirect=/dashboard");
   }
   if (sesion.claims.role !== "admin") {
-    redirect("/mi-cuenta");
+    redirect("/portal");
   }
 
   const pathname = headers().get("x-pathname") ?? "";
