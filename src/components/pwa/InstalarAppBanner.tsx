@@ -57,19 +57,19 @@ export function InstalarAppBanner() {
 
   if (oculto) return null;
 
-  const Wrapper = "div" as const;
+  const Box = "div" as const;
 
   return (
-    <Wrapper className="mb-6 overflow-hidden rounded-2xl border border-[#D4A04C]/25 bg-gradient-to-r from-[#1a1a1c] to-[#121214] p-4 shadow-lg">
-      <Wrapper className="flex items-start gap-3">
-        <Wrapper className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4A04C]/15 text-[#D4A04C]">
+    <Box className="mb-6 overflow-hidden rounded-2xl border border-terracotta-200/40 bg-cream-50 p-4 shadow-soft">
+      <Box className="flex items-start gap-3">
+        <Box className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-terracotta-100 text-terracotta-500">
           <Download size={18} />
-        </Wrapper>
-        <Wrapper className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-white">
+        </Box>
+        <Box className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-bark-700">
             Instalar App de MascotPoints
           </p>
-          <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">
+          <p className="mt-0.5 text-xs leading-relaxed text-bark-500">
             Accedé a tus huellitas desde el ícono en la pantalla de inicio, sin
             abrir el navegador cada vez.
           </p>
@@ -77,21 +77,21 @@ export function InstalarAppBanner() {
             type="button"
             onClick={() => void instalar()}
             disabled={instalando}
-            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#D4A04C] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#0a0a0b] transition hover:bg-[#e8b85a] disabled:opacity-60"
+            className="btn-primary mt-3 inline-flex items-center gap-2 text-xs"
           >
             <Download size={14} />
             {instalando ? "Instalando…" : "Instalar ahora"}
           </button>
-        </Wrapper>
+        </Box>
         <button
           type="button"
           onClick={descartar}
-          className="shrink-0 rounded-full p-1.5 text-zinc-500 hover:bg-white/5"
+          className="shrink-0 rounded-full p-1.5 text-bark-400 hover:bg-bark-50"
           aria-label="Ocultar"
         >
           <X size={16} />
         </button>
-      </Wrapper>
-    </Wrapper>
+      </Box>
+    </Box>
   );
 }

@@ -1,50 +1,20 @@
-import Link from "next/link";
-import { getInfoLocal } from "@/lib/huellitas/localService";
-import { normalizarCodigo } from "@/lib/huellitas/referidos";
-import { AccesoInteligente } from "@/components/landing/AccesoInteligente";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = {
-  title: "Acceso — MascotPoints"
-};
-
-export default async function AccesoPage({
+/**
+ * Compatibilidad con QR impresos que apuntaban a /acceso.
+ * Los clientes deben ir directo al formulario de registro del local.
+ */
+export default function AccesoLegacyRedirect({
   searchParams
 }: {
   searchParams: { localId?: string; ref?: string };
 }) {
-  const localId = searchParams.localId?.trim() || "";
+  const localId = searchParams.localId?.trim();
   if (!localId) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0a0a0b] px-6 text-center text-zinc-300">
-        <div>
-          <h1 className="font-display text-2xl font-semibold text-white">
-            Link incompleto
-          </h1>
-          <p className="mt-2 text-sm text-zinc-500">
-            Escaneá el QR del local o pedile el enlace con su identificador.
-          </p>
-          <Link
-            href="/"
-            className="webelite-btn-secondary mt-8 inline-flex px-6 py-3 text-sm"
-          >
-            Volver al inicio
-          </Link>
-        </div>
-      </main>
-    );
+    redirect("/");
   }
-
-  const info = await getInfoLocal(localId);
-  const codigoRef = searchParams.ref ? normalizarCodigo(searchParams.ref) : "";
-
-  return (
-    <AccesoInteligente
-      localId={localId}
-      nombreLocal={info.nombre}
-      logoUrl={info.logoUrl}
-      codigoRef={codigoRef || undefined}
-    />
-  );
+  const qs = new URLSearchParams({ localId });
+  const ref = searchParams.ref?.trim();
+  if (ref) qs.set("ref", ref);
+  redirect(`/registro?${qs.toString()}`);
 }

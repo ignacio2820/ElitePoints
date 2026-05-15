@@ -5,11 +5,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --bg: #1b4332;
+  --bg: #064e3b;
   --surface: #ffffff;
-  --forest: #1b4332;
-  --forest-soft: #2d6a4f;
-  --accent: #fb8500;
+  --forest: #064e3b;
+  --forest-soft: #047857;
+  --accent: #ff8c00;
   --ink: #f8f9fa;
   --ink-on-surface: #1b4332;
   /* Texto secundario LEGIBLE sobre fondo crema/blanco (~5.5:1 vs #F8F9FA). */
@@ -240,24 +240,4 @@ input[type="range"]:focus::-webkit-slider-thumb {
     break-inside: avoid;
     page-break-inside: avoid;
   }
-}
-
-/* WebElite SOLUTIONS — landing / acceso inteligente */
-.webelite-btn-primary {
-  @apply rounded-2xl px-6 py-4 text-sm font-bold uppercase tracking-wide transition;
-  background: linear-gradient(135deg, #f0c674 0%, #d4a04c 50%, #b8862e 100%);
-  color: #0a0a0b;
-  box-shadow: 0 8px 32px -8px rgba(212, 160, 76, 0.55);
-}
-.webelite-btn-primary:hover {
-  filter: brightness(1.06);
-}
-.webelite-btn-secondary {
-  @apply rounded-2xl border px-6 py-4 text-sm font-semibold transition;
-  border-color: rgba(212, 160, 76, 0.35);
-  color: #f0c674;
-  background: rgba(255, 255, 255, 0.03);
-}
-.webelite-btn-secondary:hover {
-  background: rgba(212, 160, 76, 0.08);
 }

@@ -20,7 +20,7 @@ export default async function AdminPosterPage() {
 
   const h = headers();
   const baseUrl = resolvePublicBaseUrl(h);
-  const registroUrl = `${baseUrl}/acceso?localId=${encodeURIComponent(localId)}`;
+  const registroUrl = `${baseUrl}/registro?localId=${encodeURIComponent(localId)}`;
 
   return (
     <div className="poster-page">

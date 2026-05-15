@@ -95,7 +95,7 @@ describe("mensaje WhatsApp", () => {
 
   it("construye la URL de registro con ?ref=", () => {
     expect(urlRegistroConRef(datos)).toBe(
-      "https://huellitas.app/acceso?localId=patitas&ref=LUC-K3MP"
+      "https://huellitas.app/registro?localId=patitas&ref=LUC-K3MP"
     );
   });
 
@@ -107,14 +107,14 @@ describe("mensaje WhatsApp", () => {
     expect(m).toContain("Pet Shop Patitas");
     expect(m).toContain("LUC-K3MP");
     expect(m).toContain(
-      "https://huellitas.app/acceso?localId=patitas&ref=LUC-K3MP"
+      "https://huellitas.app/registro?localId=patitas&ref=LUC-K3MP"
     );
   });
 
   it("agrega la URL al final si la plantilla la omite", () => {
     const m = renderMensajeReferido("¡Probá {local}!", datos);
     expect(m).toContain(
-      "https://huellitas.app/acceso?localId=patitas&ref=LUC-K3MP"
+      "https://huellitas.app/registro?localId=patitas&ref=LUC-K3MP"
     );
   });
 
@@ -127,7 +127,7 @@ describe("mensaje WhatsApp", () => {
     const decoded = decodeURIComponent(url.split("text=")[1]);
     expect(decoded).toContain("Pet Shop Patitas");
     expect(decoded).toContain(
-      "https://huellitas.app/acceso?localId=patitas&ref=LUC-K3MP"
+      "https://huellitas.app/registro?localId=patitas&ref=LUC-K3MP"
     );
   });
 });
