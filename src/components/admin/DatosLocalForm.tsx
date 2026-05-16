@@ -8,7 +8,9 @@ import { Field } from "@/components/ui/Field";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
+import { persistirLogoUrlEnFirestore } from "@/lib/firebase/persistLogoUrl";
 import { subirLogoLocalCliente } from "@/lib/firebase/storageUploadsClient";
+import { useLocalDocLive } from "@/hooks/useLocalDocLive";
 import type { InfoLocal } from "@/lib/huellitas/localService";
 
 const LOGO_ACCEPT = "image/jpeg,image/png,.jpg,.jpeg,.png";
@@ -31,11 +33,19 @@ function esBlobUrl(url: string | null): url is string {
 export function DatosLocalForm({ initial }: DatosLocalFormProps) {
   const router = useRouter();
   const { sesion } = useAuth();
+  const localId = sesion?.claims.localId ?? initial.id;
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { logoUrl: logoUrlFirestore } = useLocalDocLive(localId, {
+    nombre: initial.nombre,
+    logoUrl: initial.logoUrl ?? null
+  });
 
   const [nombre, setNombre] = useState(initial.nombre);
   /** URL del logo ya guardado en Firebase (persistido). */
-  const [savedLogoUrl, setSavedLogoUrl] = useState(initial.logoUrl ?? "");
+  const [savedLogoUrl, setSavedLogoUrl] = useState(
+    () => (initial.logoUrl ?? "").trim()
+  );
   /** Vista previa local (solo blob:); null = mostrar savedLogoUrl. */
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   /** Archivo elegido por el usuario; no se limpia salvo éxito o “Quitar logo”. */
@@ -70,6 +80,11 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
     setTelefono(initial.telefonoWhatsapp ?? "");
     setDireccion(initial.direccion ?? "");
   }, [initial.nombre, initial.logoUrl, initial.telefonoWhatsapp, initial.direccion]);
+
+  useEffect(() => {
+    const remoto = logoUrlFirestore.trim();
+    if (remoto) setSavedLogoUrl(remoto);
+  }, [logoUrlFirestore]);
 
   function reemplazarPreviewBlob(nuevoBlobUrl: string | null) {
     setPreviewUrl((prev) => {
@@ -125,7 +140,6 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
 
     try {
       const comprimida = await comprimirImagenEnCliente(file);
-      const localId = sesion?.claims.localId;
 
       if (isFirebaseConfigured() && localId) {
         try {
@@ -134,23 +148,10 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
             comprimida,
             comprimida.type
           );
-          const persist = await fetch("/api/admin/local/info", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "same-origin",
-            body: JSON.stringify({ logoUrl: downloadUrl.trim() })
-          });
-          const dataPersist = (await persist.json()) as {
-            ok?: boolean;
-            error?: string;
-            info?: { logoUrl?: string };
-          };
-          if (!persist.ok || !dataPersist.ok) {
-            throw new Error(dataPersist.error ?? "No pudimos guardar la URL del logo");
-          }
-          const urlFinal =
-            (typeof dataPersist.info?.logoUrl === "string"
-              && dataPersist.info.logoUrl.trim()) || downloadUrl.trim();
+          const urlFinal = await persistirLogoUrlEnFirestore(
+            localId,
+            downloadUrl
+          );
           reemplazarPreviewBlob(null);
           setSavedLogoUrl(urlFinal);
           setLogoFile(null);
@@ -267,13 +268,24 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
               {savedLogoUrl.trim() ? (
                 <button
                   type="button"
+                  disabled={uploadingLogo || pending}
                   onClick={() => {
-                    reemplazarPreviewBlob(null);
-                    setSavedLogoUrl("");
-                    setLogoFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = "";
+                    void (async () => {
+                      reemplazarPreviewBlob(null);
+                      setLogoFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                      setSavedLogoUrl("");
+                      try {
+                        await persistirLogoUrlEnFirestore(localId, "");
+                        router.refresh();
+                      } catch (e) {
+                        setError(
+                          e instanceof Error ? e.message : "No pudimos quitar el logo"
+                        );
+                      }
+                    })();
                   }}
-                  className="text-sm text-bark-500 transition hover:text-bark-700"
+                  className="text-sm text-bark-500 transition hover:text-bark-700 disabled:opacity-50"
                 >
                   Quitar logo
                 </button>

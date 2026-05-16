@@ -70,10 +70,17 @@ export function useLocalDocLive(
   const aplicar = useCallback(
     (data: Record<string, unknown> | undefined) => {
       const parsed = parseLocalDoc(localId, data);
-      setEstado({
-        nombre: parsed.nombre,
-        logoUrl: parsed.logoUrl,
-        cargando: false
+      const logoEnDocumento = !!data && "logoUrl" in data;
+      setEstado((prev) => {
+        let logoUrl = parsed.logoUrl;
+        if (!logoEnDocumento && !logoUrl && prev.logoUrl.trim()) {
+          logoUrl = prev.logoUrl;
+        }
+        return {
+          nombre: parsed.nombre,
+          logoUrl,
+          cargando: false
+        };
       });
     },
     [localId]
