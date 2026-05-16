@@ -101,7 +101,7 @@ export default async function AdminDashboard() {
             Icon={Users}
           />
           <DashboardCard
-            href="/admin/clientes"
+            href="/admin/cumpleanos"
             title="Cumpleaños"
             description="Quiénes cumplen pronto y a quiénes saludamos."
             Icon={Cake}

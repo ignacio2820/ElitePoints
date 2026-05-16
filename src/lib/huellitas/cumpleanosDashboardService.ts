@@ -10,6 +10,7 @@ import {
   etiquetaDiaCumple,
   fechaProximoCumple
 } from "./cumpleanosProximos";
+import { fusionarMascotasCliente } from "./fusionarMascotasCliente";
 import { normalizarFechaNacimientoMascota } from "./fechaNacimientoMascota";
 import type { Cliente, Mascota } from "@/lib/huellitas/types";
 
@@ -125,25 +126,23 @@ export async function listarProximosCumpleanosMascotas(
       };
 
       const embebidas = (cliente.mascotas ?? []) as Mascota[];
-      embebidas.forEach((m, idx) => {
-        agregarMascotaSiAplica(filas, visto, {
-          ...base,
-          mascotaId: m.id ?? `emb-${idx}-${m.nombre ?? ""}`,
-          mascota: m
-        });
-      });
-
+      let subcoleccion: Mascota[] = [];
       try {
         const mascotasSnap = await cols.mascotas(db, localId, cDoc.id).get();
-        for (const mDoc of mascotasSnap.docs) {
-          agregarMascotaSiAplica(filas, visto, {
-            ...base,
-            mascotaId: mDoc.id,
-            mascota: { id: mDoc.id, ...(mDoc.data() as Mascota) }
-          });
-        }
+        subcoleccion = mascotasSnap.docs.map((mDoc) => ({
+          id: mDoc.id,
+          ...(mDoc.data() as Mascota)
+        }));
       } catch {
-        // Subcolección ausente en clientes legacy: seguimos con embebidas.
+        // Subcolección ausente en clientes legacy.
+      }
+
+      for (const m of fusionarMascotasCliente(embebidas, subcoleccion)) {
+        agregarMascotaSiAplica(filas, visto, {
+          ...base,
+          mascotaId: m.id ?? m.nombre,
+          mascota: m
+        });
       }
 
       return filas;

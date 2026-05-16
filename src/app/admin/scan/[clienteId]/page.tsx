@@ -12,6 +12,7 @@ import {
   type ConfiguracionLocal,
   type Mascota
 } from "@/lib/huellitas/types";
+import { fusionarMascotasCliente } from "@/lib/huellitas/fusionarMascotasCliente";
 import { formatARS, formatNumber } from "@/lib/utils";
 
 interface DatosScan {
@@ -94,11 +95,15 @@ async function loadScan(
     const db = adminDb();
     const cliSnap = await cols.cliente(db, localId, clienteId).get();
     if (!cliSnap.exists) return null;
-    const cli = cliSnap.data() as DatosScan["cliente"];
+    const cli = cliSnap.data() as DatosScan["cliente"] & {
+      mascotas?: Mascota[];
+    };
     const mascotasSnap = await cols.mascotas(db, localId, clienteId).get();
-    const mascotas = mascotasSnap.docs.map(
-      (d) => ({ id: d.id, ...(d.data() as Mascota) })
-    );
+    const subcoleccion = mascotasSnap.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Mascota)
+    }));
+    const mascotas = fusionarMascotasCliente(cli.mascotas, subcoleccion);
     const cfg = await getConfiguracion(localId);
     return {
       cliente: {

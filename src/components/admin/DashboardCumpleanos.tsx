@@ -19,7 +19,7 @@ export async function DashboardCumpleanos({ localId }: { localId: string }) {
     const vacio = estaSemana.length === 0 && proximasSemanas.length === 0;
 
     return (
-      <section className="mb-10">
+      <section id="cumpleanos" className="mb-10 scroll-mt-24">
         <Cabecera />
         <article className="card space-y-6 rounded-3xl p-6">
           {vacio ? (
@@ -188,10 +188,10 @@ function FilaCumpleano({
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-2">
         <Link
-          href={`/admin/clientes?cliente=${encodeURIComponent(item.clienteId)}`}
+          href={`/admin/scan/${encodeURIComponent(item.clienteId)}`}
           className="rounded-xl border border-bark-200 bg-white px-3 py-2 text-xs font-semibold text-bark-700 transition hover:bg-cream-100"
         >
-          Ver cliente
+          Ver ficha
         </Link>
         {wa ? (
           <a
