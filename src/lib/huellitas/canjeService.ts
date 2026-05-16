@@ -306,6 +306,10 @@ export async function cancelarTicketCanje(input: {
     }
 
     const plan = data.plan as ConsumoLote[];
+    const costo = Number(data.costoHuellitas);
+    const cliSnap = await tx.get(clienteRef);
+    const cli = (cliSnap.data() ?? {}) as Cliente;
+
     for (const c of plan) {
       const loteRef = cols
         .huellitas(db, input.localId, input.clienteId)
@@ -315,9 +319,6 @@ export async function cancelarTicketCanje(input: {
       });
     }
 
-    const costo = Number(data.costoHuellitas);
-    const cliSnap = await tx.get(clienteRef);
-    const cli = (cliSnap.data() ?? {}) as Cliente;
     tx.update(clienteRef, {
       saldoHuellitas: Math.max(0, (cli.saldoHuellitas ?? 0) + costo)
     });
@@ -506,6 +507,16 @@ async function confirmarColaEntregaTx(
   if (ticket.estado === "cancelado") {
     throw new Error("Este canje fue cancelado.");
   }
+  const costo = Number(ticket.costoHuellitas);
+  const clienteRef = cols.cliente(db, localId, String(ticket.clienteId));
+  const premioRef = cols.premio(db, localId, String(ticket.premioId));
+
+  const [clienteSnap, premioSnap] = await Promise.all([
+    tx.get(clienteRef),
+    tx.get(premioRef)
+  ]);
+  const cliente = (clienteSnap.data() ?? {}) as Cliente;
+
   if (tickectExpirado(String(ticket.expiraEn ?? ""))) {
     await expirarCanjeColaTx(
       db,
@@ -514,15 +525,11 @@ async function confirmarColaEntregaTx(
       String(ticket.clienteId),
       codigo,
       canjeRef,
-      ticket
+      ticket,
+      cliente
     );
     throw new Error("Este canje expiró.");
   }
-
-  const costo = Number(ticket.costoHuellitas);
-  const clienteRef = cols.cliente(db, localId, String(ticket.clienteId));
-  const clienteSnap = await tx.get(clienteRef);
-  const cliente = (clienteSnap.data() ?? {}) as Cliente;
 
   tx.update(canjeRef, {
     estado: "completado" as EstadoCanje,
@@ -530,8 +537,6 @@ async function confirmarColaEntregaTx(
     confirmadoPor: adminUid
   });
 
-  const premioRef = cols.premio(db, localId, String(ticket.premioId));
-  const premioSnap = await tx.get(premioRef);
   let stockRestante: number | null = null;
   if (premioSnap.exists) {
     const stock = (premioSnap.data() as Premio).stock;
@@ -573,19 +578,24 @@ async function expirarCanjeColaTx(
   clienteId: string,
   _codigo: string,
   canjeRef: DocumentReference,
-  ticket: Record<string, unknown>
+  ticket: Record<string, unknown>,
+  clientePrecargado?: Cliente
 ): Promise<void> {
   const plan = ticket.plan as ConsumoLote[];
+  const clienteRef = cols.cliente(db, localId, clienteId);
+  let cli = clientePrecargado;
+  if (!cli) {
+    const cliSnap = await tx.get(clienteRef);
+    cli = (cliSnap.data() ?? {}) as Cliente;
+  }
+  const costo = Number(ticket.costoHuellitas);
+
   for (const c of plan) {
     const loteRef = cols.huellitas(db, localId, clienteId).doc(c.loteId);
     tx.update(loteRef, {
       huellitasRestantes: FieldValue.increment(c.consumidas)
     });
   }
-  const clienteRef = cols.cliente(db, localId, clienteId);
-  const cliSnap = await tx.get(clienteRef);
-  const cli = (cliSnap.data() ?? {}) as Cliente;
-  const costo = Number(ticket.costoHuellitas);
   tx.update(clienteRef, {
     saldoHuellitas: Math.max(0, (cli.saldoHuellitas ?? 0) + costo)
   });
@@ -623,13 +633,17 @@ async function confirmarLegacyTicketTx(
   }
 
   const clienteRef = cols.cliente(db, localId, ticket.clienteId);
-  const clienteSnap = await tx.get(clienteRef);
+  const premioRef = cols.premio(db, localId, ticket.premioId);
+
+  const [clienteSnap, lotesSnap, premioSnap] = await Promise.all([
+    tx.get(clienteRef),
+    tx.get(cols.huellitas(db, localId, ticket.clienteId)),
+    tx.get(premioRef)
+  ]);
+
   if (!clienteSnap.exists) throw new Error("Cliente inexistente.");
   const cliente = clienteSnap.data() as Cliente;
 
-  const lotesSnap = await tx.get(
-    cols.huellitas(db, localId, ticket.clienteId)
-  );
   const lotes: LoteHuellitas[] = lotesSnap.docs.map((d) => ({
     id: d.id,
     ...(d.data() as Omit<LoteHuellitas, "id">)
@@ -684,8 +698,6 @@ async function confirmarLegacyTicketTx(
     huellitasReservadas: FieldValue.increment(-ticket.costoHuellitas)
   });
 
-  const premioRef = cols.premio(db, localId, ticket.premioId);
-  const premioSnap = await tx.get(premioRef);
   let stockRestante: number | null = null;
   if (premioSnap.exists) {
     const stock = (premioSnap.data() as Premio).stock;
