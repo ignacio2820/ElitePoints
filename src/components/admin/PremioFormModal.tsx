@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
+import { isFirebaseConfigured } from "@/lib/firebase/client";
+import { subirImagenPremioCliente } from "@/lib/firebase/storageUploadsClient";
 import { Field } from "@/components/ui/Field";
 
 export interface PremioFormValues {
@@ -30,6 +33,7 @@ export function PremioFormModal({
   onClose,
   onSaved
 }: Props) {
+  const { sesion } = useAuth();
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [costoHuellitas, setCostoHuellitas] = useState("");
@@ -109,7 +113,7 @@ export function PremioFormModal({
         valorDescuentoValue = Math.round(v * 100) / 100;
       }
 
-      const payload = {
+      const payloadBase = {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
         costoHuellitas: costo,
@@ -117,6 +121,29 @@ export function PremioFormModal({
         stock: stockValue,
         nivelMinimoId: nivelMinimoId || null
       };
+
+      /** Subir imagen al cliente ANTES del POST/patch para que Zod reciba la URL en el mismo cuerpo. */
+      let imagenUrlListo: string | undefined;
+      let comprimidaPremio: File | null = null;
+      if (imagenFile) {
+        comprimidaPremio = await comprimirImagenEnCliente(imagenFile);
+        if (isFirebaseConfigured() && sesion?.claims.localId) {
+          try {
+            imagenUrlListo = await subirImagenPremioCliente(
+              sesion.claims.localId,
+              comprimidaPremio,
+              comprimidaPremio.type
+            );
+          } catch {
+            imagenUrlListo = undefined;
+          }
+        }
+      }
+
+      const payload =
+        imagenUrlListo !== undefined
+          ? { ...payloadBase, imagen: imagenUrlListo }
+          : payloadBase;
 
       const endpoint = initial?.id
         ? `/api/admin/premios/${initial.id}`
@@ -133,10 +160,11 @@ export function PremioFormModal({
       }
 
       let premio: Premio = data.premio;
-      if (imagenFile) {
-        const comprimida = await comprimirImagenEnCliente(imagenFile);
+      if (imagenFile && imagenUrlListo === undefined) {
+        const archivo =
+          comprimidaPremio ?? (await comprimirImagenEnCliente(imagenFile));
         const fd = new FormData();
-        fd.append("file", comprimida);
+        fd.append("file", archivo);
         const imgRes = await fetch(`/api/admin/premios/${premio.id}/imagen`, {
           method: "POST",
           body: fd

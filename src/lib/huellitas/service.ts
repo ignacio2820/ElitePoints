@@ -434,9 +434,12 @@ export async function registrarVenta(
         fecha: FieldValue.serverTimestamp()
       });
 
+      const saldoDocRef = cliente.saldoHuellitas ?? 0;
+      const deltaSaldoRef = saldoEstimado - saldoDocRef;
+      const deltaAcumRef = acumuladoConBonus - acumuladoActual;
       tx.update(clienteRef, {
-        saldoHuellitas: saldoEstimado,
-        acumuladoHistorico: acumuladoConBonus,
+        saldoHuellitas: FieldValue.increment(deltaSaldoRef),
+        acumuladoHistorico: FieldValue.increment(deltaAcumRef),
         nivelId: nivelTrasBonus.id,
         referidoActivado: true,
         primerCompraRegistrada: true
@@ -499,9 +502,12 @@ export async function registrarVenta(
     }
 
     // 7. Caso normal (sin activación de referido)
+    const saldoDoc = cliente.saldoHuellitas ?? 0;
+    const deltaSaldo = saldoEstimado - saldoDoc;
+    const deltaAcum = acumuladoBase - acumuladoActual;
     tx.update(clienteRef, {
-      saldoHuellitas: saldoEstimado,
-      acumuladoHistorico: acumuladoBase,
+      saldoHuellitas: FieldValue.increment(deltaSaldo),
+      acumuladoHistorico: FieldValue.increment(deltaAcum),
       nivelId: nivelNuevo.id,
       primerCompraRegistrada: true
     });

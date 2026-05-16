@@ -24,10 +24,16 @@ import { formatNumber } from "@/lib/utils";
 interface Props {
   /** ID inicial preseleccionado (viene del query param `?cliente=...`). */
   clienteIdInicial?: string;
+  /** Último escaneo QR (t único para reinyectar el mismo cliente). */
+  escaneoQr?: { id: string; t: number } | null;
   onChange: (clienteId: string) => void;
 }
 
-export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
+export function SelectorCliente({
+  clienteIdInicial,
+  escaneoQr,
+  onChange
+}: Props) {
   const [q, setQ] = useState("");
   const [resultados, setResultados] = useState<ClienteResumen[]>([]);
   const [buscando, setBuscando] = useState(false);
@@ -67,6 +73,33 @@ export function SelectorCliente({ clienteIdInicial, onChange }: Props) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteIdInicial]);
+
+  useEffect(() => {
+    if (!escaneoQr?.id?.trim()) return;
+    const id = escaneoQr.id.trim();
+    let cancelado = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/admin/clientes/${encodeURIComponent(id)}`, {
+          cache: "no-store",
+          credentials: "same-origin"
+        });
+        const data = (await r.json()) as {
+          ok?: boolean;
+          cliente?: ClienteResumen;
+        };
+        if (cancelado || !data.ok || !data.cliente) return;
+        setSeleccionado(data.cliente);
+        onChange(data.cliente.id);
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+    // escaneoQr.t dispara cada nuevo escaneo
+  }, [escaneoQr?.t, escaneoQr?.id, onChange]);
 
   // Cerrar el dropdown al click fuera
   useEffect(() => {

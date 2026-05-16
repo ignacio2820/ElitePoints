@@ -59,7 +59,10 @@ export default async function ConfiguracionPage() {
         </p>
       </header>
 
-      <DatosLocalForm initial={info} />
+      <DatosLocalForm
+        initial={info}
+        key={`${localId}-${(info.logoUrl ?? "").slice(0, 80)}`}
+      />
 
       <PasswordAccesoForm />
 

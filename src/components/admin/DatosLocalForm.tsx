@@ -5,7 +5,10 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { ImageIcon, Phone, Save, Store } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
+import { isFirebaseConfigured } from "@/lib/firebase/client";
+import { subirLogoLocalCliente } from "@/lib/firebase/storageUploadsClient";
 import type { InfoLocal } from "@/lib/huellitas/localService";
 
 const LOGO_ACCEPT = "image/jpeg,image/png,.jpg,.jpeg,.png";
@@ -27,6 +30,7 @@ function esBlobUrl(url: string | null): url is string {
 
 export function DatosLocalForm({ initial }: DatosLocalFormProps) {
   const router = useRouter();
+  const { sesion } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [nombre, setNombre] = useState(initial.nombre);
@@ -121,19 +125,65 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
 
     try {
       const comprimida = await comprimirImagenEnCliente(file);
+      const localId = sesion?.claims.localId;
+
+      if (isFirebaseConfigured() && localId) {
+        try {
+          const downloadUrl = await subirLogoLocalCliente(
+            localId,
+            comprimida,
+            comprimida.type
+          );
+          const persist = await fetch("/api/admin/local/info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ logoUrl: downloadUrl.trim() })
+          });
+          const dataPersist = (await persist.json()) as {
+            ok?: boolean;
+            error?: string;
+            info?: { logoUrl?: string };
+          };
+          if (!persist.ok || !dataPersist.ok) {
+            throw new Error(dataPersist.error ?? "No pudimos guardar la URL del logo");
+          }
+          const urlFinal =
+            (typeof dataPersist.info?.logoUrl === "string"
+              && dataPersist.info.logoUrl.trim()) || downloadUrl.trim();
+          reemplazarPreviewBlob(null);
+          setSavedLogoUrl(urlFinal);
+          setLogoFile(null);
+          router.refresh();
+          return;
+        } catch {
+          // Continuá con el upload por API (Admin SDK) si falla Storage del cliente o reglas.
+        }
+      }
+
       const form = new FormData();
       form.append("file", comprimida);
       const res = await fetch("/api/admin/local/logo", {
         method: "POST",
         body: form
       });
-      const data = await res.json();
+      const data = await res.json() as {
+        ok?: boolean;
+        error?: string;
+        logoUrl?: string;
+        info?: { logoUrl?: string };
+      };
       if (!res.ok || !data.ok) {
         throw new Error(data.error ?? "No pudimos subir el logo");
       }
-      const url = (data.logoUrl as string) ?? "";
+      const url =
+        (typeof data.info?.logoUrl === "string" && data.info.logoUrl.trim()) ||
+        (typeof data.logoUrl === "string" ? data.logoUrl.trim() : "");
+      if (!url) {
+        throw new Error("El servidor no devolvió la URL del logo.");
+      }
       reemplazarPreviewBlob(null);
-      setSavedLogoUrl(url.trim());
+      setSavedLogoUrl(url);
       setLogoFile(null);
       router.refresh();
     } catch (err) {

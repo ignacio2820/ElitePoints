@@ -360,7 +360,7 @@ export const PremioSchema = z.object({
   /** Stock disponible (null = ilimitado). */
   stock: z.number().int().nonnegative().nullable().default(null),
   /** null = sin imagen en Firestore; omitir en creación hasta subir archivo. */
-  imagen: z.union([z.string().url(), z.null()]).optional(),
+  imagen: z.string().url().nullish(),
   activo: z.boolean().default(true),
   /** Solo para mascotas de cierta especie (opcional). */
   especiesObjetivo: z.array(EspecieSchema).default([])

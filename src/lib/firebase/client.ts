@@ -18,13 +18,12 @@ const firebaseConfig = {
   apiKey: sanitizePublicEnvString(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
   authDomain: sanitizePublicEnvString(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
   projectId: sanitizePublicEnvString(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
-  storageBucket: (() => {
-    const raw = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-    const once = String(raw ?? "")
-      .trim()
-      .replace(/^"|"$/g, "");
-    return sanitizePublicEnvString(once)?.replace(/^"|"$/g, "").trim() || undefined;
-  })(),
+  /** Regex obligatorio (Vercel a veces envuelve el valor en comillas JSON). */
+  storageBucket: sanitizePublicEnvString(
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.replace(/^"|"$/g, "") ?? ""
+  )
+    ?.replace(/^"|"$/g, "")
+    .trim() || undefined,
   messagingSenderId: sanitizePublicEnvString(
     process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
   ),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Cake,
@@ -15,6 +15,7 @@ import {
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import type { NivelLealtad } from "@/lib/huellitas/types";
 import { formatARS, formatNumber } from "@/lib/utils";
+import { EscanerQrClienteMovil } from "@/components/admin/EscanerQrClienteMovil";
 import { SelectorCliente } from "./SelectorCliente";
 
 interface VentaResponse {
@@ -80,6 +81,10 @@ export function NuevaVentaForm({
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<VentaResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [escaneoQr, setEscaneoQr] = useState<{ id: string; t: number } | null>(
+    null
+  );
+  const montoInputRef = useRef<HTMLInputElement>(null);
 
   const montoNum = Number(monto) || 0;
   const canjeNum = Number(huellitasACanjear) || 0;
@@ -102,6 +107,7 @@ export function NuevaVentaForm({
       const res = await fetch("/api/ventas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           localId,
           clienteId: clienteId.trim(),
@@ -132,6 +138,13 @@ export function NuevaVentaForm({
     setHuellitasACanjear("");
   }
 
+  const onClienteDesdeQr = useCallback((id: string) => {
+    setClienteId(id);
+    setEscaneoQr({ id, t: Date.now() });
+    requestAnimationFrame(() => {
+      montoInputRef.current?.focus();
+    });
+  }, []);
   const nivelActualResult = niveles.find((n) => n.id === resultado?.nivelId);
   const nivelAnteriorResult = niveles.find((n) => n.id === resultado?.nivelAnterior);
 
@@ -191,10 +204,14 @@ export function NuevaVentaForm({
         <div className="rounded-3xl border border-bark-100/80 bg-white/90 p-7 shadow-soft">
             {!resultado ? (
               <form onSubmit={onSubmit} className="space-y-6">
-                <SelectorCliente
-                  clienteIdInicial={clienteIdInicial}
-                  onChange={setClienteId}
-                />
+                <div className="flex flex-col gap-3 md:gap-4">
+                  <SelectorCliente
+                    clienteIdInicial={clienteIdInicial}
+                    escaneoQr={escaneoQr}
+                    onChange={setClienteId}
+                  />
+                  <EscanerQrClienteMovil onClienteId={onClienteDesdeQr} />
+                </div>
 
                 {/* Monto */}
                 <FieldDark
@@ -203,10 +220,11 @@ export function NuevaVentaForm({
                   icon={<Receipt size={16} />}
                 >
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-bark-500">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 z-[1] -translate-y-1/2 text-lg font-semibold tabular-nums text-bark-500 sm:left-4">
                       $
                     </span>
                     <input
+                      ref={montoInputRef}
                       type="number"
                       inputMode="decimal"
                       min={0}
@@ -214,7 +232,7 @@ export function NuevaVentaForm({
                       value={monto}
                       onChange={(e) => setMonto(e.target.value)}
                       placeholder="0"
-                      className="w-full rounded-xl input-elegant py-4 pl-9 pr-4 text-2xl font-semibold outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                      className="w-full rounded-xl input-elegant py-4 pl-11 pr-4 text-2xl font-semibold tabular-nums outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 sm:pl-12"
                     />
                   </div>
                 </FieldDark>
