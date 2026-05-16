@@ -10,6 +10,7 @@ import {
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ActivarPasskeyAviso } from "@/components/admin/ActivarPasskeyAviso";
 import { AlertasCanjeDashboard } from "@/components/admin/AlertasCanjeDashboard";
+import { DashboardCumpleanos } from "@/components/admin/DashboardCumpleanos";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { requireAdmin } from "@/lib/auth/server";
 import { getInfoLocal } from "@/lib/huellitas/localService";
@@ -79,6 +80,8 @@ export default async function AdminDashboard() {
       <AlertasCanjeDashboard localId={localId} />
 
       <DashboardStats localId={localId} />
+
+      <DashboardCumpleanos localId={localId} />
 
       <section>
         <h2 className="mb-5 font-display text-2xl font-bold text-bark-700">
