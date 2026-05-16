@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
+import { sanitizePublicEnvString } from "@/lib/firebase/storageBucket";
 import { getInfoLocal, membresiaActiva, setInfoLocal } from "@/lib/huellitas/localService";
 
 export const runtime = "nodejs";
@@ -8,9 +9,18 @@ export const dynamic = "force-dynamic";
 
 const Body = z.object({
   nombre: z.string().min(1).max(120).optional(),
-  logoUrl: z
-    .union([z.string().trim().url().max(500), z.literal(""), z.null()])
-    .optional(),
+  logoUrl: z.preprocess(
+    (v) => {
+      if (v === "" || v === null || v === undefined) return v;
+      if (typeof v === "string") {
+        return sanitizePublicEnvString(v) ?? v.trim();
+      }
+      return v;
+    },
+    z
+      .union([z.string().trim().url().max(500), z.literal(""), z.null()])
+      .optional()
+  ),
   telefonoWhatsapp: z
     .string()
     .max(30)

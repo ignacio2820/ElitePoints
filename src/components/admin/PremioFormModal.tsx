@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
@@ -40,9 +40,20 @@ export function PremioFormModal({
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const previewBlobRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      if (previewBlobRef.current) {
+        URL.revokeObjectURL(previewBlobRef.current);
+        previewBlobRef.current = null;
+      }
+      return;
+    }
+    if (previewBlobRef.current) {
+      URL.revokeObjectURL(previewBlobRef.current);
+      previewBlobRef.current = null;
+    }
     setNombre(initial?.nombre ?? "");
     setDescripcion(initial?.descripcion ?? "");
     setCostoHuellitas(
@@ -136,6 +147,13 @@ export function PremioFormModal({
         }
         premio = imgData.premio;
       }
+
+      if (previewBlobRef.current) {
+        URL.revokeObjectURL(previewBlobRef.current);
+        previewBlobRef.current = null;
+      }
+      setImagenPreview(premio.imagen ?? null);
+      setImagenFile(null);
 
       onSaved(premio);
       onClose();
@@ -253,9 +271,18 @@ export function PremioFormModal({
                 onChange={(e) => {
                   const file = e.target.files?.[0] ?? null;
                   setImagenFile(file);
-                  setImagenPreview(
-                    file ? URL.createObjectURL(file) : initial?.imagen ?? null
-                  );
+                  if (previewBlobRef.current) {
+                    URL.revokeObjectURL(previewBlobRef.current);
+                    previewBlobRef.current = null;
+                  }
+                  if (file) {
+                    const u = URL.createObjectURL(file);
+                    previewBlobRef.current = u;
+                    setImagenPreview(u);
+                  } else {
+                    setImagenPreview(initial?.imagen ?? null);
+                  }
+                  e.target.value = "";
                 }}
               />
               {imagenPreview ? (

@@ -60,6 +60,13 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
     };
   }, []);
 
+  useEffect(() => {
+    setNombre(initial.nombre);
+    setSavedLogoUrl((initial.logoUrl ?? "").trim());
+    setTelefono(initial.telefonoWhatsapp ?? "");
+    setDireccion(initial.direccion ?? "");
+  }, [initial.nombre, initial.logoUrl, initial.telefonoWhatsapp, initial.direccion]);
+
   function reemplazarPreviewBlob(nuevoBlobUrl: string | null) {
     setPreviewUrl((prev) => {
       if (esBlobUrl(prev)) {
@@ -89,6 +96,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
           return;
         }
         setSavedAt(new Date().toLocaleTimeString("es-AR"));
+        router.refresh();
         if (!data.membresiaActiva) {
           router.push("/admin/pagos");
         }
@@ -125,8 +133,9 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
       }
       const url = (data.logoUrl as string) ?? "";
       reemplazarPreviewBlob(null);
-      setSavedLogoUrl(url);
+      setSavedLogoUrl(url.trim());
       setLogoFile(null);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
       // Mantener preview blob y logoFile: no revocar ni pisar con saved vacío

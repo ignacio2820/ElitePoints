@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStorage } from "firebase-admin/storage";
+import { getFirebaseStorageBucket } from "@/lib/firebase/storageBucket";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
 import { comprimirImagenPremio } from "@/lib/images/compressImage";
 import { actualizarPremio, obtenerPremio } from "@/lib/huellitas/premiosService";
@@ -31,7 +32,7 @@ export async function POST(
       );
     }
 
-    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+    const bucketName = getFirebaseStorageBucket();
     if (!bucketName) {
       return NextResponse.json(
         {

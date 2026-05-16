@@ -21,7 +21,7 @@ const Body = z.object({
   categoria: z
     .enum(["alimento", "juguete", "accesorio", "servicio", "otro"])
     .optional(),
-  imagen: z.string().url().nullable().optional(),
+  imagen: z.union([z.string().url(), z.null()]).optional(),
   activo: z.boolean().optional()
 });
 

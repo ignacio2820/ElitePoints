@@ -15,6 +15,21 @@ export type PremioInput = {
   activo?: boolean;
 };
 
+function normalizarImagenPremio(raw: unknown): string | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  if (typeof raw !== "string") return null;
+  const t = raw.trim();
+  if (t.length === 0) return null;
+  try {
+    const u = new URL(t);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    return t;
+  } catch {
+    return null;
+  }
+}
+
 function mapDoc(id: string, data: Record<string, unknown>, localId: string): Premio {
   const valorDescuento =
     typeof data.valorDescuento === "number" && data.valorDescuento >= 0
@@ -30,7 +45,7 @@ function mapDoc(id: string, data: Record<string, unknown>, localId: string): Pre
     nivelMinimoId: data.nivelMinimoId ?? "cachorro",
     categoria: data.categoria ?? "otro",
     stock: data.stock ?? null,
-    imagen: data.imagen,
+    imagen: normalizarImagenPremio(data.imagen),
     activo: data.activo !== false,
     especiesObjetivo: Array.isArray(data.especiesObjetivo) ? data.especiesObjetivo : []
   });
@@ -63,12 +78,14 @@ export async function crearPremio(localId: string, input: PremioInput): Promise<
     nivelMinimoId: input.nivelMinimoId?.trim() || "cachorro",
     categoria: input.categoria ?? "otro",
     stock: input.stock ?? null,
-    imagen: input.imagen ?? null,
     activo: input.activo ?? true,
     especiesObjetivo: [],
     creadoEn: ahora,
     actualizadoEn: ahora
   };
+  if (input.imagen !== undefined) {
+    payload.imagen = input.imagen;
+  }
   if (
     typeof input.valorDescuento === "number" &&
     Number.isFinite(input.valorDescuento) &&

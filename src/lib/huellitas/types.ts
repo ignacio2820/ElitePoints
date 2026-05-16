@@ -359,7 +359,8 @@ export const PremioSchema = z.object({
   categoria: z.enum(["alimento", "juguete", "accesorio", "servicio", "otro"]).default("otro"),
   /** Stock disponible (null = ilimitado). */
   stock: z.number().int().nonnegative().nullable().default(null),
-  imagen: z.string().url().optional(),
+  /** null = sin imagen en Firestore; omitir en creación hasta subir archivo. */
+  imagen: z.union([z.string().url(), z.null()]).optional(),
   activo: z.boolean().default(true),
   /** Solo para mascotas de cierta especie (opcional). */
   especiesObjetivo: z.array(EspecieSchema).default([])

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { InstalarAppBanner } from "@/components/pwa/InstalarAppBanner";
 import { getSesion } from "@/lib/auth/server";
-import { RUTA_PORTAL } from "@/lib/auth/redirect";
+import { RUTA_DASHBOARD, RUTA_PORTAL } from "@/lib/auth/redirect";
 import { loginClienteRedirect } from "@/lib/huellitas/tenant";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default async function MiCuentaLayout({
     redirect(loginClienteRedirect(RUTA_PORTAL));
   }
   if (sesion.claims.role !== "cliente" || !sesion.claims.clienteId) {
-    redirect("/dashboard");
+    redirect(RUTA_DASHBOARD);
   }
   return (
     <div className="flex min-h-screen flex-col">

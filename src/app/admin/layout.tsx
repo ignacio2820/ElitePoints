@@ -6,6 +6,7 @@ import { AdminNav } from "@/components/admin/AdminNav";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { getSesion } from "@/lib/auth/server";
+import { RUTA_PORTAL } from "@/lib/auth/redirect";
 import { AvisoMembresiaPorVencer } from "@/components/admin/AvisoMembresiaPorVencer";
 import { getInfoLocal } from "@/lib/huellitas/localService";
 import {
@@ -28,7 +29,7 @@ export default async function AdminLayout({
     redirect("/login?intent=admin&redirect=/dashboard");
   }
   if (sesion.claims.role !== "admin") {
-    redirect("/portal");
+    redirect(RUTA_PORTAL);
   }
 
   const pathname = headers().get("x-pathname") ?? "";
@@ -100,7 +101,7 @@ export default async function AdminLayout({
                 Configurar perfil
               </Link>
             ) : null}
-            <UserMenu tone="forest" />
+            <UserMenu tone="forest" showSignOutLabel />
           </div>
         </div>
         <AdminNav className="overflow-x-auto px-4 pb-2 md:hidden" />

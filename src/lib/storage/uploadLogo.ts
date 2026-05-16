@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { getStorage } from "firebase-admin/storage";
+import { getFirebaseStorageBucket } from "@/lib/firebase/storageBucket";
 import { comprimirImagenPremio } from "@/lib/images/compressImage";
 import { setInfoLocal } from "@/lib/huellitas/localService";
 
@@ -17,7 +18,7 @@ function downloadUrlFirebase(
 }
 
 function bucketNameOrThrow(): string {
-  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim();
+  const bucketName = getFirebaseStorageBucket();
   if (!bucketName) {
     throw new Error(
       "Firebase Storage no está configurado. Definí NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET."

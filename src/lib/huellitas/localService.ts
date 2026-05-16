@@ -1,5 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
+import { sanitizePublicEnvString } from "@/lib/firebase/storageBucket";
 import { cols } from "@/lib/firebase/collections";
 import { tieneAccesoOperativo, type PlanMembresia } from "./membresia.shared";
 
@@ -36,10 +37,16 @@ export async function getInfoLocal(localId: string): Promise<InfoLocal> {
   const db = adminDb();
   const snap = await cols.local(db, localId).get();
   const data = (snap.data() ?? {}) as Record<string, unknown>;
+  const rawLogo = data.logoUrl;
+  const logoUrlLimpio =
+    typeof rawLogo === "string"
+      ? sanitizePublicEnvString(rawLogo) ?? rawLogo.trim()
+      : undefined;
+
   const info: InfoLocal = {
     id: localId,
     nombre: (data.nombre as string | undefined) ?? localId,
-    logoUrl: data.logoUrl as string | undefined,
+    logoUrl: logoUrlLimpio || undefined,
     telefonoWhatsapp: data.telefonoWhatsapp as string | undefined,
     email: data.email as string | undefined,
     direccion: data.direccion as string | undefined,
@@ -72,7 +79,8 @@ export async function setInfoLocal(
   if (patch.logoUrl === null) {
     update.logoUrl = null;
   } else if (typeof patch.logoUrl === "string") {
-    const logo = patch.logoUrl.trim();
+    const logo =
+      sanitizePublicEnvString(patch.logoUrl) ?? patch.logoUrl.trim();
     update.logoUrl = logo.length > 0 ? logo : null;
   }
   if (typeof patch.telefonoWhatsapp === "string") {

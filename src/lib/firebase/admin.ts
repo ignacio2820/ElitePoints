@@ -5,6 +5,7 @@ import {
   getApp,
   type App
 } from "firebase-admin/app";
+import { getFirebaseStorageBucket } from "@/lib/firebase/storageBucket";
 import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
@@ -43,7 +44,7 @@ function initFromServiceAccountJson(serviceAccount: {
       privateKey
     }),
     projectId: serviceAccount.project_id,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    storageBucket: getFirebaseStorageBucket()
   });
 }
 
@@ -88,7 +89,7 @@ function getAdminApp(): App {
   _app = initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
     projectId,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    storageBucket: getFirebaseStorageBucket()
   });
 
   return _app;

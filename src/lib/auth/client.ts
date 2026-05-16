@@ -294,7 +294,24 @@ export async function logout(): Promise<void> {
   } catch {
     // ignore
   }
-  await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+  if (typeof window !== "undefined") {
+    try {
+      const borrar: string[] = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const k = window.localStorage.key(i);
+        if (k?.startsWith("huellitas:")) borrar.push(k);
+      }
+      borrar.forEach((k) => window.localStorage.removeItem(k));
+    } catch {
+      // ignore
+    }
+    window.localStorage.removeItem(STORAGE_EMAIL_KEY);
+    window.localStorage.removeItem(STORAGE_REDIRECT_KEY);
+  }
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "same-origin"
+  }).catch(() => {});
   if (typeof window !== "undefined") {
     window.location.href = "/login";
   }
