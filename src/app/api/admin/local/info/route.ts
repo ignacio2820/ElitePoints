@@ -18,7 +18,8 @@ const Body = z.object({
       return v;
     },
     z
-      .union([z.string().trim().url().max(500), z.literal(""), z.null()])
+      // URLs de Firebase Storage con token pueden superar largamente 500 caracteres.
+      .union([z.string().trim().url().max(8192), z.literal(""), z.null()])
       .optional()
   ),
   telefonoWhatsapp: z

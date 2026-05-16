@@ -22,6 +22,7 @@ export function UserMenu({
           ? "border-white/25 bg-white/10 text-white"
           : "border-bark-100 bg-cream-50 text-bark-600"
       }`}
+      title={showSignOutLabel ? (sesion.email ?? undefined) : undefined}
     >
       <span
         className={`flex h-7 w-7 items-center justify-center rounded-full ${
@@ -33,7 +34,7 @@ export function UserMenu({
       <span
         className={`min-w-0 font-medium ${
           onForest && showSignOutLabel
-            ? "inline-block max-w-[min(42vw,11rem)] truncate text-[11px] sm:max-w-[16rem] sm:text-xs"
+            ? "hidden text-[11px] sm:inline-block sm:max-w-[min(12rem,calc(100vw-22rem))] sm:truncate sm:text-xs md:max-w-[14rem]"
             : "hidden max-w-[10rem] sm:inline"
         }`}
         title={sesion.email ?? undefined}
