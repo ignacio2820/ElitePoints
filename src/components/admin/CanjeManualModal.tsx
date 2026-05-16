@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Gift, Loader2, X } from "lucide-react";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import type { Premio } from "@/lib/huellitas/types";
+import { reproducirSonidoExitoCanje } from "@/lib/sound";
 import { formatNumber } from "@/lib/utils";
 
 interface Props {
@@ -52,6 +53,7 @@ export function CanjeManualModal({
       if (!res.ok || !data.ok) {
         throw new Error(data.error ?? "No pudimos registrar el canje.");
       }
+      reproducirSonidoExitoCanje();
       onSuccess();
       onClose();
     } catch (err) {

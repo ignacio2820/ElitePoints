@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import type { NivelLealtad } from "@/lib/huellitas/types";
+import { reproducirSonidoExitoVenta } from "@/lib/sound";
 import { formatARS, formatNumber } from "@/lib/utils";
 import { EscanerQrClienteMovil } from "@/components/admin/EscanerQrClienteMovil";
 import { LectorSerialCaja } from "@/components/admin/LectorSerialCaja";
@@ -134,6 +135,7 @@ export function NuevaVentaForm({
         setHuellitasACanjear("");
         setClienteId("");
         setEscaneoQr(null);
+        reproducirSonidoExitoVenta();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error de red");

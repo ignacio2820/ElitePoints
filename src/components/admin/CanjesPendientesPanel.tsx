@@ -8,6 +8,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Ca
 import { Field } from "@/components/ui/Field";
 import type { CanjePendienteResumen } from "@/lib/huellitas/canjeService";
 import { extraerCodigoCanjeDesdeQr } from "@/lib/huellitas/parseCanjeQr";
+import { reproducirSonidoExitoCanje } from "@/lib/sound";
 import { cn, formatARS, formatNumber } from "@/lib/utils";
 
 export interface CanjesPendientesPanelProps {
@@ -69,6 +70,7 @@ export function CanjesPendientesPanel({
       setSuccess(
         `Canje confirmado: -${formatNumber(data.huellitasDescontadas)} Huellitas (${data.premioNombre}). Saldo final: ${formatNumber(data.saldoFinal)}.`
       );
+      reproducirSonidoExitoCanje();
       setTickets((prev) => prev.filter((t) => t.codigo !== codigoNorm));
       setCodigo("");
       router.refresh();
