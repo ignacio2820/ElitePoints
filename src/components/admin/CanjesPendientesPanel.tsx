@@ -7,6 +7,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import type { CanjePendienteResumen } from "@/lib/huellitas/canjeService";
+import { extraerCodigoCanjeDesdeQr } from "@/lib/huellitas/parseCanjeQr";
 import { cn, formatARS, formatNumber } from "@/lib/utils";
 
 export interface CanjesPendientesPanelProps {
@@ -46,12 +47,19 @@ export function CanjesPendientesPanel({
   async function confirmar(codigoAConfirmar: string) {
     setError(null);
     setSuccess(null);
-    setPendingId(codigoAConfirmar);
+    const codigoNorm =
+      extraerCodigoCanjeDesdeQr(codigoAConfirmar) ??
+      codigoAConfirmar.trim().toUpperCase();
+    if (!codigoNorm) {
+      setError("Ingresá un código de canje válido.");
+      return;
+    }
+    setPendingId(codigoNorm);
     try {
       const res = await fetch("/api/admin/canjes/confirmar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ codigo: codigoAConfirmar })
+        body: JSON.stringify({ codigo: codigoNorm })
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -61,7 +69,7 @@ export function CanjesPendientesPanel({
       setSuccess(
         `Canje confirmado: -${formatNumber(data.huellitasDescontadas)} Huellitas (${data.premioNombre}). Saldo final: ${formatNumber(data.saldoFinal)}.`
       );
-      setTickets((prev) => prev.filter((t) => t.codigo !== codigoAConfirmar));
+      setTickets((prev) => prev.filter((t) => t.codigo !== codigoNorm));
       setCodigo("");
       router.refresh();
     } catch (e) {

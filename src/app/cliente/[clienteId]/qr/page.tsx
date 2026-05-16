@@ -1,7 +1,5 @@
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import QRCode from "qrcode";
 import { ArrowLeft } from "lucide-react";
 import { requiereAccesoClientePublico } from "@/lib/auth/clientePortal";
 import { adminDb } from "@/lib/firebase/admin";
@@ -10,7 +8,9 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import type { Cliente } from "@/lib/huellitas/types";
 import { rutaConLocalId } from "@/lib/huellitas/tenant";
-import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
+import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
+import { QrEscanerFisicoSvg } from "@/components/qr/QrEscanerFisicoSvg";
+import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 
 export const dynamic = "force-dynamic";
 
@@ -42,34 +42,23 @@ export default async function ClienteQrPage({
   const nombreLocal =
     (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
-  const h = headers();
-  const baseUrl = resolvePublicBaseUrl(h);
-  const scanUrl = `${baseUrl}/admin/scan/${params.clienteId}`;
-
-  const qrSvg = await QRCode.toString(scanUrl, {
-    type: "svg",
-    margin: 1,
-    color: { dark: "#1B4332", light: "#FFFFFF" },
-    errorCorrectionLevel: "H",
-    width: 300
-  });
-
+  const payload = payloadQrCliente(params.clienteId);
   const volverHref = rutaConLocalId(`/cliente/${params.clienteId}`, localId);
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-50">
-      <header className="border-b border-bark-100 bg-cream-50/90 backdrop-blur">
+    <PantallaQrCliente>
+      <header className="border-b border-neutral-200 bg-[#FFFFFF]">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <Link
             href={volverHref}
-            className="inline-flex items-center gap-1.5 text-sm text-bark-500 transition hover:text-bark-700"
+            className="inline-flex items-center gap-1.5 text-sm text-bark-600"
           >
             <ArrowLeft size={14} />
             Volver
           </Link>
           <div className="flex items-center gap-2">
-            <HuellitaIcon size={22} className="text-amber-600" />
-            <span className="font-display text-lg font-semibold text-bark-700">
+            <HuellitaIcon size={22} className="text-terracotta-500" />
+            <span className="font-display text-lg font-semibold text-bark-800">
               Huellitas
             </span>
           </div>
@@ -79,54 +68,38 @@ export default async function ClienteQrPage({
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-8">
         <div className="text-center">
-          <span className="label-elegant">Tarjeta digital</span>
-          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-bark-700">
-            Tu tarjeta de fidelidad en{" "}
-            <span className="text-amber-700">{nombreLocal}</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-bark-500">
+            Tarjeta digital
+          </span>
+          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-bark-800">
+            Tu tarjeta en{" "}
+            <span className="text-terracotta-600">{nombreLocal}</span>
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
-            Mostrá este código en caja para sumar Huellitas en cada visita.
+          <p className="mt-3 text-sm leading-relaxed text-bark-600">
+            Mostrá este código en caja. Subí el brillo del celular al máximo.
           </p>
         </div>
 
-        <div className="mt-8 rounded-[32px] border border-amber-200/80 bg-white p-6 shadow-soft">
-          <div className="mx-auto w-fit rounded-[28px] border-2 border-amber-300/70 bg-cream-50 p-4">
-            <div
-              className="mx-auto"
-              style={{ width: 300, height: 300 }}
-              dangerouslySetInnerHTML={{ __html: qrSvg }}
-            />
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="font-display text-2xl font-semibold text-bark-700">
-              {cliente.nombre}
-            </p>
-            {cliente.codigoReferido ? (
-              <p className="mt-2 text-sm text-bark-500">
-                Código de referido{" "}
-                <span className="font-mono font-semibold tracking-wide text-bark-700">
-                  {cliente.codigoReferido}
-                </span>
-              </p>
-            ) : null}
-          </div>
-
-          <div className="mt-6 flex items-center justify-center gap-2 rounded-2xl border border-bark-100 bg-cream-50 px-4 py-3">
-            <HuellitaIcon size={20} className="text-amber-600" />
-            <span className="text-sm font-medium text-bark-600">
-              Programa Huellitas
-            </span>
-          </div>
+        <div className="mt-8 flex justify-center">
+          <QrEscanerFisicoSvg payload={payload} size={300} />
         </div>
 
-        <p className="mt-6 text-center text-xs text-bark-400">
-          Si el local no puede escanear, pueden abrir{" "}
-          <span className="font-mono text-bark-600">{scanUrl}</span>
-        </p>
+        <div className="mt-6 text-center">
+          <p className="font-display text-2xl font-semibold text-bark-800">
+            {cliente.nombre}
+          </p>
+          {cliente.codigoReferido ? (
+            <p className="mt-2 text-sm text-bark-600">
+              Código de referido{" "}
+              <span className="font-mono font-semibold text-bark-800">
+                {cliente.codigoReferido}
+              </span>
+            </p>
+          ) : null}
+        </div>
       </main>
 
       <MascotPointsFooter creditLabel="Producido por" className="print:hidden" />
-    </div>
+    </PantallaQrCliente>
   );
 }

@@ -1,17 +1,17 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import QRCode from "qrcode";
 import { ArrowLeft } from "lucide-react";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
 import { RUTA_PORTAL } from "@/lib/auth/redirect";
 import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
-import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { formatHuellitas } from "@/lib/utils";
+import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
+import { QrEscanerFisicoSvg } from "@/components/qr/QrEscanerFisicoSvg";
+import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 import type { Cliente } from "@/lib/huellitas/types";
 
 function nombreMascotaPrincipal(cliente: Cliente | undefined): string | null {
@@ -54,24 +54,14 @@ export default async function MiQRPage({
   const nombreLocal =
     (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
-  const h = headers();
-  const baseUrl = resolvePublicBaseUrl(h);
-  const qrUrl = `${baseUrl}/admin/scan/${clienteId}`;
-
-  const qrSvg = await QRCode.toString(qrUrl, {
-    type: "svg",
-    margin: 1,
-    color: { dark: "#1B4332", light: "#FFFFFF" },
-    errorCorrectionLevel: "H",
-    width: 320
-  });
+  const payload = payloadQrCliente(clienteId);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-4 py-4">
+    <PantallaQrCliente>
+      <header className="flex items-center justify-between border-b border-neutral-200 bg-[#FFFFFF] px-4 py-4">
         <Link
           href={RUTA_PORTAL}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-bark-600 shadow-sm transition hover:bg-cream-100"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-[#FFFFFF] text-bark-600"
         >
           <ArrowLeft size={18} />
         </Link>
@@ -81,61 +71,37 @@ export default async function MiQRPage({
         <div className="w-10" />
       </header>
 
-      {/* QR Card */}
-      <div className="flex flex-1 items-center justify-center px-5 py-4">
-        <div className="w-full max-w-sm">
-          <div className="relative rounded-[36px] bg-gradient-to-br from-bark-700 via-bark-600 to-terracotta-500 p-1.5 shadow-[0_25px_60px_-15px_rgba(60,40,20,0.45)]">
-            <div className="rounded-[30px] bg-white p-7 text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-bark-400">
-                {nombreLocal}
+      <div className="flex flex-1 flex-col items-center justify-center px-5 py-6">
+        <div className="w-full max-w-sm text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-bark-500">
+            {nombreLocal}
+          </p>
+          <h1 className="mt-1 font-display text-2xl font-semibold text-bark-800">
+            {cliente?.nombre ?? "Cliente"}
+          </h1>
+          {nombreMascota ? (
+            <p className="mt-1 text-sm text-bark-600">Mascota: {nombreMascota}</p>
+          ) : null}
+
+          <div className="mt-8 flex justify-center">
+            <QrEscanerFisicoSvg payload={payload} size={300} />
+          </div>
+
+          <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-neutral-200 bg-[#FFFFFF] px-4 py-3">
+            <HuellitaIcon size={24} className="text-terracotta-500" />
+            <div className="text-left">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-bark-500">
+                Tu saldo
               </p>
-              <h1 className="mt-1 font-display text-2xl font-semibold text-bark-700">
-                {cliente?.nombre ?? "Cliente"}
-              </h1>
-              {nombreMascota ? (
-                <p className="mt-1 font-sans text-sm text-bark-500">
-                  Mascota: {nombreMascota}
-                </p>
-              ) : null}
-
-              <div className="mt-6 flex justify-center">
-                <div className="rounded-2xl border-[3px] border-bark-700/10 bg-white p-2">
-                  <div
-                    className="flex w-[20rem] max-w-full items-center justify-center [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
-                    dangerouslySetInnerHTML={{ __html: qrSvg }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-center justify-center gap-3 rounded-2xl bg-cream-50 px-4 py-3">
-                <HuellitaIcon size={24} className="text-bark-500" />
-                <div className="text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-bark-400">
-                    Tu saldo
-                  </p>
-                  <p className="font-display text-2xl font-bold tabular-nums text-bark-700">
-                    {formatHuellitas(cliente?.saldoHuellitas ?? 0)}
-                  </p>
-                  <p className="text-[11px] font-semibold text-bark-600">
-                    Huellitas acumuladas
-                  </p>
-                </div>
-              </div>
-
-              {cliente?.codigoReferido && (
-                <p className="mt-4 text-[11px] uppercase tracking-widest text-bark-300">
-                  Código: <span className="font-mono text-bark-500">{cliente.codigoReferido}</span>
-                </p>
-              )}
-            </div>
-
-            <div className="absolute -top-4 left-1/2 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-gradient-to-br from-bark-700 to-terracotta-500 ring-4 ring-cream-50">
-              <HuellitaIcon size={22} className="text-cream-50" />
+              <p className="font-display text-2xl font-bold tabular-nums text-bark-800">
+                {formatHuellitas(cliente?.saldoHuellitas ?? 0)}
+              </p>
             </div>
           </div>
 
-          <p className="mt-6 text-center text-xs text-bark-400">
-            Mostrale esta pantalla al local para que sume tus Huellitas.
+          <p className="mt-6 text-xs leading-relaxed text-bark-600">
+            Subí el brillo del celular al máximo y mostrá el código sobre fondo
+            blanco. El local lo escanea en caja para sumar Huellitas.
           </p>
           <MascotPointsFooter
             creditLabel="Producido por"
@@ -143,6 +109,6 @@ export default async function MiQRPage({
           />
         </div>
       </div>
-    </div>
+    </PantallaQrCliente>
   );
 }

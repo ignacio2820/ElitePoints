@@ -16,6 +16,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import type { NivelLealtad } from "@/lib/huellitas/types";
 import { formatARS, formatNumber } from "@/lib/utils";
 import { EscanerQrClienteMovil } from "@/components/admin/EscanerQrClienteMovil";
+import { LectorSerialCaja } from "@/components/admin/LectorSerialCaja";
 import { SelectorCliente } from "./SelectorCliente";
 
 interface VentaResponse {
@@ -155,12 +156,16 @@ export function NuevaVentaForm({
     setHuellitasACanjear("");
   }
 
-  const onClienteDesdeQr = useCallback((id: string) => {
-    setClienteId(id);
-    setEscaneoQr({ id, t: Date.now() });
+  const enfocarMonto = useCallback(() => {
     requestAnimationFrame(() => {
       montoInputRef.current?.focus();
+      montoInputRef.current?.select();
     });
+  }, []);
+
+  const onClienteDesdeEscaneo = useCallback((id: string) => {
+    setClienteId(id);
+    setEscaneoQr({ id, t: Date.now() });
   }, []);
   const nivelActualResult = niveles.find((n) => n.id === resultado?.nivelId);
   const nivelAnteriorResult = niveles.find((n) => n.id === resultado?.nivelAnterior);
@@ -230,13 +235,15 @@ export function NuevaVentaForm({
                 aria-labelledby="titulo-nueva-venta"
               >
                 <div className="flex flex-col gap-3 md:gap-4">
+                  <LectorSerialCaja onClienteId={onClienteDesdeEscaneo} />
                   <SelectorCliente
                     clienteIdInicial={clienteIdInicial}
                     escaneoQr={escaneoQr}
                     clienteIdEnFormulario={clienteId}
                     onChange={setClienteId}
+                    onClienteListo={enfocarMonto}
                   />
-                  <EscanerQrClienteMovil onClienteId={onClienteDesdeQr} />
+                  <EscanerQrClienteMovil onClienteId={onClienteDesdeEscaneo} />
                 </div>
 
                 {/* Monto */}

@@ -1,13 +1,18 @@
+import { PREFIJO_CLIENTE } from "@/lib/qr/scannerPayloads";
+
 /**
  * Extrae el ID de cliente Firestore desde el texto del QR.
  *
- * El QR oficial de Mi cuenta apunta a `/admin/scan/{clienteId}`.
- * También aceptamos `/cliente/{id}` y un ID plano.
+ * Formato preferido en pantalla: `MP-CLIENTE:{clienteId}` (baja densidad).
+ * Compatibilidad: `/admin/scan/{id}`, URLs y ID plano (QR impresos antiguos).
  */
 
 export function extraerClienteIdDesdeQr(raw: string): string | null {
   const t = raw.trim();
   if (!t) return null;
+
+  const prefijo = t.match(/^MP-CLIENTE:([A-Za-z0-9_-]+)/i);
+  if (prefijo?.[1]) return prefijo[1].trim();
 
   try {
     const url = /^https?:\/\//i.test(t)

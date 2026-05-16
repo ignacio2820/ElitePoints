@@ -29,13 +29,16 @@ interface Props {
   /** ID que mantiene el padre; si queda vacío, se limpia el chip (evita UI desincronizada). */
   clienteIdEnFormulario?: string;
   onChange: (clienteId: string) => void;
+  /** Tras cargar el cliente (escaneo o selección). */
+  onClienteListo?: () => void;
 }
 
 export function SelectorCliente({
   clienteIdInicial,
   escaneoQr,
   clienteIdEnFormulario,
-  onChange
+  onChange,
+  onClienteListo
 }: Props) {
   const [q, setQ] = useState("");
   const [resultados, setResultados] = useState<ClienteResumen[]>([]);
@@ -66,6 +69,7 @@ export function SelectorCliente({
         if (hit) {
           setSeleccionado(hit);
           onChange(hit.id);
+          onClienteListo?.();
         }
       } catch {
         // ignore
@@ -94,6 +98,7 @@ export function SelectorCliente({
         if (cancelado || !data.ok || !data.cliente) return;
         setSeleccionado(data.cliente);
         onChange(data.cliente.id);
+        onClienteListo?.();
       } catch {
         // ignore
       }
@@ -102,7 +107,7 @@ export function SelectorCliente({
       cancelado = true;
     };
     // escaneoQr.t dispara cada nuevo escaneo
-  }, [escaneoQr?.t, escaneoQr?.id, onChange]);
+  }, [escaneoQr?.t, escaneoQr?.id, onChange, onClienteListo]);
 
   useEffect(() => {
     if (clienteIdEnFormulario === undefined) return;
@@ -189,6 +194,7 @@ export function SelectorCliente({
     setOpen(false);
     setResultados([]);
     onChange(c.id);
+    onClienteListo?.();
   }
 
   function limpiar() {

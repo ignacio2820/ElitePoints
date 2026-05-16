@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import QRCode from "qrcode";
 import { Check, Copy, X } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { payloadQrCanje } from "@/lib/qr/scannerPayloads";
+import { QrEscanerFisico } from "@/components/qr/QrEscanerFisico";
+import { BrilloMaximoQr } from "@/components/qr/BrilloMaximoQr";
 import { formatARS, formatNumber } from "@/lib/utils";
 
 export interface TicketCanje {
@@ -23,7 +25,6 @@ export interface TicketCanjeModalProps {
 
 export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
   const [copiado, setCopiado] = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!ticket) return;
@@ -38,31 +39,7 @@ export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
     };
   }, [ticket, onClose]);
 
-  // QR con el código del ticket. El admin lo escanea y verifica al confirmar.
-  // Incluimos prefijo "MP-CANJE:" para que la lectura sea inequívoca
-  // (no se confunda con otros QRs del local).
-  useEffect(() => {
-    if (!ticket) {
-      setQrDataUrl(null);
-      return;
-    }
-    let cancelado = false;
-    QRCode.toDataURL(`MP-CANJE:${ticket.codigo}`, {
-      margin: 1,
-      width: 220,
-      color: { dark: "#1B4332", light: "#FFFFFF" },
-      errorCorrectionLevel: "H"
-    })
-      .then((url) => {
-        if (!cancelado) setQrDataUrl(url);
-      })
-      .catch(() => {
-        if (!cancelado) setQrDataUrl(null);
-      });
-    return () => {
-      cancelado = true;
-    };
-  }, [ticket]);
+  const payloadQr = ticket ? payloadQrCanje(ticket.codigo) : "";
 
   const expiraTexto = useMemo(() => {
     if (!ticket) return "";
@@ -95,8 +72,8 @@ export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
   const codigoPretty = ticket.codigo.match(/.{1,2}/g)?.join(" ") ?? ticket.codigo;
 
   return (
-    <div className="modal-overlay sm:px-4">
-      <div className="modal-panel relative max-w-md overflow-hidden text-bark-800">
+    <BrilloMaximoQr activo className="modal-overlay sm:px-4">
+      <div className="modal-panel relative max-w-md overflow-hidden bg-[#FFFFFF] text-bark-800">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-2xl border border-bark-200 bg-white text-bark-600 transition hover:bg-cream-100"
@@ -124,19 +101,14 @@ export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
           </div>
         </div>
 
-        <div className="mx-6 rounded-3xl border border-dashed border-bark-200 bg-cream-50 px-4 py-5 text-center sm:mx-8">
-          {qrDataUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={qrDataUrl}
-              alt={`QR del canje ${ticket.codigo}`}
-              className="mx-auto h-44 w-44 rounded-2xl bg-white p-2 shadow-soft"
-            />
-          ) : (
-            <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-2xl bg-white p-2 text-xs text-bark-500 shadow-soft">
-              Generando QR…
-            </div>
-          )}
+        <div className="mx-6 rounded-3xl border border-neutral-200 bg-[#FFFFFF] px-4 py-5 text-center sm:mx-8">
+          <QrEscanerFisico
+            payload={payloadQr}
+            size={280}
+            alt={`QR del canje ${ticket.codigo}`}
+            className="mx-auto"
+            envolverBrillo={false}
+          />
           <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-bark-600">
             Mostrale este código al vendedor
           </p>
@@ -171,6 +143,6 @@ export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
           </button>
         </div>
       </div>
-    </div>
+    </BrilloMaximoQr>
   );
 }
