@@ -26,7 +26,7 @@ export function AdminNav({ className }: { className?: string }) {
   return (
     <nav
       className={cn(
-        "flex flex-wrap items-center gap-1 sm:gap-1.5",
+        "flex flex-nowrap items-center gap-4",
         className
       )}
       aria-label="Secciones del panel"
@@ -41,8 +41,8 @@ export function AdminNav({ className }: { className?: string }) {
             className={cn(
               "inline-flex shrink-0 rounded-full px-3 py-2 text-sm transition-colors whitespace-nowrap",
               active
-                ? "bg-terracotta-400 font-bold text-white shadow-soft"
-                : "font-medium text-white/80 hover:bg-white/10 hover:text-white"
+                ? "bg-orange-500 font-bold text-white shadow-sm"
+                : "font-medium text-white/90 hover:bg-white/10 hover:text-white"
             )}
           >
             {link.label}

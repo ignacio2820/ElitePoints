@@ -7,7 +7,12 @@ import {
   useMemo,
   useState
 } from "react";
-import { onUserChanged, logout } from "@/lib/auth/client";
+import {
+  iniciarRenovacionSesionEnSegundoPlano,
+  onUserChanged,
+  logout,
+  restaurarSesionDesdeFirebase
+} from "@/lib/auth/client";
 import type { SesionInfo } from "@/lib/auth/types";
 
 interface AuthContextValue {
@@ -48,13 +53,39 @@ export function AuthProvider({
   }
 
   useEffect(() => {
+    let activo = true;
+
+    void (async () => {
+      if (!sesionInicial) {
+        const restaurado = await restaurarSesionDesdeFirebase();
+        if (activo && restaurado.ok) {
+          await refrescar();
+        }
+      }
+    })();
+
+    const offToken = iniciarRenovacionSesionEnSegundoPlano();
     const off = onUserChanged(() => {
       refrescar().catch(() => {});
     });
     if (sesionInicial === undefined) {
       refrescar().catch(() => {});
     }
-    return off;
+
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      void restaurarSesionDesdeFirebase().then((r) => {
+        if (r.ok) refrescar().catch(() => {});
+      });
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      activo = false;
+      off();
+      offToken();
+      document.removeEventListener("visibilitychange", onVisible);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

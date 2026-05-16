@@ -36,6 +36,14 @@ const app: FirebaseApp =
 export const db: Firestore = getFirestore(app);
 export const auth: Auth = getAuth(app);
 
+if (typeof window !== "undefined") {
+  void import("@/lib/auth/persistence").then(({ ensureAuthPersistence }) =>
+    ensureAuthPersistence().catch(() => {
+      /* ignorar en dev sin credenciales */
+    })
+  );
+}
+
 /** True si las credenciales NEXT_PUBLIC_FIREBASE_* están definidas. */
 export function isFirebaseConfigured(): boolean {
   return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);

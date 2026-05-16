@@ -4,10 +4,26 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
-import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
-import { isFirebaseConfigured } from "@/lib/firebase/client";
-import { subirImagenPremioCliente } from "@/lib/firebase/storageUploadsClient";
+import {
+  resolverUrlImagenPremio,
+  subirImagenPremioPorApi
+} from "@/lib/admin/premioImagenUpload";
+import { withTimeout } from "@/lib/async/withTimeout";
 import { Field } from "@/components/ui/Field";
+
+const MS_GUARDAR_PREMIO = 30_000;
+
+async function parseJsonResponse(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  if (!text.trim()) {
+    return { ok: false, error: `Respuesta vacía del servidor (${res.status}).` };
+  }
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    return { ok: false, error: `Respuesta inválida del servidor (${res.status}).` };
+  }
+}
 
 export interface PremioFormValues {
   nombre: string;
@@ -91,13 +107,24 @@ export function PremioFormModal({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (guardando) return;
+
     setGuardando(true);
     setError(null);
+
+    const localId = sesion?.claims.localId;
+    if (!localId) {
+      setError("No hay sesión de administrador activa.");
+      setGuardando(false);
+      return;
+    }
+
     try {
       const costo = Number(costoHuellitas);
       if (!Number.isFinite(costo) || costo <= 0) {
         throw new Error("Ingresá un costo válido en Huellitas.");
       }
+
       const stockValue =
         stock.trim() === "" ? null : Math.max(0, Math.floor(Number(stock)));
       if (stock.trim() !== "" && !Number.isFinite(Number(stock))) {
@@ -116,64 +143,71 @@ export function PremioFormModal({
       const payloadBase = {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
-        costoHuellitas: costo,
+        costoHuellitas: Math.floor(costo),
         valorDescuento: valorDescuentoValue,
         stock: stockValue,
-        nivelMinimoId: nivelMinimoId || null
+        nivelMinimoId: nivelMinimoId.trim() || null
       };
 
-      /** Subir imagen al cliente ANTES del POST/patch para que Zod reciba la URL en el mismo cuerpo. */
-      let imagenUrlListo: string | undefined;
-      let comprimidaPremio: File | null = null;
+      /** a) Storage (uploadBytes + getDownloadURL) → b) URL en payload → c) POST/PATCH premio */
+      let imagenUrl: string | undefined;
       if (imagenFile) {
-        comprimidaPremio = await comprimirImagenEnCliente(imagenFile);
-        if (isFirebaseConfigured() && sesion?.claims.localId) {
-          try {
-            imagenUrlListo = await subirImagenPremioCliente(
-              sesion.claims.localId,
-              comprimidaPremio,
-              comprimidaPremio.type
-            );
-          } catch {
-            imagenUrlListo = undefined;
+        try {
+          imagenUrl = await resolverUrlImagenPremio({
+            localId,
+            imagenFile
+          });
+        } catch (errStorage) {
+          if (initial?.id) {
+            throw errStorage instanceof Error
+              ? errStorage
+              : new Error("No pudimos subir la imagen.");
           }
+          /* Premio nuevo: guardamos datos primero y subimos imagen por API con Admin SDK. */
         }
       }
 
       const payload =
-        imagenUrlListo !== undefined
-          ? { ...payloadBase, imagen: imagenUrlListo }
+        imagenUrl !== undefined
+          ? { ...payloadBase, imagen: imagenUrl }
           : payloadBase;
 
       const endpoint = initial?.id
         ? `/api/admin/premios/${initial.id}`
         : "/api/admin/premios";
       const method = initial?.id ? "PATCH" : "POST";
-      const res = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error ?? "No pudimos guardar el premio.");
+
+      const res = await withTimeout(
+        fetch(endpoint, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify(payload)
+        }),
+        MS_GUARDAR_PREMIO,
+        "Guardar el premio tardó demasiado."
+      );
+
+      const data = await parseJsonResponse(res);
+      if (!res.ok || data.ok !== true) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "No pudimos guardar el premio."
+        );
       }
 
-      let premio: Premio = data.premio;
-      if (imagenFile && imagenUrlListo === undefined) {
-        const archivo =
-          comprimidaPremio ?? (await comprimirImagenEnCliente(imagenFile));
-        const fd = new FormData();
-        fd.append("file", archivo);
-        const imgRes = await fetch(`/api/admin/premios/${premio.id}/imagen`, {
-          method: "POST",
-          body: fd
-        });
-        const imgData = await imgRes.json();
-        if (!imgRes.ok || !imgData.ok) {
-          throw new Error(imgData.error ?? "No pudimos subir la imagen.");
-        }
-        premio = imgData.premio;
+      let premio = data.premio as Premio;
+      if (!premio?.id) {
+        throw new Error("El servidor no devolvió el premio guardado.");
+      }
+
+      if (imagenFile && !imagenUrl) {
+        const { premio: actualizado } = await subirImagenPremioPorApi(
+          premio.id,
+          imagenFile
+        );
+        premio = actualizado as Premio;
       }
 
       if (previewBlobRef.current) {
@@ -186,7 +220,7 @@ export function PremioFormModal({
       onSaved(premio);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error");
+      setError(err instanceof Error ? err.message : "Error al guardar el premio.");
     } finally {
       setGuardando(false);
     }

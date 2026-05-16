@@ -14,6 +14,15 @@ import { COOKIE_SESION } from "@/lib/auth/types";
 
 const RUTAS_PROTEGIDAS = ["/admin", "/mi-cuenta", "/dashboard", "/portal"];
 
+function esRutaPortalCliente(pathname: string): boolean {
+  return (
+    pathname === "/portal" ||
+    pathname.startsWith("/portal/") ||
+    pathname === "/mi-cuenta" ||
+    pathname.startsWith("/mi-cuenta/")
+  );
+}
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -33,9 +42,21 @@ export function middleware(req: NextRequest) {
     return res;
   }
 
-  const url = req.nextUrl.clone();
-  url.pathname = "/login";
   const destino = `${pathname}${req.nextUrl.search}`;
+  const url = req.nextUrl.clone();
+
+  /**
+   * Portal cliente: la cookie httpOnly a veces se pierde en PWA (iOS),
+   * pero Firebase Auth sigue en IndexedDB. Redirigimos a /auth/restaurar
+   * para re-emitir la cookie sin pedir magic link.
+   */
+  if (esRutaPortalCliente(pathname)) {
+    url.pathname = "/auth/restaurar";
+    url.search = `?redirect=${encodeURIComponent(destino)}`;
+    return NextResponse.redirect(url);
+  }
+
+  url.pathname = "/login";
   url.search = `?redirect=${encodeURIComponent(destino)}`;
   return NextResponse.redirect(url);
 }

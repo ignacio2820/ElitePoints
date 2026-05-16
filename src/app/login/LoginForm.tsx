@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,8 +20,10 @@ import {
   consultarRolEmail,
   pedirMagicLink,
   registrarseYRecibirMagicLink,
+  restaurarSesionDesdeFirebase,
   type RegistrarInput
 } from "@/lib/auth/client";
+import { guardarUltimoEmail, leerUltimoEmail } from "@/lib/auth/ultimoEmail";
 
 type Modo = "ingresar" | "registrar";
 type Especie = RegistrarInput["mascota"]["especie"];
@@ -35,6 +37,7 @@ const ESPECIES: { id: Especie; label: string }[] = [
 ];
 
 export function LoginForm() {
+  const router = useRouter();
   const sp = useSearchParams();
   /**
    * Política de UX: este formulario SIEMPRE detecta el rol automáticamente.
@@ -58,9 +61,31 @@ export function LoginForm() {
     }
   }, []);
 
+  /** Si Firebase conservó la sesión local, evitamos pedir magic link de nuevo. */
+  useEffect(() => {
+    let cancelado = false;
+    void (async () => {
+      const destino = redirect?.trim() || "/portal";
+      const res = await restaurarSesionDesdeFirebase(destino);
+      if (!cancelado && res.ok) {
+        router.replace(res.redirectTo ?? destino);
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [redirect, router]);
+
   const [modo, setModo] = useState<Modo>("ingresar");
 
   const [email, setEmail] = useState("");
+  const [emailInicializado, setEmailInicializado] = useState(false);
+
+  useEffect(() => {
+    const guardado = leerUltimoEmail();
+    if (guardado) setEmail(guardado);
+    setEmailInicializado(true);
+  }, []);
   const [nombre, setNombre] = useState("");
   const [mascotaNombre, setMascotaNombre] = useState("");
   const [mascotaEspecie, setMascotaEspecie] = useState<Especie>("perro");
@@ -157,7 +182,6 @@ export function LoginForm() {
                 datosDev={exito}
                 onVolver={() => {
                   reset();
-                  setEmail("");
                   setNombre("");
                   setMascotaNombre("");
                   setMascotaFecha("");
@@ -167,6 +191,7 @@ export function LoginForm() {
             ) : modo === "ingresar" ? (
               <FormIngresar
                 email={email}
+                emailInicializado={emailInicializado}
                 redirect={redirect}
                 onEmailChange={setEmail}
                 onSubmit={onLogin}
@@ -243,6 +268,7 @@ export function LoginForm() {
 
 function FormIngresar({
   email,
+  emailInicializado,
   redirect,
   onEmailChange,
   onSubmit,
@@ -253,6 +279,7 @@ function FormIngresar({
   registroDisponible
 }: {
   email: string;
+  emailInicializado: boolean;
   redirect?: string;
   onEmailChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -264,16 +291,22 @@ function FormIngresar({
 }) {
   const [rolEmail, setRolEmail] = useState<"admin" | "cliente" | null>(null);
   const [tienePassword, setTienePassword] = useState(false);
+  const [mostrarMagicLink, setMostrarMagicLink] = useState(false);
+
+  const emailNorm = email.trim().toLowerCase();
+  const emailValido =
+    !!emailNorm && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailNorm);
+  const emailRecordado =
+    emailInicializado && emailValido && emailNorm === leerUltimoEmail();
 
   useEffect(() => {
-    const trimmed = email.trim().toLowerCase();
-    if (!trimmed || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed)) {
+    if (!emailValido) {
       setRolEmail(null);
       setTienePassword(false);
       return;
     }
     const t = setTimeout(() => {
-      void consultarRolEmail(trimmed).then((res) => {
+      void consultarRolEmail(emailNorm).then((res) => {
         if (!res.ok) {
           setRolEmail(null);
           return;
@@ -283,20 +316,35 @@ function FormIngresar({
       });
     }, 400);
     return () => clearTimeout(t);
-  }, [email]);
+  }, [emailNorm, emailValido]);
 
   const esDueno = rolEmail === "admin";
+  const flujoCliente = !esDueno;
+
+  function onEmailBlur() {
+    if (emailValido) guardarUltimoEmail(emailNorm);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (flujoCliente && !mostrarMagicLink) return;
+    onSubmit(e);
+  }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <h2 className="font-display text-2xl font-semibold text-bark-700">
-          Ingresá a tu cuenta
+          {flujoCliente && emailRecordado
+            ? "Bienvenido de nuevo"
+            : "Ingresá a tu cuenta"}
         </h2>
         <p className="mt-1 text-sm text-bark-500">
           {esDueno
             ? "Detectamos que sos dueño de un local. Podés usar link mágico o contraseña."
-            : "Escribí tu email y te enviamos un link mágico. Detectamos si sos cliente o dueño."}
+            : emailRecordado
+              ? "Tu email ya está en este dispositivo. Usá huella o Face ID para entrar al toque."
+              : "Escribí tu email. En la app instalada podés entrar con huella la próxima vez."}
         </p>
         {esDueno ? (
           <p className="mt-2 inline-block rounded-full bg-terracotta-50 px-2.5 py-0.5 text-xs font-medium text-terracotta-600">
@@ -305,30 +353,97 @@ function FormIngresar({
         ) : null}
       </div>
 
-      <CampoEmail value={email} onChange={onEmailChange} />
+      <CampoEmail
+        value={email}
+        onChange={onEmailChange}
+        onBlur={onEmailBlur}
+        readOnly={flujoCliente && emailRecordado}
+        onEdit={
+          flujoCliente && emailRecordado
+            ? () => onEmailChange("")
+            : undefined
+        }
+      />
 
       {error && <ErrorBox>{error}</ErrorBox>}
 
-      <button
-        type="submit"
-        disabled={enviando || !email}
-        className="btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {enviando ? (
-          <>
-            <Spinner /> Enviando...
-          </>
-        ) : (
-          <>
-            <Sparkles size={16} />
-            Enviarme el link mágico
-            <ArrowRight size={16} />
-          </>
-        )}
-      </button>
-
-      {esDueno ? (
+      {flujoCliente ? (
         <>
+          <PasskeyLoginButton
+            email={email}
+            redirect={redirect}
+            variant="primary"
+            autoIntentar={emailRecordado}
+            disabled={enviando || !emailValido}
+            onSuccess={() => undefined}
+            onError={onError}
+          />
+          <div className="relative flex items-center gap-3 py-1">
+            <div className="h-px flex-1 bg-bark-100" />
+            <span className="text-xs text-bark-400">o</span>
+            <div className="h-px flex-1 bg-bark-100" />
+          </div>
+          {!mostrarMagicLink ? (
+            <button
+              type="button"
+              disabled={enviando || !emailValido}
+              onClick={() => {
+                onError("");
+                setMostrarMagicLink(true);
+              }}
+              className="btn-ghost w-full justify-center gap-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Sparkles size={16} />
+              Prefiero recibir link por email
+            </button>
+          ) : (
+            <>
+              <button
+                type="submit"
+                disabled={enviando || !emailValido}
+                className="btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {enviando ? (
+                  <>
+                    <Spinner /> Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={16} />
+                    Enviarme el link mágico
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                className="w-full text-center text-xs text-bark-500 hover:text-bark-700"
+                onClick={() => setMostrarMagicLink(false)}
+              >
+                Volver a huella / Face ID
+              </button>
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <button
+            type="submit"
+            disabled={enviando || !emailValido}
+            className="btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {enviando ? (
+              <>
+                <Spinner /> Enviando...
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} />
+                Enviarme el link mágico
+                <ArrowRight size={16} />
+              </>
+            )}
+          </button>
           <div className="relative flex items-center gap-3 py-1">
             <div className="h-px flex-1 bg-bark-100" />
             <span className="text-xs text-bark-400">o</span>
@@ -341,15 +456,15 @@ function FormIngresar({
             disabled={enviando}
             onError={onError}
           />
+          <PasskeyLoginButton
+            email={email}
+            redirect={redirect}
+            disabled={enviando}
+            onSuccess={() => undefined}
+            onError={onError}
+          />
         </>
-      ) : null}
-
-      <PasskeyLoginButton
-        email={email}
-        disabled={enviando}
-        onSuccess={() => undefined}
-        onError={onError}
-      />
+      )}
 
       <div className="text-center text-sm text-bark-500">
         ¿No tenés cuenta?{" "}
@@ -372,7 +487,9 @@ function FormIngresar({
       <p className="text-center text-xs text-bark-400">
         {esDueno
           ? "El link mágico expira en 1 hora. La contraseña la configurás en tu panel."
-          : "El link expira en 1 hora y solo se usa una vez."}
+          : flujoCliente
+            ? "El link mágico expira en 1 hora. Con la app instalada, la huella es lo más rápido."
+            : "El link expira en 1 hora y solo se usa una vez."}
       </p>
     </form>
   );
@@ -559,26 +676,47 @@ function FormRegistro({
 
 function CampoEmail({
   value,
-  onChange
+  onChange,
+  onBlur,
+  readOnly,
+  onEdit
 }: {
   value: string;
   onChange: (v: string) => void;
+  onBlur?: () => void;
+  readOnly?: boolean;
+  onEdit?: () => void;
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold uppercase tracking-widest text-bark-500">
+      <span className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-widest text-bark-500">
         Email
+        {onEdit ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="normal-case font-medium text-terracotta-600 hover:underline"
+          >
+            Cambiar
+          </button>
+        ) : null}
       </span>
-      <div className="mt-2 flex items-center gap-2 rounded-xl border border-bark-100 bg-white px-3 py-3 transition focus-within:border-bark-400 focus-within:ring-2 focus-within:ring-bark-300/30">
+      <div
+        className={`mt-2 flex items-center gap-2 rounded-xl border border-bark-100 bg-white px-3 py-3 transition focus-within:border-bark-400 focus-within:ring-2 focus-within:ring-bark-300/30 ${
+          readOnly ? "bg-cream-50/80" : ""
+        }`}
+      >
         <Mail size={16} className="text-bark-400" />
         <input
           type="email"
           autoComplete="email"
           required
+          readOnly={readOnly}
           placeholder="tu@email.com"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300"
+          onBlur={onBlur}
+          className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300 read-only:cursor-default"
         />
       </div>
     </label>

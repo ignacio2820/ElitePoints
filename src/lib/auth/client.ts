@@ -8,6 +8,11 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { redirectDesdeUrl } from "@/lib/auth/continueUrl";
+import {
+  ensureAuthPersistence,
+  esperarUsuarioFirebase
+} from "@/lib/auth/persistence";
+import { guardarUltimoEmail, leerUltimoEmail } from "@/lib/auth/ultimoEmail";
 
 const STORAGE_EMAIL_KEY = "huellitas:emailForSignIn";
 const STORAGE_REDIRECT_KEY = "huellitas:redirectPostLogin";
@@ -80,6 +85,7 @@ async function intercambiarIdTokenPorSesion(
   const r = await fetch("/api/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
     body: JSON.stringify({ idToken, redirect })
   });
   const data = (await r.json()) as {
@@ -133,6 +139,7 @@ export async function ingresarConPassword(
   }
 
   try {
+    await ensureAuthPersistence();
     const cred = await signInWithEmailAndPassword(auth, email, input.password);
     const idToken = await cred.user.getIdToken(true);
     const sesion = await intercambiarIdTokenPorSesion(idToken, input.redirect);
@@ -140,6 +147,7 @@ export async function ingresarConPassword(
       await fbSignOut(auth);
       return { ok: false, error: sesion.error };
     }
+    guardarUltimoEmail(email);
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(STORAGE_EMAIL_KEY);
       window.localStorage.removeItem(STORAGE_REDIRECT_KEY);
@@ -177,7 +185,9 @@ export async function pedirMagicLink(
 ): Promise<PedirMagicLinkResponse> {
   // Guardamos el email para recuperarlo en /login/verify (Firebase lo requiere).
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_EMAIL_KEY, input.email);
+    const emailNorm = input.email.trim().toLowerCase();
+    guardarUltimoEmail(emailNorm);
+    window.localStorage.setItem(STORAGE_EMAIL_KEY, emailNorm);
     if (input.redirect?.trim()) {
       window.localStorage.setItem(STORAGE_REDIRECT_KEY, input.redirect.trim());
     } else {
@@ -228,7 +238,9 @@ export async function registrarseYRecibirMagicLink(
   input: RegistrarInput
 ): Promise<RegistrarResponse> {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_EMAIL_KEY, input.email);
+    const emailNorm = input.email.trim().toLowerCase();
+    guardarUltimoEmail(emailNorm);
+    window.localStorage.setItem(STORAGE_EMAIL_KEY, emailNorm);
   }
   try {
     const r = await fetch("/api/auth/registro", {
@@ -273,7 +285,10 @@ export async function completarLogin(
     return { ok: false, error: "Link inválido o expirado" };
   }
 
-  let email = emailExplicito ?? window.localStorage.getItem(STORAGE_EMAIL_KEY);
+  let email =
+    emailExplicito ??
+    window.localStorage.getItem(STORAGE_EMAIL_KEY) ??
+    leerUltimoEmail();
   if (!email) {
     return {
       ok: false,
@@ -284,6 +299,7 @@ export async function completarLogin(
   email = email.trim().toLowerCase();
 
   try {
+    await ensureAuthPersistence();
     const cred = await signInWithEmailLink(auth, email, href);
     const idToken = await cred.user.getIdToken(true);
     const redirect =
@@ -297,6 +313,7 @@ export async function completarLogin(
       return { ok: false, error: sesion.error };
     }
 
+    guardarUltimoEmail(email);
     window.localStorage.removeItem(STORAGE_EMAIL_KEY);
     window.localStorage.removeItem(STORAGE_REDIRECT_KEY);
     return { ok: true, redirectTo: sesion.redirectTo };
@@ -337,4 +354,58 @@ export async function logout(): Promise<void> {
 
 export function onUserChanged(cb: (user: User | null) => void): () => void {
   return onIdTokenChanged(auth, cb);
+}
+
+export interface RestaurarSesionResult {
+  ok: boolean;
+  redirectTo?: string;
+  error?: string;
+}
+
+/**
+ * Si Firebase Auth conservó al usuario en local (PWA/navegador) pero la cookie
+ * httpOnly expiró o se borró, re-emite la session cookie sin pedir magic link.
+ */
+export async function restaurarSesionDesdeFirebase(
+  redirect?: string
+): Promise<RestaurarSesionResult> {
+  if (typeof window === "undefined") {
+    return { ok: false, error: "Sólo en el cliente" };
+  }
+
+  try {
+    const user = await esperarUsuarioFirebase();
+    if (!user) {
+      return { ok: false, error: "sin-usuario-firebase" };
+    }
+
+    const idToken = await user.getIdToken(true);
+    const sesion = await intercambiarIdTokenPorSesion(idToken, redirect);
+    if (!sesion.ok) {
+      return { ok: false, error: sesion.error };
+    }
+    return { ok: true, redirectTo: sesion.redirectTo };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Error al restaurar sesión";
+    return { ok: false, error: msg };
+  }
+}
+
+/** Renueva la cookie de sesión cuando Firebase rota el ID token (p. ej. cada hora). */
+export function iniciarRenovacionSesionEnSegundoPlano(): () => void {
+  if (typeof window === "undefined") return () => {};
+
+  let renovando = false;
+
+  return onIdTokenChanged(auth, (user) => {
+    if (!user || renovando) return;
+    renovando = true;
+    void user
+      .getIdToken()
+      .then((token) => intercambiarIdTokenPorSesion(token))
+      .catch(() => {})
+      .finally(() => {
+        renovando = false;
+      });
+  });
 }

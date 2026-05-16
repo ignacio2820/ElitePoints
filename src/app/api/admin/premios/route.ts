@@ -21,7 +21,14 @@ const Body = z.object({
   categoria: z
     .enum(["alimento", "juguete", "accesorio", "servicio", "otro"])
     .optional(),
-  imagen: z.string().url().nullish(),
+  imagen: z.preprocess(
+    (v) => {
+      if (v === null || v === undefined || v === "") return v;
+      if (typeof v === "string") return v.trim();
+      return v;
+    },
+    z.string().url().max(8192).nullish()
+  ),
   activo: z.boolean().optional()
 });
 
@@ -48,8 +55,14 @@ export async function POST(req: Request) {
     const raw = await req.json();
     const parsed = Body.safeParse(raw);
     if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const campo = issue?.path?.join(".") ?? "";
+      const detalle = issue?.message ?? "Datos inválidos";
       return NextResponse.json(
-        { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" },
+        {
+          ok: false,
+          error: campo ? `${detalle} (${campo})` : detalle
+        },
         { status: 400 }
       );
     }
