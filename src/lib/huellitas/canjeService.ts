@@ -1,6 +1,7 @@
 import {
   FieldValue,
   type DocumentReference,
+  type DocumentSnapshot,
   type Firestore,
   type Transaction
 } from "firebase-admin/firestore";
@@ -467,127 +468,232 @@ export async function confirmarTicketCanje(
   input: ConfirmarTicketInput
 ): Promise<ConfirmarTicketOutput> {
   const db = adminDb();
+  const { localId, adminUid } = input;
   const codigo = input.codigo.trim().toUpperCase();
-  const canjeRef = cols.canjes(db, input.localId).doc(codigo);
+  const canjeRef = cols.canjes(db, localId).doc(codigo);
+  const ticketLegacyRef = cols.canjePendiente(db, localId, codigo);
 
   return db.runTransaction(async (tx) => {
+    // ── Fase 1: todas las lecturas (sin escrituras previas) ──
     const canjeSnap = await tx.get(canjeRef);
+    const rawCanje = canjeSnap.exists
+      ? (canjeSnap.data() as Record<string, unknown>)
+      : null;
+    const esCola = !!rawCanje && esCanjeColaEntrega(rawCanje);
 
-    if (canjeSnap.exists) {
-      const raw = canjeSnap.data() as Record<string, unknown>;
-      if (esCanjeColaEntrega(raw)) {
-        return confirmarColaEntregaTx(
+    if (esCola && rawCanje) {
+      const ticket = rawCanje;
+      const clienteId = String(ticket.clienteId);
+      const premioId = String(ticket.premioId);
+      const clienteRef = cols.cliente(db, localId, clienteId);
+      const premioRef = cols.premio(db, localId, premioId);
+
+      const [clienteSnap, premioSnap] = await Promise.all([
+        tx.get(clienteRef),
+        tx.get(premioRef)
+      ]);
+
+      if (ticket.estado === "completado") {
+        throw new Error("Este canje ya fue entregado.");
+      }
+      if (ticket.estado === "cancelado") {
+        throw new Error("Este canje fue cancelado.");
+      }
+
+      const cliente = (clienteSnap.data() ?? {}) as Cliente;
+      const costo = Number(ticket.costoHuellitas);
+
+      if (tickectExpirado(String(ticket.expiraEn ?? ""))) {
+        // Escrituras de expiración (lecturas ya hechas)
+        escribirExpiracionCanjeCola(
           db,
           tx,
-          input.localId,
-          codigo,
+          localId,
+          clienteId,
           canjeRef,
-          raw,
-          input.adminUid
+          ticket,
+          cliente
         );
+        throw new Error("Este canje expiró.");
       }
+
+      // ── Fase 2: escrituras (cola: huellitas ya descontadas al crear ticket) ──
+      tx.update(canjeRef, {
+        estado: "completado" as EstadoCanje,
+        confirmadoEn: new Date().toISOString(),
+        confirmadoPor: adminUid
+      });
+
+      const stockRestante = aplicarDescuentoStockPremio(tx, premioRef, premioSnap);
+
+      registrarLogCanjeEnTx(db, tx, localId, {
+        localId,
+        clienteId,
+        clienteNombre: String(ticket.clienteNombre ?? cliente.nombre ?? ""),
+        premioId,
+        premioNombre: String(ticket.premioNombre ?? ""),
+        huellitasDescontadas: costo,
+        stockRestante,
+        origen: "confirmacion",
+        canjeId: codigo,
+        adminUid
+      });
+
+      return {
+        ok: true as const,
+        canjeId: codigo,
+        clienteId,
+        premioNombre: String(ticket.premioNombre ?? ""),
+        huellitasDescontadas: costo,
+        saldoFinal: Math.max(0, cliente.saldoHuellitas ?? 0)
+      };
     }
 
-    return confirmarLegacyTicketTx(db, tx, input.localId, codigo, input.adminUid);
-  });
-}
+    // Ticket legacy en CanjesPendientes
+    const ticketSnap = await tx.get(ticketLegacyRef);
+    if (!ticketSnap.exists) {
+      throw new Error("Canje inexistente.");
+    }
+    const ticket = ticketSnap.data() as CanjePendiente;
 
-async function confirmarColaEntregaTx(
-  db: Firestore,
-  tx: Transaction,
-  localId: string,
-  codigo: string,
-  canjeRef: DocumentReference,
-  ticket: Record<string, unknown>,
-  adminUid: string
-): Promise<ConfirmarTicketOutput> {
-  if (ticket.estado === "completado") {
-    throw new Error("Este canje ya fue entregado.");
-  }
-  if (ticket.estado === "cancelado") {
-    throw new Error("Este canje fue cancelado.");
-  }
-  const costo = Number(ticket.costoHuellitas);
-  const clienteRef = cols.cliente(db, localId, String(ticket.clienteId));
-  const premioRef = cols.premio(db, localId, String(ticket.premioId));
+    if (ticket.estado === "completado") {
+      throw new Error("Este ticket ya fue canjeado.");
+    }
+    if (ticket.estado === "cancelado") {
+      throw new Error("Este ticket fue cancelado por el cliente.");
+    }
 
-  const [clienteSnap, premioSnap] = await Promise.all([
-    tx.get(clienteRef),
-    tx.get(premioRef)
-  ]);
-  const cliente = (clienteSnap.data() ?? {}) as Cliente;
+    const clienteRef = cols.cliente(db, localId, ticket.clienteId);
+    const premioRef = cols.premio(db, localId, ticket.premioId);
 
-  if (tickectExpirado(String(ticket.expiraEn ?? ""))) {
-    await expirarCanjeColaTx(
-      db,
-      tx,
-      localId,
-      String(ticket.clienteId),
-      codigo,
-      canjeRef,
-      ticket,
-      cliente
+    const [clienteSnap, lotesSnap, premioSnap] = await Promise.all([
+      tx.get(clienteRef),
+      tx.get(cols.huellitas(db, localId, ticket.clienteId)),
+      tx.get(premioRef)
+    ]);
+
+    if (!clienteSnap.exists) {
+      throw new Error("Cliente inexistente.");
+    }
+    const cliente = clienteSnap.data() as Cliente;
+
+    const lotes: LoteHuellitas[] = lotesSnap.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Omit<LoteHuellitas, "id">)
+    }));
+
+    if (tickectExpirado(ticket.expiraEn)) {
+      tx.update(ticketLegacyRef, { estado: "expirado" as EstadoCanje });
+      tx.update(clienteRef, {
+        huellitasReservadas: FieldValue.increment(-ticket.costoHuellitas)
+      });
+      throw new Error("Este ticket expiró.");
+    }
+
+    const saldo = saldoVigente(lotes);
+    if (saldo < ticket.costoHuellitas) {
+      throw new Error(
+        `Saldo insuficiente: hay ${saldo} y el ticket cuesta ${ticket.costoHuellitas}.`
+      );
+    }
+
+    const plan = planConsumoFIFO(lotes, ticket.costoHuellitas);
+    const saldoFinal = Math.max(
+      0,
+      (cliente.saldoHuellitas ?? 0) - ticket.costoHuellitas
     );
-    throw new Error("Este canje expiró.");
-  }
 
-  tx.update(canjeRef, {
-    estado: "completado" as EstadoCanje,
-    confirmadoEn: new Date().toISOString(),
-    confirmadoPor: adminUid
-  });
-
-  let stockRestante: number | null = null;
-  if (premioSnap.exists) {
-    const stock = (premioSnap.data() as Premio).stock;
-    if (typeof stock === "number" && stock > 0) {
-      stockRestante = stock - 1;
-      tx.update(premioRef, { stock: FieldValue.increment(-1) });
-    } else if (typeof stock === "number") {
-      stockRestante = stock;
+    // ── Fase 2: escrituras legacy (descuenta huellitas + marca entregado) ──
+    for (const c of plan) {
+      const loteRef = cols
+        .huellitas(db, localId, ticket.clienteId)
+        .doc(c.loteId);
+      tx.update(loteRef, {
+        huellitasRestantes: FieldValue.increment(-c.consumidas)
+      });
     }
-  }
 
-  registrarLogCanjeEnTx(db, tx, localId, {
-    localId,
-    clienteId: String(ticket.clienteId),
-    clienteNombre: String(ticket.clienteNombre ?? cliente.nombre ?? ""),
-    premioId: String(ticket.premioId),
-    premioNombre: String(ticket.premioNombre ?? ""),
-    huellitasDescontadas: costo,
-    stockRestante,
-    origen: "confirmacion",
-    canjeId: codigo,
-    adminUid
+    const canjeAudRef = cols.canjes(db, localId).doc();
+    tx.set(canjeAudRef, {
+      localId,
+      clienteId: ticket.clienteId,
+      ticketId: codigo,
+      premioId: ticket.premioId,
+      premioNombre: ticket.premioNombre,
+      huellitasCanjeadas: ticket.costoHuellitas,
+      valorDescuento: ticket.valorDescuento ?? null,
+      valor_descuento: ticket.valorDescuento ?? null,
+      plan,
+      fecha: FieldValue.serverTimestamp(),
+      confirmadoPor: adminUid,
+      estado: "completado" as EstadoCanje
+    });
+
+    tx.update(ticketLegacyRef, {
+      estado: "completado" as EstadoCanje,
+      confirmadoEn: new Date().toISOString(),
+      confirmadoPor: adminUid
+    });
+
+    tx.update(clienteRef, {
+      saldoHuellitas: saldoFinal,
+      huellitasReservadas: FieldValue.increment(-ticket.costoHuellitas)
+    });
+
+    const stockRestante = aplicarDescuentoStockPremio(tx, premioRef, premioSnap);
+
+    registrarLogCanjeEnTx(db, tx, localId, {
+      localId,
+      clienteId: ticket.clienteId,
+      clienteNombre: ticket.clienteNombre,
+      premioId: ticket.premioId,
+      premioNombre: ticket.premioNombre,
+      huellitasDescontadas: ticket.costoHuellitas,
+      stockRestante,
+      origen: "confirmacion",
+      canjeId: canjeAudRef.id,
+      adminUid
+    });
+
+    return {
+      ok: true as const,
+      canjeId: canjeAudRef.id,
+      clienteId: ticket.clienteId,
+      premioNombre: ticket.premioNombre,
+      huellitasDescontadas: ticket.costoHuellitas,
+      saldoFinal
+    };
   });
-
-  return {
-    ok: true as const,
-    canjeId: codigo,
-    clienteId: String(ticket.clienteId),
-    premioNombre: String(ticket.premioNombre ?? ""),
-    huellitasDescontadas: costo,
-    saldoFinal: Math.max(0, cliente.saldoHuellitas ?? 0)
-  };
 }
 
-async function expirarCanjeColaTx(
+/** Solo escrituras: baja stock del premio si corresponde (datos ya leídos). */
+function aplicarDescuentoStockPremio(
+  tx: Transaction,
+  premioRef: DocumentReference,
+  premioSnap: DocumentSnapshot
+): number | null {
+  if (!premioSnap.exists) return null;
+  const stock = (premioSnap.data() as Premio).stock;
+  if (typeof stock === "number" && stock > 0) {
+    tx.update(premioRef, { stock: FieldValue.increment(-1) });
+    return stock - 1;
+  }
+  if (typeof stock === "number") return stock;
+  return null;
+}
+
+/** Solo escrituras: devuelve huellitas al expirar (cliente ya leído en la misma transacción). */
+function escribirExpiracionCanjeCola(
   db: Firestore,
   tx: Transaction,
   localId: string,
   clienteId: string,
-  _codigo: string,
   canjeRef: DocumentReference,
   ticket: Record<string, unknown>,
-  clientePrecargado?: Cliente
-): Promise<void> {
+  cliente: Cliente
+): void {
   const plan = ticket.plan as ConsumoLote[];
   const clienteRef = cols.cliente(db, localId, clienteId);
-  let cli = clientePrecargado;
-  if (!cli) {
-    const cliSnap = await tx.get(clienteRef);
-    cli = (cliSnap.data() ?? {}) as Cliente;
-  }
   const costo = Number(ticket.costoHuellitas);
 
   for (const c of plan) {
@@ -597,137 +703,10 @@ async function expirarCanjeColaTx(
     });
   }
   tx.update(clienteRef, {
-    saldoHuellitas: Math.max(0, (cli.saldoHuellitas ?? 0) + costo)
+    saldoHuellitas: Math.max(0, (cliente.saldoHuellitas ?? 0) + costo)
   });
   tx.update(canjeRef, {
     estado: "expirado" as EstadoCanje,
     confirmadoEn: new Date().toISOString()
   });
-}
-
-async function confirmarLegacyTicketTx(
-  db: Firestore,
-  tx: Transaction,
-  localId: string,
-  codigo: string,
-  adminUid: string
-): Promise<ConfirmarTicketOutput> {
-  const ticketRef = cols.canjePendiente(db, localId, codigo);
-  const ticketSnap = await tx.get(ticketRef);
-  if (!ticketSnap.exists) throw new Error("Canje inexistente.");
-  const ticket = ticketSnap.data() as CanjePendiente;
-
-  if (ticket.estado === "completado") {
-    throw new Error("Este ticket ya fue canjeado.");
-  }
-  if (ticket.estado === "cancelado") {
-    throw new Error("Este ticket fue cancelado por el cliente.");
-  }
-  if (tickectExpirado(ticket.expiraEn)) {
-    tx.update(ticketRef, { estado: "expirado" as EstadoCanje });
-    const clienteRefExp = cols.cliente(db, localId, ticket.clienteId);
-    tx.update(clienteRefExp, {
-      huellitasReservadas: FieldValue.increment(-ticket.costoHuellitas)
-    });
-    throw new Error("Este ticket expiró.");
-  }
-
-  const clienteRef = cols.cliente(db, localId, ticket.clienteId);
-  const premioRef = cols.premio(db, localId, ticket.premioId);
-
-  const [clienteSnap, lotesSnap, premioSnap] = await Promise.all([
-    tx.get(clienteRef),
-    tx.get(cols.huellitas(db, localId, ticket.clienteId)),
-    tx.get(premioRef)
-  ]);
-
-  if (!clienteSnap.exists) throw new Error("Cliente inexistente.");
-  const cliente = clienteSnap.data() as Cliente;
-
-  const lotes: LoteHuellitas[] = lotesSnap.docs.map((d) => ({
-    id: d.id,
-    ...(d.data() as Omit<LoteHuellitas, "id">)
-  }));
-
-  const saldo = saldoVigente(lotes);
-  if (saldo < ticket.costoHuellitas) {
-    throw new Error(
-      `Saldo insuficiente: hay ${saldo} y el ticket cuesta ${ticket.costoHuellitas}.`
-    );
-  }
-
-  const plan = planConsumoFIFO(lotes, ticket.costoHuellitas);
-
-  for (const c of plan) {
-    const loteRef = cols
-      .huellitas(db, localId, ticket.clienteId)
-      .doc(c.loteId);
-    tx.update(loteRef, {
-      huellitasRestantes: FieldValue.increment(-c.consumidas)
-    });
-  }
-
-  const canjeAudRef = cols.canjes(db, localId).doc();
-  tx.set(canjeAudRef, {
-    localId,
-    clienteId: ticket.clienteId,
-    ticketId: codigo,
-    premioId: ticket.premioId,
-    premioNombre: ticket.premioNombre,
-    huellitasCanjeadas: ticket.costoHuellitas,
-    valorDescuento: ticket.valorDescuento ?? null,
-    valor_descuento: ticket.valorDescuento ?? null,
-    plan,
-    fecha: FieldValue.serverTimestamp(),
-    confirmadoPor: adminUid,
-    estado: "completado" as EstadoCanje
-  });
-
-  tx.update(ticketRef, {
-    estado: "completado" as EstadoCanje,
-    confirmadoEn: new Date().toISOString(),
-    confirmadoPor: adminUid
-  });
-
-  const saldoFinal = Math.max(
-    0,
-    (cliente.saldoHuellitas ?? 0) - ticket.costoHuellitas
-  );
-  tx.update(clienteRef, {
-    saldoHuellitas: saldoFinal,
-    huellitasReservadas: FieldValue.increment(-ticket.costoHuellitas)
-  });
-
-  let stockRestante: number | null = null;
-  if (premioSnap.exists) {
-    const stock = (premioSnap.data() as Premio).stock;
-    if (typeof stock === "number" && stock > 0) {
-      stockRestante = stock - 1;
-      tx.update(premioRef, { stock: FieldValue.increment(-1) });
-    } else if (typeof stock === "number") {
-      stockRestante = stock;
-    }
-  }
-
-  registrarLogCanjeEnTx(db, tx, localId, {
-    localId,
-    clienteId: ticket.clienteId,
-    clienteNombre: ticket.clienteNombre,
-    premioId: ticket.premioId,
-    premioNombre: ticket.premioNombre,
-    huellitasDescontadas: ticket.costoHuellitas,
-    stockRestante,
-    origen: "confirmacion",
-    canjeId: canjeAudRef.id,
-    adminUid
-  });
-
-  return {
-    ok: true as const,
-    canjeId: canjeAudRef.id,
-    clienteId: ticket.clienteId,
-    premioNombre: ticket.premioNombre,
-    huellitasDescontadas: ticket.costoHuellitas,
-    saldoFinal
-  };
 }

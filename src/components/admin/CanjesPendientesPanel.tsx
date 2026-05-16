@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Clock, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -15,6 +16,7 @@ export interface CanjesPendientesPanelProps {
 export function CanjesPendientesPanel({
   ticketsIniciales
 }: CanjesPendientesPanelProps) {
+  const router = useRouter();
   const [tickets, setTickets] = useState(ticketsIniciales);
   const [codigo, setCodigo] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -61,6 +63,7 @@ export function CanjesPendientesPanel({
       );
       setTickets((prev) => prev.filter((t) => t.codigo !== codigoAConfirmar));
       setCodigo("");
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {

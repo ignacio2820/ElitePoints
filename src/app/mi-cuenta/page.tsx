@@ -15,9 +15,8 @@ import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembres
 import { progresoNivel } from "@/lib/huellitas/engine";
 import { MascotaCard } from "@/components/MascotaCard";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
-import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
-import { CustomerPanel } from "@/components/cliente/CustomerPanel";
+import { MiCuentaClienteShell } from "@/components/cliente/MiCuentaClienteShell";
 import { MiCuentaPasskeyCard } from "@/components/cliente/MiCuentaPasskeyCard";
 import type { Cliente, Mascota, Premio } from "@/lib/huellitas/types";
 
@@ -137,11 +136,11 @@ export default async function MiCuentaPage({
 
   return (
     <div className="pb-28 antialiased text-bark-800">
-      <CustomerPanel
+      <MiCuentaClienteShell
         nombreLocal={nombreLocal}
         logoUrl={logoUrl}
         nombreCliente={cliente.nombre}
-        saldoHuellitas={cliente.saldoDisponible}
+        saldoDisponibleInicial={cliente.saldoDisponible}
         huellitasReservadas={cliente.huellitasReservadas}
         valorMonetarioHuellita={cfg.valorMonetarioHuellita}
         nivelActual={progreso.nivelActual}
@@ -153,23 +152,10 @@ export default async function MiCuentaPage({
         esLeyenda={!progreso.nivelSiguiente}
         montoParaUnaHuellita={cfg.montoParaUnaHuellita}
         diasVencimiento={cfg.diasVencimiento}
-        recompensas={
-          premios.length > 0 ? (
-            <CanjesDisponibles
-              embedded
-              premios={premios}
-              saldoCliente={cliente.saldoDisponible}
-              valorMonetarioHuellita={cfg.valorMonetarioHuellita}
-              nivelCliente={progreso.nivelActual}
-              niveles={cfg.niveles}
-              especiesCliente={mascotas.map((m) => m.especie)}
-            />
-          ) : (
-            <p className="rounded-2xl border border-dashed border-bark-100 bg-cream-50 px-4 py-8 text-center text-sm text-bark-500">
-              Todavía no hay premios disponibles.
-            </p>
-          )
-        }
+        premios={premios}
+        nivelCliente={progreso.nivelActual}
+        niveles={cfg.niveles}
+        especiesCliente={mascotas.map((m) => m.especie)}
       >
         {membresiaExpirada ? (
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
@@ -231,7 +217,7 @@ export default async function MiCuentaPage({
             baseUrl={baseUrl}
           />
         )}
-      </CustomerPanel>
+      </MiCuentaClienteShell>
 
       <FloatingWhatsApp
         telefono={telefonoWhatsapp}

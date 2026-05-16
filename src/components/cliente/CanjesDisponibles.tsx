@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { Bone, Gift, Loader2, Lock, Package, Stethoscope } from "lucide-react";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
@@ -12,6 +13,7 @@ import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { formatNumber } from "@/lib/utils";
 import { TicketCanjeModal, type TicketCanje } from "./TicketCanjeModal";
 import { ConfirmarCanjeModal } from "./ConfirmarCanjeModal";
+import { ExitoCanjeModal } from "./ExitoCanjeModal";
 
 export interface CanjesDisponiblesProps {
   premios: Premio[];
@@ -30,6 +32,8 @@ export interface CanjesDisponiblesProps {
   embedded?: boolean;
   /** Si es false, no se llama a la API (p. ej. vista demo pública). */
   puedeCanjear?: boolean;
+  /** Tras crear el ticket con éxito: actualiza saldo en el panel padre. */
+  onCanjeExitoso?: (saldoDisponible: number, costoHuellitas: number) => void;
 }
 
 function descripcionCorta(text: string | undefined, max = 120): string {
@@ -47,13 +51,17 @@ export function CanjesDisponibles({
   niveles,
   especiesCliente,
   embedded = false,
-  puedeCanjear = true
+  puedeCanjear = true,
+  onCanjeExitoso
 }: CanjesDisponiblesProps) {
+  const router = useRouter();
   const [ticket, setTicket] = useState<TicketCanje | null>(null);
   const [pidiendoId, setPidiendoId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saldoLocal, setSaldoLocal] = useState(saldoCliente);
   const [confirmando, setConfirmando] = useState<Premio | null>(null);
+  const [mostrarExito, setMostrarExito] = useState(false);
+  const [saldoExito, setSaldoExito] = useState<number | undefined>();
 
   useEffect(() => {
     setSaldoLocal(saldoCliente);
@@ -108,11 +116,15 @@ export function CanjesDisponibles({
             : undefined,
         clienteNombre: data.clienteNombre
       });
-      if (typeof data.saldoDisponibleFinal === "number") {
-        setSaldoLocal(data.saldoDisponibleFinal);
-      } else {
-        setSaldoLocal((s) => Math.max(0, s - premio.costoHuellitas));
-      }
+      const nuevoSaldo =
+        typeof data.saldoDisponibleFinal === "number"
+          ? data.saldoDisponibleFinal
+          : Math.max(0, saldoLocal - premio.costoHuellitas);
+      setSaldoLocal(nuevoSaldo);
+      setSaldoExito(nuevoSaldo);
+      setMostrarExito(true);
+      onCanjeExitoso?.(nuevoSaldo, premio.costoHuellitas);
+      router.refresh();
       setConfirmando(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ocurrió un error");
@@ -210,7 +222,16 @@ export function CanjesDisponibles({
         }}
       />
 
-      <TicketCanjeModal ticket={ticket} onClose={() => setTicket(null)} />
+      <TicketCanjeModal
+        ticket={mostrarExito ? null : ticket}
+        onClose={() => setTicket(null)}
+      />
+
+      <ExitoCanjeModal
+        abierto={mostrarExito}
+        saldoDisponible={saldoExito}
+        onCerrar={() => setMostrarExito(false)}
+      />
     </>
   );
 }
