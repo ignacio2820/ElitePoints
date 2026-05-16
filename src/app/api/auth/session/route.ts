@@ -9,44 +9,54 @@ import {
 } from "@/lib/auth/server";
 import { esRolValido, type Rol } from "@/lib/auth/types";
 import { assertAllowedAuthRequest } from "@/lib/auth/allowedOrigins";
+import { buscarIdentidadPorEmail } from "@/lib/auth/identityIndex";
+import { sincronizarSesionClientePorEmail } from "@/lib/auth/persistenciaCliente";
 
 export const runtime = "nodejs";
 
 const Body = z.object({
   idToken: z.string().min(10),
-  redirect: z.string().optional()
+  redirect: z.string().optional(),
+  /** Segunda pasada tras `getIdToken(true)` cuando los claims se actualizaron en servidor. */
+  afterClaimsRefresh: z.boolean().optional()
 });
 
-async function claimsDesdeSesion(decoded: DecodedIdToken): Promise<{
+async function claimsDesdeAuth(uid: string): Promise<{
   role: Rol;
   localId: string;
   clienteId?: string;
-}> {
-  let role = decoded.role;
-  let localId = typeof decoded.localId === "string" ? decoded.localId : undefined;
-  let clienteId =
-    typeof decoded.clienteId === "string" ? decoded.clienteId : undefined;
+} | null> {
+  const user = await adminAuth().getUser(uid);
+  const claims = user.customClaims ?? {};
+  const role = claims.role;
+  const localId = typeof claims.localId === "string" ? claims.localId : undefined;
+  const clienteId =
+    typeof claims.clienteId === "string" ? claims.clienteId : undefined;
 
-  if (!esRolValido(role) || !localId) {
-    const user = await adminAuth().getUser(decoded.uid);
-    const claims = user.customClaims ?? {};
-    role = claims.role;
-    localId = typeof claims.localId === "string" ? claims.localId : undefined;
-    clienteId =
-      typeof claims.clienteId === "string" ? claims.clienteId : undefined;
-  }
-
-  if (!esRolValido(role) || !localId) {
-    throw new Error("claims-missing");
-  }
-
+  if (!esRolValido(role) || !localId) return null;
   return { role, localId, clienteId };
+}
+
+function tokenCoincideConClaims(
+  decoded: DecodedIdToken,
+  auth: { role: Rol; localId: string; clienteId?: string }
+): boolean {
+  if (decoded.role !== auth.role || decoded.localId !== auth.localId) {
+    return false;
+  }
+  if (auth.role === "cliente") {
+    return decoded.clienteId === auth.clienteId;
+  }
+  return true;
 }
 
 /**
  * Recibe un ID token recién emitido por Firebase Auth (en el cliente)
  * y crea la session cookie httpOnly. Tras esto, todos los requests del
  * navegador llevan la cookie automáticamente.
+ *
+ * Si el email ya tiene perfil en Firestore, sincroniza claims y passkeys
+ * antes de emitir la cookie (correo único tras reinstalar PWA).
  */
 export async function POST(req: Request) {
   try {
@@ -72,10 +82,22 @@ export async function POST(req: Request) {
 
   try {
     const decoded = await adminAuth().verifyIdToken(parsed.data.idToken, true);
-    let claims: Awaited<ReturnType<typeof claimsDesdeSesion>>;
-    try {
-      claims = await claimsDesdeSesion(decoded);
-    } catch {
+    const userRecord = await adminAuth().getUser(decoded.uid);
+    const email = (decoded.email ?? userRecord.email)?.trim().toLowerCase();
+
+    if (email) {
+      const identidad = await buscarIdentidadPorEmail(email);
+      if (identidad?.tipo === "customer") {
+        await sincronizarSesionClientePorEmail(
+          decoded.uid,
+          email,
+          identidad.localId
+        );
+      }
+    }
+
+    const claims = await claimsDesdeAuth(decoded.uid);
+    if (!claims) {
       return NextResponse.json(
         {
           ok: false,
@@ -86,6 +108,19 @@ export async function POST(req: Request) {
         },
         { status: 403 }
       );
+    }
+
+    if (
+      !parsed.data.afterClaimsRefresh &&
+      !tokenCoincideConClaims(decoded, claims)
+    ) {
+      return NextResponse.json({
+        ok: true,
+        needsFreshIdToken: true,
+        role: claims.role,
+        localId: claims.localId,
+        clienteId: claims.clienteId ?? null
+      });
     }
 
     const cookie = await crearSesionCookie(parsed.data.idToken);

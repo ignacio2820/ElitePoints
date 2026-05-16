@@ -45,7 +45,20 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    await passkeyRegistrationVerify(sesion.uid, email, parsed.data.response);
+    const perfil =
+      sesion.claims.role === "cliente" && sesion.claims.clienteId
+        ? {
+            localId: sesion.claims.localId,
+            clienteId: sesion.claims.clienteId
+          }
+        : undefined;
+
+    await passkeyRegistrationVerify(
+      sesion.uid,
+      email,
+      parsed.data.response,
+      perfil
+    );
     return NextResponse.json({ ok: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error";

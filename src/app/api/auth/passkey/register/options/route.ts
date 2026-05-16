@@ -27,7 +27,15 @@ export async function POST() {
       );
     }
 
-    const options = await passkeyRegistrationOptions(sesion.uid, email);
+    const perfil =
+      sesion.claims.role === "cliente" && sesion.claims.clienteId
+        ? {
+            localId: sesion.claims.localId,
+            clienteId: sesion.claims.clienteId
+          }
+        : undefined;
+
+    const options = await passkeyRegistrationOptions(sesion.uid, email, perfil);
     return NextResponse.json({ ok: true, options });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error";

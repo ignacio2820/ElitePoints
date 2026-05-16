@@ -22,6 +22,9 @@ export interface PasskeyDoc {
   counter: number;
   transports?: AuthenticatorTransportFuture[];
   creadoEn: string;
+  /** Perfil Firestore al que pertenece la huella (persistente tras reinstalar PWA). */
+  localId?: string;
+  clienteId?: string;
 }
 
 function rpId(): string {
@@ -70,8 +73,34 @@ export class PasskeyFlowError extends Error {
   }
 }
 
-export async function passkeyRegistrationOptions(uid: string, email: string) {
-  const existing = await passkeysCol().where("uid", "==", uid).get();
+/** Reasigna todas las passkeys del email al UID actual (tras magic link / recuperación). */
+export async function reasignarPasskeysAlUid(
+  email: string,
+  uid: string,
+  perfil?: { localId: string; clienteId: string }
+): Promise<void> {
+  const normalized = email.trim().toLowerCase();
+  const snap = await passkeysCol().where("email", "==", normalized).get();
+  if (snap.empty) return;
+
+  const batch = adminDb().batch();
+  for (const doc of snap.docs) {
+    const patch: Record<string, unknown> = { uid };
+    if (perfil) {
+      patch.localId = perfil.localId;
+      patch.clienteId = perfil.clienteId;
+    }
+    batch.update(doc.ref, patch);
+  }
+  await batch.commit();
+}
+
+export async function passkeyRegistrationOptions(
+  uid: string,
+  email: string,
+  perfil?: { localId: string; clienteId: string }
+) {
+  const existing = await passkeysCol().where("email", "==", email.trim().toLowerCase()).get();
   const excludeCredentials = existing.docs.map((d) => {
     const data = d.data() as PasskeyDoc;
     return {
@@ -80,11 +109,13 @@ export async function passkeyRegistrationOptions(uid: string, email: string) {
     };
   });
 
+  const userIdEstable = perfil?.clienteId ?? uid;
+
   const options = await generateRegistrationOptions({
     rpName: process.env.WEBAUTHN_RP_NAME?.trim() || "MascotPoints",
     rpID: rpId(),
     userName: email,
-    userID: new TextEncoder().encode(uid),
+    userID: new TextEncoder().encode(userIdEstable),
     userDisplayName: email,
     attestationType: "none",
     excludeCredentials,
@@ -106,7 +137,8 @@ export async function passkeyRegistrationOptions(uid: string, email: string) {
 export async function passkeyRegistrationVerify(
   uid: string,
   email: string,
-  response: RegistrationResponseJSON
+  response: RegistrationResponseJSON,
+  perfil?: { localId: string; clienteId: string }
 ) {
   const chSnap = await adminDb().collection("PasskeyChallenges").doc(uid).get();
   const ch = chSnap.data() as { challenge?: string; expiraEn?: number } | undefined;
@@ -138,7 +170,8 @@ export async function passkeyRegistrationVerify(
     deviceType: credentialDeviceType,
     backedUp: credentialBackedUp,
     transports: response.response.transports,
-    creadoEn: new Date().toISOString()
+    creadoEn: new Date().toISOString(),
+    ...(perfil ? { localId: perfil.localId, clienteId: perfil.clienteId } : {})
   } satisfies PasskeyDoc & { deviceType: string; backedUp: boolean });
 
   await chSnap.ref.delete();
@@ -223,8 +256,31 @@ export async function passkeyLoginVerify(
   await credSnap.ref.update({ counter: newCounter });
   await chSnap.ref.delete();
 
-  const customToken = await adminAuth().createCustomToken(cred.uid);
-  return { customToken, uid: cred.uid };
+  const { getOrCreateUserByEmail } = await import("@/lib/auth/server");
+  const { sincronizarSesionClientePorEmail } = await import(
+    "@/lib/auth/persistenciaCliente"
+  );
+
+  const uid = await getOrCreateUserByEmail(normalized);
+  const perfilPasskey =
+    cred.localId && cred.clienteId
+      ? { localId: cred.localId, clienteId: cred.clienteId }
+      : undefined;
+
+  const sincronizado = await sincronizarSesionClientePorEmail(
+    uid,
+    normalized,
+    perfilPasskey?.localId
+  );
+
+  if (!sincronizado) {
+    throw new Error(
+      "No encontramos una cuenta de cliente con este email. Pedile al local que te registre o usá el link mágico."
+    );
+  }
+
+  const customToken = await adminAuth().createCustomToken(uid);
+  return { customToken, uid };
 }
 
 export function passkeysHabilitados(): boolean {

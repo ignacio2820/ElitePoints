@@ -80,22 +80,37 @@ export async function consultarRolEmail(
 
 async function intercambiarIdTokenPorSesion(
   idToken: string,
-  redirect?: string
+  redirect?: string,
+  afterClaimsRefresh = false
 ): Promise<{ ok: true; redirectTo: string } | { ok: false; error: string }> {
   const r = await fetch("/api/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ idToken, redirect })
+    body: JSON.stringify({ idToken, redirect, afterClaimsRefresh })
   });
   const data = (await r.json()) as {
     ok: boolean;
     error?: string;
     redirectTo?: string;
+    needsFreshIdToken?: boolean;
   };
   if (!r.ok || !data.ok) {
     return { ok: false, error: data.error ?? "No se pudo crear la sesión" };
   }
+
+  if (data.needsFreshIdToken && auth.currentUser && !afterClaimsRefresh) {
+    const fresh = await auth.currentUser.getIdToken(true);
+    return intercambiarIdTokenPorSesion(fresh, redirect, true);
+  }
+
+  if (data.needsFreshIdToken) {
+    return {
+      ok: false,
+      error: "No se pudo actualizar la sesión con tu perfil. Intentá de nuevo."
+    };
+  }
+
   return { ok: true, redirectTo: data.redirectTo ?? "/" };
 }
 

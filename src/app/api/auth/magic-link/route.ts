@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuth } from "@/lib/firebase/admin";
 import { getOrCreateUserByEmail, setCustomClaims } from "@/lib/auth/server";
-import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
+import { sincronizarSesionClientePorEmail } from "@/lib/auth/persistenciaCliente";
 import { cols } from "@/lib/firebase/collections";
 import { adminDb } from "@/lib/firebase/admin";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
@@ -13,7 +13,6 @@ import {
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
 import {
   buscarIdentidadPorEmail,
-  upsertCustomerIndex,
   upsertOwnerIndex
 } from "@/lib/auth/identityIndex";
 import { RUTA_DASHBOARD, RUTA_PORTAL } from "@/lib/auth/redirect";
@@ -114,22 +113,20 @@ export async function POST(req: Request) {
         identidad.localId;
     } else if (identidad?.tipo === "customer") {
       uid = await getOrCreateUserByEmail(email);
-      await setCustomClaims(uid, {
-        role: "cliente",
-        localId: identidad.localId,
-        clienteId: identidad.clienteId
-      });
-      await vincularUsuarioACliente(
-        identidad.localId,
-        identidad.clienteId,
-        uid
-      );
-      await upsertCustomerIndex({
+      const perfil = await sincronizarSesionClientePorEmail(
+        uid,
         email,
-        localId: identidad.localId,
-        clienteId: identidad.clienteId,
-        uid
-      });
+        identidad.localId
+      );
+      if (!perfil) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "No encontramos tu perfil de cliente. Pedile al local que te registre."
+          },
+          { status: 404 }
+        );
+      }
       rolFinal = "cliente";
       const localSnap = await cols.local(adminDb(), identidad.localId).get();
       nombreLocal =

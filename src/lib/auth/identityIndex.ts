@@ -1,6 +1,6 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
-import { buscarClientePorEmailGlobal } from "@/lib/huellitas/clientesService";
+import { buscarClientePorEmailRobusto } from "@/lib/auth/persistenciaCliente";
 
 export type OwnerIndex = {
   email: string;
@@ -140,7 +140,7 @@ export async function buscarIdentidadPorEmail(
     // no existe en Auth
   }
 
-  const cli = await buscarClientePorEmailGlobal(normalized);
+  const cli = await buscarClientePorEmailRobusto(normalized);
   if (cli) {
     await upsertCustomerIndex({
       email: normalized,

@@ -6,10 +6,8 @@ import {
   getOrCreateUserByEmail,
   setCustomClaims
 } from "@/lib/auth/server";
-import {
-  buscarClientePorEmailGlobal,
-  vincularUsuarioACliente
-} from "@/lib/huellitas/clientesService";
+import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
+import { emailYaRegistradoComoCliente } from "@/lib/auth/persistenciaCliente";
 import { crearClienteConReferido } from "@/lib/huellitas/referidosService";
 import { mayExposeDevMagicLink } from "@/lib/auth/allowedOrigins";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
@@ -73,8 +71,8 @@ export async function POST(req: Request) {
     const nombreLocal =
       (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
-    // 2. Email duplicado en algún cliente del sistema
-    const existente = await buscarClientePorEmailGlobal(data.email);
+    // 2. Correo único: no permitir duplicar perfil (índice + scan legacy)
+    const existente = await emailYaRegistradoComoCliente(data.email, localId);
     if (existente) {
       return NextResponse.json(
         {
