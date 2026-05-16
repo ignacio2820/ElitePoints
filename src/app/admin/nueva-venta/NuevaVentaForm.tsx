@@ -97,9 +97,18 @@ export function NuevaVentaForm({
   const valorEnPesos = huellitasPrevistas * valorMonetarioHuellita;
   const isValid = clienteId.trim().length > 0 && montoNum > 0;
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValid || enviando) return;
+  async function confirmarVenta() {
+    const idCliente = clienteId.trim();
+    if (!idCliente) {
+      setError("Elegí un cliente para registrar la venta.");
+      return;
+    }
+    if (!Number.isFinite(montoNum) || montoNum <= 0) {
+      setError("Ingresá un monto mayor a $0.");
+      return;
+    }
+    if (enviando) return;
+
     setEnviando(true);
     setError(null);
     setResultado(null);
@@ -110,7 +119,7 @@ export function NuevaVentaForm({
         credentials: "same-origin",
         body: JSON.stringify({
           localId,
-          clienteId: clienteId.trim(),
+          clienteId: idCliente,
           totalVenta: montoNum,
           huellitasACanjear: canjeNum > 0 ? canjeNum : undefined
         })
@@ -122,6 +131,8 @@ export function NuevaVentaForm({
         setResultado(data);
         setMonto("");
         setHuellitasACanjear("");
+        setClienteId("");
+        setEscaneoQr(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error de red");
@@ -130,10 +141,16 @@ export function NuevaVentaForm({
     }
   }
 
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await confirmarVenta();
+  }
+
   function nuevaVenta() {
     setResultado(null);
     setError(null);
     setClienteId("");
+    setEscaneoQr(null);
     setMonto("");
     setHuellitasACanjear("");
   }
@@ -158,7 +175,10 @@ export function NuevaVentaForm({
               <ScanLine size={12} />
               Caja registradora
             </span>
-            <h1 className="mt-3 font-display text-4xl font-semibold text-bark-700">
+            <h1
+              id="titulo-nueva-venta"
+              className="mt-3 font-display text-4xl font-semibold text-bark-700"
+            >
               Nueva venta
             </h1>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
@@ -203,11 +223,17 @@ export function NuevaVentaForm({
         {/* Card principal */}
         <div className="rounded-3xl border border-bark-100/80 bg-white/90 p-7 shadow-soft">
             {!resultado ? (
-              <form onSubmit={onSubmit} className="space-y-6">
+              <form
+                onSubmit={onSubmit}
+                className="space-y-6"
+                noValidate
+                aria-labelledby="titulo-nueva-venta"
+              >
                 <div className="flex flex-col gap-3 md:gap-4">
                   <SelectorCliente
                     clienteIdInicial={clienteIdInicial}
                     escaneoQr={escaneoQr}
+                    clienteIdEnFormulario={clienteId}
                     onChange={setClienteId}
                   />
                   <EscanerQrClienteMovil onClienteId={onClienteDesdeQr} />
@@ -237,15 +263,7 @@ export function NuevaVentaForm({
                   </div>
                 </FieldDark>
 
-                {/* Cálculo en vivo */}
-                <CalculoEnVivo
-                  monto={montoNum}
-                  huellitas={huellitasPrevistas}
-                  valorEnPesos={valorEnPesos}
-                  montoParaUnaHuellita={montoParaUnaHuellita}
-                />
-
-                {/* Canje opcional */}
+                {/* Canje opcional — antes del resumen para ajustar y luego confirmar */}
                 <details className="group rounded-xl border border-bark-100 bg-cream-50 p-4">
                   <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-bark-600 transition group-open:text-bark-700">
                     <span className="flex items-center gap-2">
@@ -277,7 +295,15 @@ export function NuevaVentaForm({
                   </div>
                 </details>
 
-                {error && (
+                {/* Cálculo en vivo */}
+                <CalculoEnVivo
+                  monto={montoNum}
+                  huellitas={huellitasPrevistas}
+                  valorEnPesos={valorEnPesos}
+                  montoParaUnaHuellita={montoParaUnaHuellita}
+                />
+
+                {error ? (
                   <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
                     <AlertTriangle size={18} className="mt-0.5 shrink-0" />
                     <div>
@@ -287,25 +313,34 @@ export function NuevaVentaForm({
                       <p className="mt-1 text-rose-800/90">{error}</p>
                     </div>
                   </div>
-                )}
+                ) : null}
 
-                <button
-                  type="submit"
-                  disabled={!isValid || enviando}
-                  className="btn-primary flex w-full items-center justify-center gap-2 py-4 text-base"
-                >
-                  {enviando ? (
-                    <>
-                      <Spinner /> Registrando...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={18} />
-                      Registrar venta · Sumar {formatNumber(huellitasPrevistas)}{" "}
-                      Huellitas
-                    </>
-                  )}
-                </button>
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="submit"
+                    disabled={enviando}
+                    aria-busy={enviando}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-[#FF9A3C] to-[#FB8500] px-5 py-4 text-base font-bold tracking-wide text-white shadow-[0_4px_20px_rgba(251,133,0,0.45)] ring-1 ring-orange-400/40 transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracotta-400 disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    {enviando ? (
+                      <>
+                        <Spinner /> Confirmando venta...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={20} aria-hidden />
+                        Confirmar y Registrar Venta
+                      </>
+                    )}
+                  </button>
+
+                  {!isValid && !enviando ? (
+                    <p className="text-center text-xs text-bark-500">
+                      Necesitás cliente y monto mayor a $0; al confirmar te
+                      avisamos si falta algo.
+                    </p>
+                  ) : null}
+                </div>
               </form>
             ) : (
               <ResultadoVenta
@@ -464,7 +499,12 @@ function ResultadoVenta({
   onNuevaVenta: () => void;
 }) {
   return (
-    <div className="space-y-5">
+      <div
+        className="space-y-5"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
       <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
           <CheckCircle2 size={22} />

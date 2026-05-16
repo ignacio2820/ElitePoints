@@ -26,12 +26,15 @@ interface Props {
   clienteIdInicial?: string;
   /** Último escaneo QR (t único para reinyectar el mismo cliente). */
   escaneoQr?: { id: string; t: number } | null;
+  /** ID que mantiene el padre; si queda vacío, se limpia el chip (evita UI desincronizada). */
+  clienteIdEnFormulario?: string;
   onChange: (clienteId: string) => void;
 }
 
 export function SelectorCliente({
   clienteIdInicial,
   escaneoQr,
+  clienteIdEnFormulario,
   onChange
 }: Props) {
   const [q, setQ] = useState("");
@@ -100,6 +103,16 @@ export function SelectorCliente({
     };
     // escaneoQr.t dispara cada nuevo escaneo
   }, [escaneoQr?.t, escaneoQr?.id, onChange]);
+
+  useEffect(() => {
+    if (clienteIdEnFormulario === undefined) return;
+    if (clienteIdEnFormulario.trim()) return;
+    setSeleccionado(null);
+    setQ("");
+    setResultados([]);
+    setOpen(false);
+    setError(null);
+  }, [clienteIdEnFormulario]);
 
   // Cerrar el dropdown al click fuera
   useEffect(() => {

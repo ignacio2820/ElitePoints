@@ -30,7 +30,14 @@ export function UserMenu({
       >
         <User size={14} />
       </span>
-      <span className="hidden max-w-[10rem] truncate font-medium sm:inline">
+      <span
+        className={`min-w-0 font-medium ${
+          onForest && showSignOutLabel
+            ? "inline-block max-w-[min(42vw,11rem)] truncate text-[11px] sm:max-w-[16rem] sm:text-xs"
+            : "hidden max-w-[10rem] sm:inline"
+        }`}
+        title={sesion.email ?? undefined}
+      >
         {sesion.email ?? "Usuario"}
       </span>
       {showSignOutLabel ? (

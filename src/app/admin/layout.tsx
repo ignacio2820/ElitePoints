@@ -58,21 +58,24 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-cream-50 text-bark-700">
-      <header className="sticky top-0 z-10 border-b border-bark-800 bg-bark-700 text-white shadow-soft print:hidden">
-        <div className="mx-auto w-full max-w-6xl px-4">
-          <div className="flex w-full items-center justify-between gap-3 py-3 sm:gap-4">
+      <header className="sticky top-0 z-10 bg-bark-700 text-white shadow-soft print:hidden">
+        <div className="mx-auto w-full max-w-6xl">
+          {/* Renglón superior: marca + cuenta */}
+          <div className="flex w-full shrink-0 items-center justify-between border-b border-white/15 px-6 py-3">
             <Link
               href="/admin"
-              className="flex min-w-0 max-w-[min(100%,18rem)] flex-1 items-center gap-3 rounded-2xl py-1 pl-0.5 pr-2 transition hover:bg-white/5 sm:max-w-md md:max-w-lg"
+              className="flex min-w-0 max-w-[min(100%,28rem)] shrink-0 items-center gap-3 rounded-2xl py-1 pl-0.5 pr-3 transition hover:bg-white/5"
             >
               {tieneLogo ? (
-                <LocalBrandMark
-                  nombreLocal={info.nombre}
-                  logoUrl={info.logoUrl}
-                  shape="circle"
-                  size={40}
-                  imageClassName="border-white/20 bg-white shadow-soft"
-                />
+                <span className="shrink-0">
+                  <LocalBrandMark
+                    nombreLocal={info.nombre}
+                    logoUrl={info.logoUrl}
+                    shape="circle"
+                    size={40}
+                    imageClassName="border-white/20 bg-white shadow-soft"
+                  />
+                </span>
               ) : (
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-terracotta-300">
                   <LocalBrandMark
@@ -83,7 +86,7 @@ export default async function AdminLayout({
                   />
                 </div>
               )}
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0">
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
                   Admin
                 </span>
@@ -93,15 +96,16 @@ export default async function AdminLayout({
               </div>
             </Link>
 
-            <AdminNav className="mx-2 hidden min-h-[44px] min-w-0 flex-1 justify-center gap-0.5 overflow-x-auto [scrollbar-width:none] md:flex md:px-1 [&::-webkit-scrollbar]:hidden" />
-
-            <div className="flex shrink-0 items-center">
+            <div className="flex shrink-0 items-center gap-3 pl-2">
               <UserMenu tone="forest" showSignOutLabel />
             </div>
           </div>
 
-          <div className="border-t border-white/10 pb-2 pt-1 md:hidden">
-            <AdminNav className="flex w-full min-w-0 gap-0.5 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" />
+          {/* Renglón inferior: solapas (scroll horizontal en móvil) */}
+          <div className="border-b border-bark-900/35 border-t border-white/10 bg-bark-900/25 px-6 py-2">
+            <div className="-mx-1 flex items-center gap-4 overflow-x-auto whitespace-nowrap px-1 [scrollbar-width:none] md:gap-6 [&::-webkit-scrollbar]:hidden">
+              <AdminNav className="gap-4 md:gap-6" />
+            </div>
           </div>
         </div>
       </header>

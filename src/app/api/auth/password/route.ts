@@ -19,7 +19,9 @@ const Body = z
   });
 
 /**
- * Establece o cambia la contraseña del dueño autenticado.
+ * GET: estado del proveedor "password".
+ * POST: establece/clave sólo desde Admin SDK (útiles externos o scripts).
+ * El panel usa el SDK web (`actualizarContraseñaDesdeCliente`) para mantener Auth y login alineados.
  */
 export async function POST(req: Request) {
   try {

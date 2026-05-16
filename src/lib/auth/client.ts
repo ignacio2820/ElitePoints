@@ -93,6 +93,24 @@ async function intercambiarIdTokenPorSesion(
   return { ok: true, redirectTo: data.redirectTo ?? "/" };
 }
 
+/**
+ * Emite un ID token fresco y renueva la session cookie httpOnly.
+ * Útil tras `updatePassword` / `linkWithCredential` para alinear cookies con Auth.
+ */
+export async function sincronizarSesionConFirebase(
+  redirect?: string
+): Promise<{ ok: true; redirectTo: string } | { ok: false; error: string }> {
+  const u = auth.currentUser;
+  if (!u) {
+    return {
+      ok: false,
+      error: "No hay usuario de Firebase activo en este navegador."
+    };
+  }
+  const idToken = await u.getIdToken(true);
+  return intercambiarIdTokenPorSesion(idToken, redirect);
+}
+
 export interface IngresarPasswordInput {
   email: string;
   password: string;
