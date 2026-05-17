@@ -17,7 +17,7 @@ type Props = {
 };
 
 const MENSAJE_SOPORTE =
-  "¿Hubo un error en los datos? Solicita la modificación o eliminación directamente al personal en el local.";
+  "¿Hubo un error en el nombre o la fecha de nacimiento? Solicitá la modificación al personal del local.";
 
 function hoyIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -26,14 +26,209 @@ function hoyIso(): string {
 const inputReadOnly =
   "mt-2 w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 px-3 py-2.5 text-sm text-bark-600";
 
+const inputEditable =
+  "mt-2 w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm text-bark-800 outline-none ring-terracotta-400/30 transition focus:border-terracotta-400 focus:ring-2";
+
 const labelClass =
   "text-xs font-semibold uppercase tracking-wide text-bark-500";
+
+function FichaMascotaEditable({
+  mascota,
+  onActualizada
+}: {
+  mascota: Mascota;
+  onActualizada: (m: Mascota) => void;
+}) {
+  const router = useRouter();
+  const especie = resolverEspecieMascota(mascota);
+  const tipoLabel = labelTipoMascota(mascota.tipo, especie);
+
+  const [raza, setRaza] = useState(mascota.raza ?? "");
+  const [color, setColor] = useState(mascota.color ?? "");
+  const [pesoKg, setPesoKg] = useState(
+    mascota.pesoKg != null ? String(mascota.pesoKg) : ""
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
+
+  const onGuardarCambios = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!mascota.id) return;
+      setError(null);
+
+      let peso: number | undefined;
+      if (pesoKg.trim()) {
+        peso = Number(pesoKg.replace(",", "."));
+        if (!Number.isFinite(peso) || peso <= 0 || peso > 300) {
+          setError("El peso debe ser un número entre 0 y 300 kg.");
+          return;
+        }
+      }
+
+      setGuardando(true);
+      try {
+        const res = await fetch("/api/cliente/mascotas", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mascotaId: mascota.id,
+            raza: raza.trim() || undefined,
+            color: color.trim() || undefined,
+            pesoKg: peso
+          })
+        });
+        const data = (await res.json()) as {
+          ok: boolean;
+          error?: string;
+          mascota?: Mascota;
+        };
+        if (!res.ok || !data.ok || !data.mascota) {
+          setError(data.error ?? "No se pudieron guardar los cambios.");
+          return;
+        }
+        onActualizada(data.mascota);
+        router.refresh();
+      } catch {
+        setError("Error de conexión. Intentá de nuevo.");
+      } finally {
+        setGuardando(false);
+      }
+    },
+    [mascota.id, raza, color, pesoKg, onActualizada, router]
+  );
+
+  return (
+    <form
+      onSubmit={onGuardarCambios}
+      className="surface-card space-y-4 rounded-2xl p-5"
+    >
+      <div className="flex items-center gap-3 border-b border-bark-100 pb-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-terracotta-50 text-terracotta-500">
+          <PawPrint size={20} />
+        </div>
+        <div>
+          <h3 className="font-display text-base font-semibold text-bark-700">
+            Ficha de mascota
+          </h3>
+          <p className="text-sm text-bark-500">
+            Podés actualizar raza, color y peso
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Nombre de la mascota</label>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={mascota.nombre}
+            readOnly
+            disabled
+            className={`${inputReadOnly} min-w-[8rem] flex-1`}
+          />
+          <BadgeCumpleanosMascota mascota={mascota} />
+        </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Tipo de mascota</label>
+        <input
+          type="text"
+          value={tipoLabel}
+          readOnly
+          disabled
+          className={inputReadOnly}
+        />
+      </div>
+
+      <div>
+        <label htmlFor={`raza-${mascota.id}`} className={labelClass}>
+          Raza
+        </label>
+        <input
+          id={`raza-${mascota.id}`}
+          type="text"
+          value={raza}
+          onChange={(e) => setRaza(e.target.value)}
+          maxLength={80}
+          placeholder="Ej: Labrador"
+          className={inputEditable}
+        />
+      </div>
+
+      <div>
+        <label htmlFor={`color-${mascota.id}`} className={labelClass}>
+          Color
+        </label>
+        <input
+          id={`color-${mascota.id}`}
+          type="text"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          maxLength={40}
+          placeholder="Ej: Negro y blanco"
+          className={inputEditable}
+        />
+      </div>
+
+      <div>
+        <label htmlFor={`peso-${mascota.id}`} className={labelClass}>
+          Peso (kg)
+        </label>
+        <input
+          id={`peso-${mascota.id}`}
+          type="number"
+          inputMode="decimal"
+          min={0.1}
+          max={300}
+          step={0.1}
+          value={pesoKg}
+          onChange={(e) => setPesoKg(e.target.value)}
+          placeholder="Ej: 12.5"
+          className={inputEditable}
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>Fecha de nacimiento</label>
+        <input
+          type="date"
+          value={mascota.fechaNacimiento}
+          readOnly
+          disabled
+          className={inputReadOnly}
+        />
+      </div>
+
+      {error ? (
+        <p className="text-sm font-medium text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={guardando}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-bark-200 bg-white px-4 py-3 text-sm font-semibold text-bark-700 shadow-sm transition hover:bg-cream-50 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {guardando ? <Loader2 size={18} className="animate-spin" /> : null}
+        Guardar cambios
+      </button>
+
+      <p className="text-xs leading-relaxed text-bark-500">{MENSAJE_SOPORTE}</p>
+    </form>
+  );
+}
 
 export function GestionMascotasCliente({ mascotasIniciales }: Props) {
   const router = useRouter();
   const [mascotas, setMascotas] = useState<Mascota[]>(mascotasIniciales);
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState<TipoMascotaValor>("perro");
+  const [raza, setRaza] = useState("");
+  const [color, setColor] = useState("");
+  const [pesoKg, setPesoKg] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -63,6 +258,15 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
         return;
       }
 
+      let peso: number | undefined;
+      if (pesoKg.trim()) {
+        peso = Number(pesoKg.replace(",", "."));
+        if (!Number.isFinite(peso) || peso <= 0 || peso > 300) {
+          setError("El peso debe ser un número entre 0 y 300 kg.");
+          return;
+        }
+      }
+
       setEnviando(true);
       try {
         const res = await fetch("/api/cliente/mascotas", {
@@ -71,7 +275,10 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
           body: JSON.stringify({
             nombre: nombreTrim,
             especie: tipo,
-            fechaNacimiento
+            fechaNacimiento,
+            raza: raza.trim() || undefined,
+            color: color.trim() || undefined,
+            pesoKg: peso
           })
         });
         const data = (await res.json()) as {
@@ -91,7 +298,7 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
         setEnviando(false);
       }
     },
-    [nombre, tipo, fechaNacimiento, router]
+    [nombre, tipo, raza, color, pesoKg, fechaNacimiento, router]
   );
 
   return (
@@ -101,71 +308,23 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
           Mis mascotas
         </h2>
         <p className="mt-1 text-sm text-bark-500">
-          Registrá a tu compañero para beneficios de cumpleaños. Los datos quedan
-          fijos después del primer guardado.
+          Registrá a tu compañero para beneficios de cumpleaños. El nombre y la
+          fecha de nacimiento quedan fijos después del primer guardado; podés
+          actualizar raza, color y peso cuando quieras.
         </p>
       </div>
 
-      {mascotas.map((m) => {
-        const especie = resolverEspecieMascota(m);
-        const tipoLabel = labelTipoMascota(m.tipo, especie);
-        return (
-          <div
-            key={m.id ?? m.nombre}
-            className="surface-card space-y-4 rounded-2xl p-5"
-          >
-            <div className="flex items-center gap-3 border-b border-bark-100 pb-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-terracotta-50 text-terracotta-500">
-                <PawPrint size={20} />
-              </div>
-              <div>
-                <h3 className="font-display text-base font-semibold text-bark-700">
-                  Ficha de mascota
-                </h3>
-                <p className="text-sm text-bark-500">Solo lectura</p>
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>Nombre de la mascota</label>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <input
-                  type="text"
-                  value={m.nombre}
-                  readOnly
-                  disabled
-                  className={`${inputReadOnly} min-w-[8rem] flex-1`}
-                />
-                <BadgeCumpleanosMascota mascota={m} />
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>Tipo de mascota</label>
-              <input
-                type="text"
-                value={tipoLabel}
-                readOnly
-                disabled
-                className={inputReadOnly}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Fecha de nacimiento</label>
-              <input
-                type="date"
-                value={m.fechaNacimiento}
-                readOnly
-                disabled
-                className={inputReadOnly}
-              />
-            </div>
-
-            <p className="text-xs leading-relaxed text-bark-500">{MENSAJE_SOPORTE}</p>
-          </div>
-        );
-      })}
+      {mascotas.map((m) => (
+        <FichaMascotaEditable
+          key={m.id ?? m.nombre}
+          mascota={m}
+          onActualizada={(actualizada) =>
+            setMascotas((prev) =>
+              prev.map((x) => (x.id === actualizada.id ? actualizada : x))
+            )
+          }
+        />
+      ))}
 
       {puedeAgregar ? (
         <form
@@ -198,7 +357,7 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
               maxLength={60}
               required
               placeholder="Ej: Luna"
-              className="mt-2 w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm text-bark-800 outline-none ring-terracotta-400/30 transition focus:border-terracotta-400 focus:ring-2"
+              className={inputEditable}
             />
           </div>
 
@@ -214,6 +373,54 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
           </div>
 
           <div>
+            <label htmlFor="mascota-raza" className={labelClass}>
+              Raza
+            </label>
+            <input
+              id="mascota-raza"
+              type="text"
+              value={raza}
+              onChange={(e) => setRaza(e.target.value)}
+              maxLength={80}
+              placeholder="Ej: Labrador"
+              className={inputEditable}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="mascota-color" className={labelClass}>
+              Color
+            </label>
+            <input
+              id="mascota-color"
+              type="text"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              maxLength={40}
+              placeholder="Ej: Negro y blanco"
+              className={inputEditable}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="mascota-peso" className={labelClass}>
+              Peso (kg)
+            </label>
+            <input
+              id="mascota-peso"
+              type="number"
+              inputMode="decimal"
+              min={0.1}
+              max={300}
+              step={0.1}
+              value={pesoKg}
+              onChange={(e) => setPesoKg(e.target.value)}
+              placeholder="Ej: 12.5"
+              className={inputEditable}
+            />
+          </div>
+
+          <div>
             <label htmlFor="mascota-fecha" className={labelClass}>
               Fecha de nacimiento
             </label>
@@ -224,7 +431,7 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
               onChange={(e) => setFechaNacimiento(e.target.value)}
               max={hoyIso()}
               required
-              className="mt-2 w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm text-bark-800 outline-none ring-terracotta-400/30 transition focus:border-terracotta-400 focus:ring-2"
+              className={inputEditable}
             />
             <p className="mt-2 text-xs text-bark-500">
               Una vez guardada, esta fecha no podrá editarse.

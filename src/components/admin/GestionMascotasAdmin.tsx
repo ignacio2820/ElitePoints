@@ -35,6 +35,9 @@ export function GestionMascotasAdmin({
 
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState<TipoMascotaValor>("perro");
+  const [raza, setRaza] = useState("");
+  const [color, setColor] = useState("");
+  const [pesoKg, setPesoKg] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
 
   const apiBase = `/api/admin/clientes/${clienteId}/mascotas`;
@@ -42,6 +45,9 @@ export function GestionMascotasAdmin({
   const resetForm = () => {
     setNombre("");
     setTipo("perro");
+    setRaza("");
+    setColor("");
+    setPesoKg("");
     setFechaNacimiento("");
     setEditandoId(null);
     setMostrarAlta(false);
@@ -50,6 +56,9 @@ export function GestionMascotasAdmin({
   const cargarEnForm = (m: Mascota) => {
     setNombre(m.nombre);
     setTipo(resolverEspecieMascota(m) as TipoMascotaValor);
+    setRaza(m.raza ?? "");
+    setColor(m.color ?? "");
+    setPesoKg(m.pesoKg != null ? String(m.pesoKg) : "");
     setFechaNacimiento(m.fechaNacimiento);
     setEditandoId(m.id ?? null);
     setMostrarAlta(true);
@@ -72,6 +81,21 @@ export function GestionMascotasAdmin({
         return;
       }
 
+      let peso: number | undefined;
+      if (pesoKg.trim()) {
+        peso = Number(pesoKg.replace(",", "."));
+        if (!Number.isFinite(peso) || peso <= 0 || peso > 300) {
+          setError("El peso debe ser un número entre 0 y 300 kg.");
+          return;
+        }
+      }
+
+      const camposExtra = {
+        raza: raza.trim() || undefined,
+        color: color.trim() || undefined,
+        pesoKg: peso
+      };
+
       setGuardando(true);
       try {
         const esEdicion = !!editandoId;
@@ -85,12 +109,14 @@ export function GestionMascotasAdmin({
                   mascotaId: editandoId,
                   nombre: nombreTrim,
                   especie: tipo,
-                  fechaNacimiento
+                  fechaNacimiento,
+                  ...camposExtra
                 }
               : {
                   nombre: nombreTrim,
                   especie: tipo,
-                  fechaNacimiento
+                  fechaNacimiento,
+                  ...camposExtra
                 }
           )
         });
@@ -117,7 +143,7 @@ export function GestionMascotasAdmin({
         setGuardando(false);
       }
     },
-    [soloLectura, nombre, tipo, fechaNacimiento, editandoId, apiBase, router]
+    [soloLectura, nombre, tipo, raza, color, pesoKg, fechaNacimiento, editandoId, apiBase, router]
   );
 
   const onEliminar = useCallback(
@@ -215,6 +241,53 @@ export function GestionMascotasAdmin({
               id="admin-mascota-tipo"
               value={tipo}
               onChange={setTipo}
+            />
+          </div>
+
+
+          <div>
+            <label htmlFor="admin-mascota-raza" className={labelClass}>
+              Raza
+            </label>
+            <input
+              id="admin-mascota-raza"
+              value={raza}
+              onChange={(e) => setRaza(e.target.value)}
+              maxLength={80}
+              placeholder="Ej: Labrador"
+              className="mt-2 w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="admin-mascota-color" className={labelClass}>
+              Color
+            </label>
+            <input
+              id="admin-mascota-color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              maxLength={40}
+              placeholder="Ej: Negro y blanco"
+              className="mt-2 w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="admin-mascota-peso" className={labelClass}>
+              Peso (kg)
+            </label>
+            <input
+              id="admin-mascota-peso"
+              type="number"
+              inputMode="decimal"
+              min={0.1}
+              max={300}
+              step={0.1}
+              value={pesoKg}
+              onChange={(e) => setPesoKg(e.target.value)}
+              placeholder="Ej: 12.5"
+              className="mt-2 w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm"
             />
           </div>
 

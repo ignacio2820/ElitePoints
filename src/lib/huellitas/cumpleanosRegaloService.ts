@@ -5,7 +5,12 @@ import { esCumpleanos } from "@/lib/huellitas/engine";
 import { fusionarMascotasCliente } from "@/lib/huellitas/fusionarMascotasCliente";
 import { leerHuellitasActuales } from "@/lib/huellitas/saldosCliente";
 import { incrementHuellitasActuales } from "@/lib/huellitas/saldosCliente.server";
-import type { Cliente, Mascota } from "@/lib/huellitas/types";
+import {
+  CONFIGURACION_DEFAULT,
+  resolverBonoCumpleanos,
+  type Cliente,
+  type Mascota
+} from "@/lib/huellitas/types";
 
 import { HUELLITAS_REGALO_CUMPLEANOS } from "@/lib/huellitas/cumpleanosConstants";
 
@@ -41,6 +46,19 @@ export async function procesarRegalosCumpleanosDiarios(
     const cfgSnap = await cols.configuracion(db, localId).get();
     const cfg = cfgSnap.data() ?? {};
     if (cfg.emailsCumpleanosActivos === false) continue;
+
+    const bonificaciones = {
+      ...CONFIGURACION_DEFAULT.bonificaciones,
+      ...((cfg.bonificaciones as typeof CONFIGURACION_DEFAULT.bonificaciones) ??
+        {})
+    };
+    const bonoCumpleanos = resolverBonoCumpleanos({
+      bonoCumpleanos:
+        cfg.bonoCumpleanos === 2 || cfg.bonoCumpleanos === 3
+          ? cfg.bonoCumpleanos
+          : undefined,
+      bonificaciones
+    });
 
     const nombreLocal =
       (localDoc.data() as { nombre?: string }).nombre ?? "tu Pet Shop";
@@ -116,7 +134,8 @@ export async function procesarRegalosCumpleanosDiarios(
                 nombreCliente: cliente.nombre,
                 mascota,
                 nombreLocal,
-                huellitasRegalo: HUELLITAS_REGALO_CUMPLEANOS
+                huellitasRegalo: HUELLITAS_REGALO_CUMPLEANOS,
+                bonoCumpleanos
               });
               resultado.emailsEnviados += 1;
             } catch (mailErr) {

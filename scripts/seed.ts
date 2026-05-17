@@ -90,6 +90,7 @@ function configFor(localId: string): ConfiguracionLocal {
     topeDescuentoPorcentual: 0.5,
     emailsCumpleanosActivos: true,
     emailsEncuestaActivos: true,
+    bonoCumpleanos: 2,
     niveles: NIVELES,
     bonificaciones: {
       cumpleanos: { activo: true, multiplicador: 2 },

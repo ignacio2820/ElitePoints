@@ -20,6 +20,7 @@ import {
 import {
   CONFIGURACION_DEFAULT,
   ConfiguracionLocalSchema,
+  resolverBonoCumpleanos,
   type ConfiguracionLocal,
   type LoteHuellitas,
   type Mascota
@@ -72,7 +73,26 @@ export async function getConfiguracion(localId: string): Promise<ConfiguracionLo
     return { ...CONFIGURACION_DEFAULT, localId };
   }
   const raw = normalizarTimestamps(snap.data() ?? {});
-  return ConfiguracionLocalSchema.parse({ ...raw, localId });
+  const parsed = ConfiguracionLocalSchema.parse({ ...raw, localId });
+  return sincronizarBonoCumpleanosConfig(parsed);
+}
+
+function sincronizarBonoCumpleanosConfig(
+  cfg: ConfiguracionLocal
+): ConfiguracionLocal {
+  
+  const bono = resolverBonoCumpleanos(cfg);
+  return {
+    ...cfg,
+    bonoCumpleanos: bono,
+    bonificaciones: {
+      ...cfg.bonificaciones,
+      cumpleanos: {
+        ...cfg.bonificaciones.cumpleanos,
+        multiplicador: bono
+      }
+    }
+  };
 }
 
 export async function setConfiguracion(
@@ -82,13 +102,16 @@ export async function setConfiguracion(
 ): Promise<ConfiguracionLocal> {
   const db = adminDb();
   const actual = await getConfiguracion(localId);
-  const merged = ConfiguracionLocalSchema.parse({
+  const mergedRaw = {
     ...actual,
     ...parcial,
     localId,
     actualizadoEn: new Date().toISOString(),
     actualizadoPor
-  });
+  };
+  const merged = sincronizarBonoCumpleanosConfig(
+    ConfiguracionLocalSchema.parse(mergedRaw)
+  );
   await cols.configuracion(db, localId).set(merged, { merge: true });
   return merged;
 }
@@ -216,6 +239,7 @@ export async function registrarVenta(
     // Bonificaciones (cumpleaños + primera compra), respetando los toggles.
     const bonus = calcularBonificaciones({
       bonificaciones: cfg.bonificaciones,
+      bonoCumpleanos: resolverBonoCumpleanos(cfg),
       mascotas,
       esPrimeraCompra: !cliente.primerCompraRegistrada
     });

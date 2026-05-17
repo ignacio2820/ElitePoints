@@ -102,6 +102,13 @@ export const ConfiguracionLocalSchema = z.object({
   emailsCumpleanosActivos: z.boolean().default(true),
   emailsEncuestaActivos: z.boolean().default(true),
 
+  /**
+   * Multiplicador del bono de cumpleaños en compras del día (2 = duplica, 3 = triplica).
+   * Se persiste en Firestore como `bonoCumpleanos` y se sincroniza con
+   * `bonificaciones.cumpleanos.multiplicador` para compatibilidad.
+   */
+  bonoCumpleanos: z.union([z.literal(2), z.literal(3)]).default(2),
+
   /** Niveles de lealtad. Deben venir ordenados por umbralHistorico ASC. */
   niveles: z.array(NivelLealtadSchema).min(1).default(NIVELES_DEFAULT),
 
@@ -168,6 +175,27 @@ export const ConfiguracionLocalSchema = z.object({
 
 export type ConfiguracionLocal = z.infer<typeof ConfiguracionLocalSchema>;
 
+export type BonoCumpleanos = 2 | 3;
+
+/** Resuelve 2x o 3x desde `bonoCumpleanos` o el multiplicador legacy. */
+export function resolverBonoCumpleanos(
+  cfg: Pick<ConfiguracionLocal, "bonoCumpleanos" | "bonificaciones">
+): BonoCumpleanos {
+  if (cfg.bonoCumpleanos === 2 || cfg.bonoCumpleanos === 3) return cfg.bonoCumpleanos;
+  const m = cfg.bonificaciones?.cumpleanos?.multiplicador;
+  return m === 3 ? 3 : 2;
+}
+
+/** Verbo en mayúsculas para emails (DUPLICAR / TRIPLICAR). */
+export function accionBonoCumpleanos(bono: BonoCumpleanos): "DUPLICAR" | "TRIPLICAR" {
+  return bono === 3 ? "TRIPLICAR" : "DUPLICAR";
+}
+
+/** Verbo en minúsculas para frases (duplicar / triplicar). */
+export function textoBonoCumpleanos(bono: BonoCumpleanos): string {
+  return bono === 3 ? "triplicar" : "duplicar";
+}
+
 export const CONFIGURACION_DEFAULT: ConfiguracionLocal = {
   localId: "",
   montoParaUnaHuellita: 1000,
@@ -177,6 +205,7 @@ export const CONFIGURACION_DEFAULT: ConfiguracionLocal = {
   topeDescuentoPorcentual: 0.5,
   emailsCumpleanosActivos: true,
   emailsEncuestaActivos: true,
+  bonoCumpleanos: 2,
   niveles: NIVELES_DEFAULT,
   bonificaciones: {
     cumpleanos: { activo: true, multiplicador: 2 },

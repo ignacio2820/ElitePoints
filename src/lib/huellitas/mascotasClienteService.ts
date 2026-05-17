@@ -7,6 +7,16 @@ export type MascotaClienteInput = {
   nombre: string;
   especie?: Especie;
   fechaNacimiento: string;
+  raza?: string;
+  color?: string;
+  pesoKg?: number;
+};
+
+export type MascotaClienteUpdate = {
+  mascotaId: string;
+  raza?: string;
+  color?: string;
+  pesoKg?: number;
 };
 
 function normalizarMascotas(raw: unknown): Mascota[] {
@@ -18,6 +28,11 @@ function normalizarMascotas(raw: unknown): Mascota[] {
       typeof (m as Mascota).nombre === "string" &&
       (m as Mascota).nombre.trim().length > 0
   );
+}
+
+function trimOpcional(s: string | undefined): string | undefined {
+  const t = s?.trim();
+  return t ? t : undefined;
 }
 
 export async function listarMascotasCliente(
@@ -56,7 +71,10 @@ export async function agregarMascotaCliente(
     tipo: especie,
     especie,
     fechaNacimiento: input.fechaNacimiento,
-    fechaNacimientoBloqueada: true
+    fechaNacimientoBloqueada: true,
+    raza: trimOpcional(input.raza),
+    color: trimOpcional(input.color),
+    pesoKg: input.pesoKg
   };
 
   const siguientes = [...actuales, mascota];
@@ -65,6 +83,44 @@ export async function agregarMascotaCliente(
   await cols.mascota(db, localId, clienteId, mascotaId).set(mascota);
 
   return mascota;
+}
+
+/** Solo permite actualizar raza, color y peso (anti-fraude en nombre/fecha). */
+export async function actualizarMascotaCliente(
+  localId: string,
+  clienteId: string,
+  input: MascotaClienteUpdate
+): Promise<Mascota> {
+  const db = adminDb();
+  const ref = cols.cliente(db, localId, clienteId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new Error("Cliente no encontrado");
+  }
+
+  const actuales = normalizarMascotas((snap.data() as { mascotas?: Mascota[] }).mascotas);
+  const idx = actuales.findIndex((m) => m.id === input.mascotaId);
+  if (idx < 0) {
+    throw new Error("Mascota no encontrada");
+  }
+
+  const prev = actuales[idx]!;
+  const actualizada: Mascota = {
+    ...prev,
+    raza: input.raza !== undefined ? trimOpcional(input.raza) : prev.raza,
+    color: input.color !== undefined ? trimOpcional(input.color) : prev.color,
+    pesoKg: input.pesoKg !== undefined ? input.pesoKg : prev.pesoKg
+  };
+
+  const siguientes = [...actuales];
+  siguientes[idx] = actualizada;
+
+  await ref.set({ mascotas: siguientes }, { merge: true });
+  if (actualizada.id) {
+    await cols.mascota(db, localId, clienteId, actualizada.id).set(actualizada);
+  }
+
+  return actualizada;
 }
 
 export async function eliminarMascotaCliente(

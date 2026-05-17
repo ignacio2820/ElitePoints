@@ -51,3 +51,38 @@ export async function comprimirImagenPremio(
     bytes: buffer.byteLength
   };
 }
+
+const SORTEO_MAX_WIDTH = 800;
+const SORTEO_JPEG_QUALITY = 75;
+
+export interface ImagenSorteoComprimida {
+  buffer: Buffer;
+  contentType: "image/jpeg";
+  ext: "jpg";
+  bytes: number;
+}
+
+export async function comprimirImagenSorteo(
+  input: Buffer
+): Promise<ImagenSorteoComprimida> {
+  let pipeline = sharp(input, { failOn: "none" });
+  const meta = await pipeline.metadata();
+  if ((meta.width ?? 0) > SORTEO_MAX_WIDTH) {
+    pipeline = pipeline.resize({
+      width: SORTEO_MAX_WIDTH,
+      withoutEnlargement: true
+    });
+  }
+  const buffer = await pipeline
+    .rotate()
+    .flatten({ background: "#ffffff" })
+    .jpeg({ quality: SORTEO_JPEG_QUALITY, mozjpeg: true })
+    .toBuffer();
+
+  return {
+    buffer,
+    contentType: "image/jpeg",
+    ext: "jpg",
+    bytes: buffer.byteLength
+  };
+}

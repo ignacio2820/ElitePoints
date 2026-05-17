@@ -104,12 +104,14 @@ export interface ResultadoBonificaciones {
 export function calcularBonificaciones(
   args: {
     bonificaciones: Pick<ConfiguracionLocal, "bonificaciones">["bonificaciones"];
+    /** 2 = duplica, 3 = triplica huellitas en compras del día de cumpleaños. */
+    bonoCumpleanos?: 2 | 3;
     mascotas: Array<Pick<Mascota, "id" | "fechaNacimiento">>;
     esPrimeraCompra: boolean;
   },
   hoy: Date = new Date()
 ): ResultadoBonificaciones {
-  const { bonificaciones, mascotas, esPrimeraCompra } = args;
+  const { bonificaciones, bonoCumpleanos, mascotas, esPrimeraCompra } = args;
 
   let multiplicadorCumple = 1;
   let mascotaCumpleId: string | undefined;
@@ -121,7 +123,10 @@ export function calcularBonificaciones(
     );
     if (ganadora) {
       cumple = true;
-      multiplicadorCumple = bonificaciones.cumpleanos.multiplicador ?? 2;
+      const legacy = bonificaciones.cumpleanos.multiplicador;
+      multiplicadorCumple =
+        bonoCumpleanos ??
+        (legacy === 3 ? 3 : legacy === 2 ? 2 : 2);
       mascotaCumpleId = ganadora.id;
     }
   }

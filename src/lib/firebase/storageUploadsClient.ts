@@ -59,6 +59,32 @@ export async function subirImagenPremioCliente(
   }
 }
 
+/**
+ * Imagen de premio del sorteo: locales/{localId}/sorteos/{sorteoId}.jpg
+ */
+export async function subirImagenSorteoCliente(
+  localId: string,
+  sorteoId: string,
+  data: Blob
+): Promise<string> {
+  const path = `locales/${localId}/sorteos/${sorteoId}.jpg`;
+  const storageRef = ref(storage(), path);
+  let snapshot: UploadResult;
+  try {
+    snapshot = await uploadBytes(storageRef, data, {
+      contentType: "image/jpeg",
+      cacheControl: "public,max-age=31536000"
+    });
+  } catch (err) {
+    throw new Error(mensajeErrorStorage(err));
+  }
+  try {
+    return await getDownloadURL(snapshot.ref);
+  } catch (err) {
+    throw new Error(mensajeErrorStorage(err));
+  }
+}
+
 export async function subirLogoLocalCliente(
   localId: string,
   data: Blob,

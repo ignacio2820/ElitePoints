@@ -312,26 +312,32 @@ export function ConfiguracionForm({
                 </label>
 
                 {cfg.bonificaciones.cumpleanos.activo ? (
-                  <div className="mt-4 pl-8 max-w-[260px]">
+                  <div className="mt-4 pl-8 max-w-[320px]">
                     <Field
-                      label="Multiplicador de cumpleaños"
-                      hint={`Cuántas veces se multiplican las huellitas (recomendado: 2x).`}
+                      label="Bono Cumpleaños"
+                      hint="Beneficio en compras del día cuando una mascota cumple años."
                     >
-                      <NumberInput
-                        min={1}
-                        max={10}
-                        step={1}
-                        value={cfg.bonificaciones.cumpleanos.multiplicador}
-                        onChange={(e) =>
-                          setField("bonificaciones", {
-                            ...cfg.bonificaciones,
-                            cumpleanos: {
-                              ...cfg.bonificaciones.cumpleanos,
-                              multiplicador: Number(e.target.value)
+                      <select
+                        value={cfg.bonoCumpleanos ?? 2}
+                        onChange={(e) => {
+                          const bono = Number(e.target.value) === 3 ? 3 : 2;
+                          setCfg((c) => ({
+                            ...c,
+                            bonoCumpleanos: bono,
+                            bonificaciones: {
+                              ...c.bonificaciones,
+                              cumpleanos: {
+                                ...c.bonificaciones.cumpleanos,
+                                multiplicador: bono
+                              }
                             }
-                          })
-                        }
-                      />
+                          }));
+                        }}
+                        className="w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm text-bark-800 outline-none ring-terracotta-400/30 transition focus:border-terracotta-400 focus:ring-2"
+                      >
+                        <option value={2}>Duplica Huellitas (2x)</option>
+                        <option value={3}>Triplica Huellitas (3x)</option>
+                      </select>
                     </Field>
                   </div>
                 ) : null}

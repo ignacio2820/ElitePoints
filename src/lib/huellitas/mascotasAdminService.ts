@@ -18,6 +18,11 @@ function normalizarMascotas(raw: unknown): Mascota[] {
   );
 }
 
+function trimOpcional(s: string | undefined): string | undefined {
+  const t = s?.trim();
+  return t ? t : undefined;
+}
+
 function mascotaConTipo(
   base: Omit<Mascota, "tipo"> & { especie: Especie; tipo?: string }
 ): Mascota {
@@ -64,7 +69,10 @@ export async function agregarMascotaAdmin(
     especie,
     tipo: especie,
     fechaNacimiento: input.fechaNacimiento,
-    fechaNacimientoBloqueada: true
+    fechaNacimientoBloqueada: true,
+    raza: trimOpcional(input.raza),
+    color: trimOpcional(input.color),
+    pesoKg: input.pesoKg
   });
 
   const actuales = normalizarMascotas((snap.data() as { mascotas?: Mascota[] }).mascotas);
@@ -78,6 +86,9 @@ export type MascotaAdminUpdate = {
   nombre?: string;
   especie?: Especie;
   fechaNacimiento?: string;
+  raza?: string;
+  color?: string;
+  pesoKg?: number;
 };
 
 export async function actualizarMascotaAdmin(
@@ -105,7 +116,10 @@ export async function actualizarMascotaAdmin(
     nombre: input.nombre?.trim() ?? prev.nombre,
     especie,
     tipo: especie,
-    fechaNacimiento: input.fechaNacimiento ?? prev.fechaNacimiento
+    fechaNacimiento: input.fechaNacimiento ?? prev.fechaNacimiento,
+    raza: input.raza !== undefined ? trimOpcional(input.raza) : prev.raza,
+    color: input.color !== undefined ? trimOpcional(input.color) : prev.color,
+    pesoKg: input.pesoKg !== undefined ? input.pesoKg : prev.pesoKg
   });
 
   const siguientes = [...actuales];

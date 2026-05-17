@@ -1,4 +1,4 @@
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, type QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import {
@@ -23,6 +23,7 @@ import {
   notificarGanadorSorteo,
   notificarLanzamientoSorteo
 } from "@/lib/notifications/sorteosNotificaciones";
+import { borrarImagenSorteoStorage } from "@/lib/huellitas/sorteoStorage";
 import {
   COSTO_BOOST_DUPLICAR,
   COSTO_BOOST_TRIPLICAR,
@@ -165,6 +166,54 @@ export async function crearSorteo(
   return sorteo;
 }
 
+export async function actualizarImagenSorteo(
+  localId: string,
+  sorteoId: string,
+  imagen: string
+): Promise<Sorteo> {
+  const db = adminDb();
+  const ref = cols.sorteo(db, localId, sorteoId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new Error("Sorteo no encontrado.");
+  }
+  const data = snap.data() as Record<string, unknown>;
+  if (String(data.localId ?? localId) !== localId) {
+    throw new Error("Sorteo no pertenece a este local.");
+  }
+  await ref.update({ imagen: imagen.trim() });
+  return mapSorteo(sorteoId, localId, {
+    ...data,
+    imagen: imagen.trim()
+  });
+}
+
+/** Sorteos finalizados visibles en la app del cliente (archivo en BD). */
+export const LIMITE_SORTEOS_TERMINADOS_CLIENTE = 5;
+
+export async function eliminarSorteo(
+  localId: string,
+  sorteoId: string
+): Promise<void> {
+  const db = adminDb();
+  const ref = cols.sorteo(db, localId, sorteoId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new Error("Sorteo no encontrado.");
+  }
+  const data = snap.data() as Record<string, unknown>;
+  if (String(data.localId ?? localId) !== localId) {
+    throw new Error("Sorteo no pertenece a este local.");
+  }
+  if (data.estado !== "terminado") {
+    throw new Error("Solo podés eliminar sorteos que ya terminaron.");
+  }
+
+  const imagen = data.imagen ? String(data.imagen) : undefined;
+  await ref.delete();
+  await borrarImagenSorteoStorage(localId, sorteoId, imagen);
+}
+
 export async function listarSorteosAdmin(localId: string): Promise<Sorteo[]> {
   const db = adminDb();
   const snap = await cols
@@ -202,10 +251,35 @@ export async function listarSorteosParaCliente(
   const ahora = Date.now();
   const out: SorteoVistaCliente[] = [];
 
-  const [activosSnap, terminadosSnap] = await Promise.all([
-    cols.sorteos(db, localId).where("estado", "==", "activo").get(),
-    cols.sorteos(db, localId).where("estado", "==", "terminado").get()
-  ]);
+  const activosSnap = await cols
+    .sorteos(db, localId)
+    .where("estado", "==", "activo")
+    .get();
+
+  let terminadosDocs: QueryDocumentSnapshot[];
+  try {
+    const terminadosSnap = await cols
+      .sorteos(db, localId)
+      .where("estado", "==", "terminado")
+      .orderBy("finalizadoEn", "desc")
+      .limit(40)
+      .get();
+    terminadosDocs = terminadosSnap.docs;
+  } catch {
+    const fallback = await cols
+      .sorteos(db, localId)
+      .where("estado", "==", "terminado")
+      .get();
+    terminadosDocs = [...fallback.docs].sort((a, b) => {
+      const fa = String(
+        (a.data() as { finalizadoEn?: string }).finalizadoEn ?? ""
+      );
+      const fb = String(
+        (b.data() as { finalizadoEn?: string }).finalizadoEn ?? ""
+      );
+      return fb.localeCompare(fa);
+    });
+  }
 
   for (const doc of activosSnap.docs) {
     const s = mapSorteo(doc.id, localId, doc.data() as Record<string, unknown>);
@@ -227,7 +301,10 @@ export async function listarSorteosParaCliente(
     });
   }
 
-  for (const doc of terminadosSnap.docs) {
+  let terminadosMostrados = 0;
+  for (const doc of terminadosDocs) {
+    if (terminadosMostrados >= LIMITE_SORTEOS_TERMINADOS_CLIENTE) break;
+
     const s = mapSorteo(doc.id, localId, doc.data() as Record<string, unknown>);
     const participante = s.participantes.find((p) => p.clienteId === clienteId);
     if (!participante) continue;
@@ -240,6 +317,7 @@ export async function listarSorteosParaCliente(
       totalPesos,
       ganadorSoyYo: s.ganadorId === clienteId
     });
+    terminadosMostrados += 1;
   }
 
   out.sort((a, b) => {

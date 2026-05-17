@@ -15,7 +15,10 @@ const PostBody = z.object({
   especie: EspecieSchema,
   fechaNacimiento: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
+  raza: z.string().max(80).optional(),
+  color: z.string().max(40).optional(),
+  pesoKg: z.number().positive().max(300).optional()
 });
 
 const PatchBody = z.object({
@@ -25,7 +28,10 @@ const PatchBody = z.object({
   fechaNacimiento: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional()
+    .optional(),
+  raza: z.string().max(80).optional(),
+  color: z.string().max(40).optional(),
+  pesoKg: z.number().positive().max(300).optional()
 });
 
 const DeleteBody = z.object({
