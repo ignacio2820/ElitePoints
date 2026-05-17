@@ -89,6 +89,7 @@ function configFor(localId: string): ConfiguracionLocal {
     minimoHuellitasCanje: 10,
     topeDescuentoPorcentual: 0.5,
     emailsCumpleanosActivos: true,
+    emailsEncuestaActivos: true,
     niveles: NIVELES,
     bonificaciones: {
       cumpleanos: { activo: true, multiplicador: 2 },

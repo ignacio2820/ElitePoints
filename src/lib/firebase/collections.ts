@@ -88,5 +88,19 @@ export const cols = {
   transaccionesCliente: (db: Firestore, localId: string, clienteId: string) =>
     db.collection(
       `Locales/${localId}/Clientes/${clienteId}/Transacciones`
-    )
+    ),
+
+  /** Invitaciones únicas post-compra (doc id = token del enlace). */
+  invitacionesEncuesta: (db: Firestore, localId: string) =>
+    db.collection(`Locales/${localId}/InvitacionesEncuesta`),
+
+  invitacionEncuesta: (db: Firestore, localId: string, token: string) =>
+    db.doc(`Locales/${localId}/InvitacionesEncuesta/${token}`),
+
+  /** Respuestas de satisfacción completadas. */
+  encuestas: (db: Firestore, localId: string) =>
+    db.collection(`Locales/${localId}/Encuestas`),
+
+  encuesta: (db: Firestore, localId: string, encuestaId: string) =>
+    db.doc(`Locales/${localId}/Encuestas/${encuestaId}`)
 };

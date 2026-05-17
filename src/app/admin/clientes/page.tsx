@@ -3,7 +3,8 @@ import { listarClientes } from "@/lib/huellitas/clientesService";
 import { listarPremiosAdmin } from "@/lib/huellitas/premiosService";
 import { getConfiguracion } from "@/lib/huellitas/service";
 import { CONFIGURACION_DEFAULT } from "@/lib/huellitas/types";
-import { BuscadorClientes } from "@/components/admin/BuscadorClientes";
+import { ClientesAdminTabs } from "@/components/admin/ClientesAdminTabs";
+import { listarAlertasEncuestaPendientes } from "@/lib/huellitas/encuestasAlertasService";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,13 @@ export default async function ClientesPage() {
   }
 
   let cfg = { ...CONFIGURACION_DEFAULT, localId };
+  let alertasIniciales = 0;
+  try {
+    alertasIniciales = (await listarAlertasEncuestaPendientes(localId)).length;
+  } catch {
+    // panel de alertas vacío si falla la query
+  }
+
   let premios: Awaited<ReturnType<typeof listarPremiosAdmin>> = [];
   try {
     cfg = await getConfiguracion(localId);
@@ -43,8 +51,8 @@ export default async function ClientesPage() {
           Clientes y mascotas
         </h1>
         <p className="mt-2 max-w-xl text-[color:var(--muted)]">
-          Buscá por nombre, email o teléfono. Sumá Huellitas manualmente cuando
-          el cliente no tenga el celular a mano.
+          Buscá por nombre, email o teléfono, gestioná alertas de insatisfacción
+          y recuperá clientes con disculpas compensatorias.
         </p>
       </div>
 
@@ -56,12 +64,13 @@ export default async function ClientesPage() {
         </div>
       ) : null}
 
-      <BuscadorClientes
+      <ClientesAdminTabs
         clientesIniciales={clientesIniciales}
         premios={premios}
         niveles={cfg.niveles}
         valorMonetarioHuellita={cfg.valorMonetarioHuellita}
         montoParaUnaHuellita={cfg.montoParaUnaHuellita}
+        alertasIniciales={alertasIniciales}
       />
     </div>
   );

@@ -133,7 +133,8 @@ function configDefault(localId: string): ConfiguracionLocal {
     diasVencimiento: 365,
     minimoHuellitasCanje: 10,
     topeDescuentoPorcentual: 0.5,
-    emailsCumpleanosActivos: true
+    emailsCumpleanosActivos: true,
+    emailsEncuestaActivos: true
   };
 }
 

@@ -240,6 +240,33 @@ input[type="range"]:focus::-webkit-slider-thumb {
     break-inside: avoid;
     page-break-inside: avoid;
   }
+
+  /* Reporte de resolución de quejas (admin) */
+  body * {
+    visibility: hidden;
+  }
+
+  #reporte-quejas-export,
+  #reporte-quejas-export * {
+    visibility: visible;
+  }
+
+  #reporte-quejas-export {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 12mm 10mm !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #reporte-quejas-export .surface-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
 }
 
 .scrollbar-none {

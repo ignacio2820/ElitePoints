@@ -240,6 +240,30 @@ export function ConfiguracionForm({
               </label>
             </div>
 
+
+            {/* Encuestas de satisfacción */}
+            <div className="rounded-2xl bg-cream-100 p-5">
+              <label className="flex items-start gap-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={cfg.emailsEncuestaActivos ?? true}
+                  onChange={(e) =>
+                    setField("emailsEncuestaActivos", e.target.checked)
+                  }
+                  className="mt-1 h-5 w-5 accent-bark-400"
+                />
+                <div>
+                  <div className="font-semibold text-bark-700">
+                    Encuesta de satisfacción post-compra
+                  </div>
+                  <p className="text-sm text-bark-500 mt-1">
+                    24 h después de una compra con Huellitas, enviamos un email
+                    con el enlace para calificar y ganar 5 Huellitas de regalo.
+                  </p>
+                </div>
+              </label>
+            </div>
+
             {/* Bonificaciones especiales */}
             <div className="rounded-2xl bg-amber-50 ring-1 ring-amber-100 p-5 space-y-5">
               <div className="flex items-start gap-3">

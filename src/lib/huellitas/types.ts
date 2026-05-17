@@ -100,6 +100,7 @@ export const ConfiguracionLocalSchema = z.object({
   minimoHuellitasCanje: z.number().int().nonnegative().default(0),
   topeDescuentoPorcentual: z.number().min(0).max(1).default(1),
   emailsCumpleanosActivos: z.boolean().default(true),
+  emailsEncuestaActivos: z.boolean().default(true),
 
   /** Niveles de lealtad. Deben venir ordenados por umbralHistorico ASC. */
   niveles: z.array(NivelLealtadSchema).min(1).default(NIVELES_DEFAULT),
@@ -175,6 +176,7 @@ export const CONFIGURACION_DEFAULT: ConfiguracionLocal = {
   minimoHuellitasCanje: 10,
   topeDescuentoPorcentual: 0.5,
   emailsCumpleanosActivos: true,
+  emailsEncuestaActivos: true,
   niveles: NIVELES_DEFAULT,
   bonificaciones: {
     cumpleanos: { activo: true, multiplicador: 2 },

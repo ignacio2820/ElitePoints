@@ -25,6 +25,7 @@ import {
   type Mascota
 } from "./types";
 import { enviarEmailReferidoActivado } from "@/lib/email/referido";
+import { programarInvitacionEncuesta } from "@/lib/huellitas/encuestasService";
 
 /**
  * Servicios server-side: orquestan motor de reglas + Firestore en transacciones.
@@ -570,5 +571,19 @@ export async function registrarVenta(
 
   // Limpiamos el job interno antes de devolver al caller.
   const { _email, ...output } = result;
+
+  const huellitasPorCompra =
+    output.huellitasGeneradas +
+    (output.bonificaciones?.primeraCompra?.huellitasExtra ?? 0);
+  if (huellitasPorCompra > 0 && output.ventaId) {
+    void programarInvitacionEncuesta({
+      localId: input.localId,
+      clienteId: input.clienteId,
+      ventaId: output.ventaId
+    }).catch((err) => {
+      console.error("[encuesta] No se pudo programar invitación:", err);
+    });
+  }
+
   return output;
 }
