@@ -3,18 +3,21 @@ import {
   EmailDuplicadoEnLocalError,
   MENSAJE_EMAIL_DUPLICADO_EN_LOCAL,
   emailExisteEnLocal,
-  normalizarEmailCliente,
   validarEmailAntesDeCrearCliente
 } from "@/lib/auth/persistenciaCliente";
+import {
+  ERROR_EMAIL_CLIENTE_DUPLICADO,
+  normalizarEmailCliente
+} from "@/lib/huellitas/emailCliente.constants";
 
 export {
   CODIGO_ERROR_EMAIL_DUPLICADO,
   EmailDuplicadoEnLocalError,
-  MENSAJE_EMAIL_DUPLICADO_EN_LOCAL
+  MENSAJE_EMAIL_DUPLICADO_EN_LOCAL,
+  normalizarEmailCliente
 };
 
-export const ERROR_EMAIL_CLIENTE_DUPLICADO =
-  "Error: Este correo electrónico ya está registrado. Utilice otro o recupere la cuenta existente.";
+export { ERROR_EMAIL_CLIENTE_DUPLICADO };
 
 /** @deprecated Usar EmailDuplicadoEnLocalError */
 export class EmailClienteDuplicadoError extends EmailDuplicadoEnLocalError {
@@ -22,8 +25,6 @@ export class EmailClienteDuplicadoError extends EmailDuplicadoEnLocalError {
     super("", "", message);
   }
 }
-
-export { normalizarEmailCliente };
 
 /**
  * Lanza si el email ya existe en Locales/{localId}/Clientes.

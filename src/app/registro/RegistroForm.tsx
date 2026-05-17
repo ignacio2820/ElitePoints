@@ -4,10 +4,11 @@ import { useState, useTransition } from "react";
 import { Check, UserPlus } from "lucide-react";
 import { Field, TextInput } from "@/components/ui/Field";
 import { esCodigoValido, normalizarCodigo } from "@/lib/huellitas/referidos";
+import { verificarEmailDuplicado } from "@/app/actions/clientes";
 import {
   CODIGO_ERROR_EMAIL_DUPLICADO,
-  validarEmailClienteAntesDeGuardar
-} from "@/lib/huellitas/verificarEmailCliente.client";
+  MENSAJE_EMAIL_DUPLICADO_EN_LOCAL
+} from "@/lib/huellitas/emailCliente.constants";
 
 export interface RegistroFormProps {
   localId: string;
@@ -46,12 +47,9 @@ export function RegistroForm({
       try {
         const emailNorm = email.trim().toLowerCase();
         if (emailNorm) {
-          const msgEmail = await validarEmailClienteAntesDeGuardar(
-            emailNorm,
-            localId
-          );
-          if (msgEmail) {
-            setErrorEmail(msgEmail);
+          const existe = await verificarEmailDuplicado(emailNorm, localId);
+          if (existe) {
+            setErrorEmail(MENSAJE_EMAIL_DUPLICADO_EN_LOCAL);
             return;
           }
         }

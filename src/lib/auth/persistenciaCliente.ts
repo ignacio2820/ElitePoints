@@ -14,13 +14,24 @@ import {
 } from "@/lib/auth/identityIndex";
 import { setCustomClaims } from "@/lib/auth/server";
 import { reasignarPasskeysAlUid } from "@/lib/auth/passkeys";
+import {
+  CODIGO_ERROR_EMAIL_DUPLICADO,
+  MENSAJE_EMAIL_DUPLICADO_ADMIN,
+  MENSAJE_EMAIL_DUPLICADO_EN_LOCAL,
+  normalizarEmailCliente
+} from "@/lib/huellitas/emailCliente.constants";
+
+export {
+  CODIGO_ERROR_EMAIL_DUPLICADO,
+  MENSAJE_EMAIL_DUPLICADO_ADMIN,
+  MENSAJE_EMAIL_DUPLICADO_EN_LOCAL
+};
 
 export function normalizarEmail(email: string): string {
-  return email.trim().toLowerCase();
+  return normalizarEmailCliente(email);
 }
 
-/** Alias usado en formularios y Zod. */
-export const normalizarEmailCliente = normalizarEmail;
+export { normalizarEmailCliente };
 
 function aResumenDesdeDoc(
   localId: string,
@@ -141,16 +152,6 @@ export async function emailYaRegistradoComoCliente(
 ): Promise<boolean> {
   return (await buscarClientePorEmailRobusto(email, localIdPreferido)) !== null;
 }
-
-/** Código estable para que el frontend detecte duplicado en el mismo local. */
-export const CODIGO_ERROR_EMAIL_DUPLICADO = "EMAIL_DUPLICATED" as const;
-
-export const MENSAJE_EMAIL_DUPLICADO_EN_LOCAL =
-  "Este correo electrónico ya está registrado en este local.";
-
-/** Mensaje para el panel admin (toast / alerta). */
-export const MENSAJE_EMAIL_DUPLICADO_ADMIN =
-  "¡Error! No se puede registrar: el correo electrónico ya pertenece a un cliente activo.";
 
 export class EmailDuplicadoEnLocalError extends Error {
   readonly code = CODIGO_ERROR_EMAIL_DUPLICADO;

@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { AlertCircle, Loader2, UserPlus, X } from "lucide-react";
 import { Field, TextInput } from "@/components/ui/Field";
+import { verificarEmailDuplicadoAdmin } from "@/app/actions/clientes";
 import {
   CODIGO_ERROR_EMAIL_DUPLICADO,
   MENSAJE_EMAIL_DUPLICADO_ADMIN
-} from "@/lib/huellitas/verificarEmailCliente.client";
+} from "@/lib/huellitas/emailCliente.constants";
 
 interface Props {
   onClose: () => void;
@@ -36,6 +37,14 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
 
     setGuardando(true);
     try {
+      if (emailNorm) {
+        const existe = await verificarEmailDuplicadoAdmin(emailNorm);
+        if (existe) {
+          setToastDuplicado(true);
+          return;
+        }
+      }
+
       const r = await fetch("/api/admin/clientes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

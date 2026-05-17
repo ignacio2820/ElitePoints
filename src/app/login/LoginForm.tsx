@@ -24,10 +24,11 @@ import {
   type RegistrarInput
 } from "@/lib/auth/client";
 import { guardarUltimoEmail, leerUltimoEmail } from "@/lib/auth/ultimoEmail";
+import { verificarEmailDuplicado } from "@/app/actions/clientes";
 import {
   CODIGO_ERROR_EMAIL_DUPLICADO,
-  validarEmailClienteAntesDeGuardar
-} from "@/lib/huellitas/verificarEmailCliente.client";
+  MENSAJE_EMAIL_DUPLICADO_EN_LOCAL
+} from "@/lib/huellitas/emailCliente.constants";
 
 type Modo = "ingresar" | "registrar";
 type Especie = RegistrarInput["mascota"]["especie"];
@@ -145,9 +146,9 @@ export function LoginForm() {
     }
 
     const emailNorm = email.trim().toLowerCase();
-    const msgEmail = await validarEmailClienteAntesDeGuardar(emailNorm, localId);
-    if (msgEmail) {
-      setErrorEmail(msgEmail);
+    const existe = await verificarEmailDuplicado(emailNorm, localId);
+    if (existe) {
+      setErrorEmail(MENSAJE_EMAIL_DUPLICADO_EN_LOCAL);
       setEnviando(false);
       return;
     }
