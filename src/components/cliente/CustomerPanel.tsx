@@ -76,20 +76,22 @@ export function CustomerPanel({
         </div>
 
         <div className="mt-8 flex flex-col items-center text-center lg:mt-10">
-          <div className="rounded-full bg-white/10 p-1 ring-4 ring-white/15">
+          <div className="flex w-full max-w-[200px] items-center justify-center rounded-xl bg-white/10 px-4 py-3 ring-2 ring-white/15">
             <LocalBrandMark
               nombreLocal={nombreLocal}
               logoUrl={logoUrl}
-              size={88}
-              imageClassName="border-white/20 bg-white"
-              iconClassName="text-bark-700"
+              fit="contain"
+              maxWidth={200}
+              maxHeight={96}
+              iconClassName="text-white/80"
+              imageClassName="drop-shadow-sm"
             />
           </div>
-          <p className="mt-4 font-display text-lg font-bold text-white">
-            {nombreCliente}
-          </p>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
+          <h2 className="mt-5 font-display text-xl font-bold leading-tight text-white lg:text-2xl">
             {nombreLocal}
+          </h2>
+          <p className="mt-2 font-display text-lg font-semibold text-terracotta-300">
+            ¡Hola, {primerNombre}!
           </p>
         </div>
 

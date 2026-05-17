@@ -52,13 +52,16 @@ export function MiCuentaStickyHeader({
       <div className="relative mx-auto max-w-6xl px-3 sm:px-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-start gap-2.5">
-            <LocalBrandMark
-              nombreLocal={nombreLocal}
-              logoUrl={logoUrl}
-              size={34}
-              imageClassName="border-bark-100 bg-white"
-              iconClassName="text-bark-500"
-            />
+            <div className="flex max-w-[120px] shrink-0 items-center">
+              <LocalBrandMark
+                nombreLocal={nombreLocal}
+                logoUrl={logoUrl}
+                fit="contain"
+                maxWidth={120}
+                maxHeight={40}
+                iconClassName="text-bark-500"
+              />
+            </div>
             <div className="min-w-0">
               <p className="truncate text-[9px] font-semibold uppercase tracking-[0.16em] text-bark-500 sm:text-[10px]">
                 {nombreLocal}

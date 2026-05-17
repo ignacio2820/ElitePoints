@@ -224,7 +224,9 @@ export const MascotaSchema = z.object({
   marcaAlimentoFavorita: z.string().max(80).optional(),
 
   notas: z.string().max(500).optional(),
-  ultimoCumpleanosNotificado: z.string().optional()
+  ultimoCumpleanosNotificado: z.string().optional(),
+  /** true tras el primer guardado por el cliente: la fecha no se puede editar. */
+  fechaNacimientoBloqueada: z.boolean().optional()
 });
 
 export type Mascota = z.infer<typeof MascotaSchema>;

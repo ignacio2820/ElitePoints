@@ -13,7 +13,7 @@ import { RUTA_PORTAL } from "@/lib/auth/redirect";
 import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { progresoNivel } from "@/lib/huellitas/engine";
-import { MascotaCard } from "@/components/MascotaCard";
+import { GestionMascotasCliente } from "@/components/cliente/GestionMascotasCliente";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
 import { MiCuentaClienteShell } from "@/components/cliente/MiCuentaClienteShell";
@@ -90,13 +90,17 @@ export default async function MiCuentaPage({
   const progreso = progresoNivel(cliente.acumuladoHistorico, cfg.niveles);
   const mascotasRaw = (clienteRaw.mascotas as Mascota[] | undefined) ?? [];
   const mascotas: Mascota[] = mascotasRaw.map((m) => ({
+    id: typeof m.id === "string" ? m.id : undefined,
     nombre: String(m.nombre ?? ""),
-    especie: m.especie,
+    especie: m.especie ?? "perro",
     raza: m.raza ? String(m.raza) : undefined,
     fechaNacimiento:
       typeof m.fechaNacimiento === "string" && m.fechaNacimiento
         ? m.fechaNacimiento
         : "2000-01-01",
+    fechaNacimientoBloqueada:
+      m.fechaNacimientoBloqueada === true ||
+      (typeof m.fechaNacimiento === "string" && m.fechaNacimiento.length > 0),
     notas: m.notas ? String(m.notas) : undefined,
     color: m.color ? String(m.color) : undefined,
     sexo: m.sexo,
@@ -185,20 +189,7 @@ export default async function MiCuentaPage({
           </div>
         </Link>
 
-        {mascotas.length > 0 && (
-          <div>
-            <h2 className="mb-3 px-1 font-display text-lg font-semibold tracking-tight text-bark-700">
-              Mis mascotas
-            </h2>
-            <div className="-mx-6 flex snap-x gap-3 overflow-x-auto px-6 pb-2">
-              {mascotas.map((m, i) => (
-                <div key={i} className="w-[260px] shrink-0 snap-start">
-                  <MascotaCard mascota={m} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <GestionMascotasCliente mascotasIniciales={mascotas} />
 
         {cliente.codigoReferido && cfg.referidos.activo && (
           <InvitarAmigos

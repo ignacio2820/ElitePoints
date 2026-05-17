@@ -25,6 +25,9 @@ export const cols = {
   mascotas: (db: Firestore, localId: string, clienteId: string) =>
     db.collection(`Locales/${localId}/Clientes/${clienteId}/Mascotas`),
 
+  mascota: (db: Firestore, localId: string, clienteId: string, mascotaId: string) =>
+    db.doc(`Locales/${localId}/Clientes/${clienteId}/Mascotas/${mascotaId}`),
+
   huellitas: (db: Firestore, localId: string, clienteId: string) =>
     db.collection(`Locales/${localId}/Clientes/${clienteId}/Huellitas`),
 
