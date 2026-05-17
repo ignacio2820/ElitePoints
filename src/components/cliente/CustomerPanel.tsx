@@ -76,7 +76,7 @@ export function CustomerPanel({
         </div>
 
         <div className="mt-8 flex flex-col items-center text-center lg:mt-10">
-          <div className="flex w-full max-w-[200px] items-center justify-center rounded-xl bg-white/10 px-4 py-3 ring-2 ring-white/15">
+          <div className="flex w-full max-w-[200px] items-center justify-center bg-transparent px-1 py-1">
             <LocalBrandMark
               nombreLocal={nombreLocal}
               logoUrl={logoUrl}
@@ -84,7 +84,7 @@ export function CustomerPanel({
               maxWidth={200}
               maxHeight={96}
               iconClassName="text-white/80"
-              imageClassName="drop-shadow-sm"
+              imageClassName="object-contain"
             />
           </div>
           <h2 className="mt-5 font-display text-xl font-bold leading-tight text-white lg:text-2xl">

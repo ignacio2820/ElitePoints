@@ -3,7 +3,6 @@ import { z } from "zod";
 import { ErrorAuth, requireCliente } from "@/lib/auth/server";
 import {
   agregarMascotaCliente,
-  eliminarMascotaCliente,
   listarMascotasCliente
 } from "@/lib/huellitas/mascotasClienteService";
 import { EspecieSchema } from "@/lib/huellitas/types";
@@ -12,14 +11,10 @@ export const runtime = "nodejs";
 
 const PostBody = z.object({
   nombre: z.string().min(1).max(60),
-  especie: EspecieSchema.default("perro"),
+  especie: EspecieSchema,
   fechaNacimiento: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD")
-});
-
-const DeleteBody = z.object({
-  mascotaId: z.string().min(1)
 });
 
 function hoyIso(): string {
@@ -81,37 +76,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: err.message }, { status: err.status });
     }
     const msg = err instanceof Error ? err.message : "Error";
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+    const status =
+      msg.includes("Ya tenés una mascota") || msg.includes("registrada") ? 409 : 500;
+    return NextResponse.json({ ok: false, error: msg }, { status });
   }
 }
 
-export async function DELETE(req: Request) {
-  try {
-    const sesion = await requireCliente();
-    let raw: unknown;
-    try {
-      raw = await req.json();
-    } catch {
-      return NextResponse.json({ ok: false, error: "JSON inválido" }, { status: 400 });
-    }
-
-    const parsed = DeleteBody.safeParse(raw);
-    if (!parsed.success) {
-      return NextResponse.json({ ok: false, error: "mascotaId requerido" }, { status: 400 });
-    }
-
-    const mascotas = await eliminarMascotaCliente(
-      sesion.claims.localId,
-      sesion.claims.clienteId,
-      parsed.data.mascotaId
-    );
-
-    return NextResponse.json({ ok: true, mascotas });
-  } catch (err) {
-    if (err instanceof ErrorAuth) {
-      return NextResponse.json({ ok: false, error: err.message }, { status: err.status });
-    }
-    const msg = err instanceof Error ? err.message : "Error";
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
-  }
+/** Los clientes no pueden eliminar mascotas (anti-fraude de cumpleaños). */
+export async function DELETE() {
+  return NextResponse.json(
+    {
+      ok: false,
+      error:
+        "No podés eliminar mascotas desde la app. Solicitá el cambio al personal del local."
+    },
+    { status: 403 }
+  );
 }

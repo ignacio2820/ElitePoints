@@ -37,6 +37,7 @@ const ESPECIES: { id: Especie; label: string }[] = [
   { id: "perro", label: "Perro" },
   { id: "gato", label: "Gato" },
   { id: "ave", label: "Ave" },
+  { id: "roedor", label: "Roedor" },
   { id: "reptil", label: "Reptil" },
   { id: "otro", label: "Otro" }
 ];
@@ -638,26 +639,21 @@ function FormRegistro({
           />
         </label>
 
-        <div>
-          <span className="text-xs font-medium text-bark-500">Especie</span>
-          <div className="mt-1.5 grid grid-cols-5 gap-1.5">
+        <label className="block">
+          <span className="text-xs font-medium text-bark-500">Tipo de mascota</span>
+          <select
+            required
+            value={mascotaEspecie}
+            onChange={(e) => onMascotaEspecieChange(e.target.value as Especie)}
+            className="mt-1.5 w-full rounded-xl border border-bark-100 bg-white px-3 py-2.5 text-base text-bark-700 outline-none transition focus:border-bark-400 focus:ring-2 focus:ring-bark-300/30"
+          >
             {ESPECIES.map((e) => (
-              <button
-                key={e.id}
-                type="button"
-                onClick={() => onMascotaEspecieChange(e.id)}
-                className={`rounded-xl border-2 px-2 py-2 text-xs font-medium transition ${
-                  mascotaEspecie === e.id
-                    ? "border-bark-400 bg-white text-bark-700 shadow-sm"
-                    : "border-bark-100 bg-white/60 text-bark-500 hover:border-bark-200"
-                }`}
-                title={e.label}
-              >
+              <option key={e.id} value={e.id}>
                 {e.label}
-              </button>
+              </option>
             ))}
-          </div>
-        </div>
+          </select>
+        </label>
 
         <label className="block">
           <span className="text-xs font-medium text-bark-500">

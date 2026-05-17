@@ -92,6 +92,7 @@ export default async function MiCuentaPage({
   const mascotas: Mascota[] = mascotasRaw.map((m) => ({
     id: typeof m.id === "string" ? m.id : undefined,
     nombre: String(m.nombre ?? ""),
+    tipo: typeof m.tipo === "string" ? m.tipo : m.especie ?? "perro",
     especie: m.especie ?? "perro",
     raza: m.raza ? String(m.raza) : undefined,
     fechaNacimiento:

@@ -234,7 +234,7 @@ export interface RegistrarInput {
   codigoReferido?: string;
   mascota: {
     nombre: string;
-    especie: "perro" | "gato" | "ave" | "reptil" | "otro";
+    especie: "perro" | "gato" | "ave" | "roedor" | "reptil" | "otro";
     raza?: string;
     fechaNacimiento?: string;
   };

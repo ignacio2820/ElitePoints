@@ -2,26 +2,40 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, PawPrint, Trash2 } from "lucide-react";
-import { MascotaCard } from "@/components/MascotaCard";
+import { Loader2, PawPrint } from "lucide-react";
+import { SelectTipoMascota } from "@/components/ui/SelectTipoMascota";
+import {
+  labelTipoMascota,
+  resolverEspecieMascota,
+  type TipoMascotaValor
+} from "@/lib/huellitas/tiposMascota";
 import type { Mascota } from "@/lib/huellitas/types";
 
 type Props = {
   mascotasIniciales: Mascota[];
 };
 
+const MENSAJE_SOPORTE =
+  "¿Hubo un error en los datos? Solicita la modificación o eliminación directamente al personal en el local.";
+
 function hoyIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+const inputReadOnly =
+  "mt-2 w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 px-3 py-2.5 text-sm text-bark-600";
+
+const labelClass =
+  "text-xs font-semibold uppercase tracking-wide text-bark-500";
 
 export function GestionMascotasCliente({ mascotasIniciales }: Props) {
   const router = useRouter();
   const [mascotas, setMascotas] = useState<Mascota[]>(mascotasIniciales);
   const [nombre, setNombre] = useState("");
+  const [tipo, setTipo] = useState<TipoMascotaValor>("perro");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const [eliminandoId, setEliminandoId] = useState<string | null>(null);
 
   const puedeAgregar = mascotas.length === 0;
 
@@ -33,6 +47,10 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
       const nombreTrim = nombre.trim();
       if (!nombreTrim) {
         setError("El nombre de la mascota es obligatorio.");
+        return;
+      }
+      if (!tipo) {
+        setError("Seleccioná el tipo de mascota.");
         return;
       }
       if (!fechaNacimiento) {
@@ -51,6 +69,7 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nombre: nombreTrim,
+            especie: tipo,
             fechaNacimiento
           })
         });
@@ -63,9 +82,7 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
           setError(data.error ?? "No se pudo guardar la mascota.");
           return;
         }
-        setMascotas((prev) => [...prev, data.mascota!]);
-        setNombre("");
-        setFechaNacimiento("");
+        setMascotas([data.mascota]);
         router.refresh();
       } catch {
         setError("Error de conexión. Intentá de nuevo.");
@@ -73,48 +90,7 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
         setEnviando(false);
       }
     },
-    [nombre, fechaNacimiento, router]
-  );
-
-  const onEliminar = useCallback(
-    async (mascota: Mascota) => {
-      if (!mascota.id) {
-        setError(
-          "Esta mascota fue cargada por el local. Pedí en la veterinaria que la actualicen o eliminen."
-        );
-        return;
-      }
-      const ok = window.confirm(
-        `¿Eliminar a ${mascota.nombre}? Vas a poder registrarla de nuevo con la fecha correcta.`
-      );
-      if (!ok) return;
-
-      setError(null);
-      setEliminandoId(mascota.id);
-      try {
-        const res = await fetch("/api/cliente/mascotas", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mascotaId: mascota.id })
-        });
-        const data = (await res.json()) as {
-          ok: boolean;
-          error?: string;
-          mascotas?: Mascota[];
-        };
-        if (!res.ok || !data.ok) {
-          setError(data.error ?? "No se pudo eliminar la mascota.");
-          return;
-        }
-        setMascotas(data.mascotas ?? []);
-        router.refresh();
-      } catch {
-        setError("Error de conexión. Intentá de nuevo.");
-      } finally {
-        setEliminandoId(null);
-      }
-    },
-    [router]
+    [nombre, tipo, fechaNacimiento, router]
   );
 
   return (
@@ -124,53 +100,68 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
           Mis mascotas
         </h2>
         <p className="mt-1 text-sm text-bark-500">
-          Registrá a tu compañero para beneficios de cumpleaños. La fecha de
-          nacimiento queda fija después del primer guardado.
+          Registrá a tu compañero para beneficios de cumpleaños. Los datos quedan
+          fijos después del primer guardado.
         </p>
       </div>
 
-      {mascotas.length > 0 ? (
-        <div className="space-y-4">
-          {mascotas.map((m) => (
-            <div key={m.id ?? m.nombre} className="space-y-3">
-              <MascotaCard mascota={m} />
-              <div className="surface-card rounded-2xl p-4">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-bark-500">
-                  Fecha de nacimiento
-                </label>
-                <input
-                  type="date"
-                  value={m.fechaNacimiento}
-                  disabled
-                  className="mt-2 w-full cursor-not-allowed rounded-xl border border-bark-100 bg-cream-50 px-3 py-2.5 text-sm text-bark-600 opacity-90"
-                  aria-describedby={`fecha-bloqueada-${m.id ?? m.nombre}`}
-                />
-                <p
-                  id={`fecha-bloqueada-${m.id ?? m.nombre}`}
-                  className="mt-2 text-xs leading-relaxed text-bark-500"
-                >
-                  La fecha no se puede modificar para proteger los beneficios de
-                  cumpleaños. Si te equivocaste, eliminá la mascota y volvé a
-                  registrarla.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onEliminar(m)}
-                  disabled={eliminandoId === m.id}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-                >
-                  {eliminandoId === m.id ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Trash2 size={16} />
-                  )}
-                  Eliminar mascota
-                </button>
+      {mascotas.map((m) => {
+        const especie = resolverEspecieMascota(m);
+        const tipoLabel = labelTipoMascota(m.tipo, especie);
+        return (
+          <div
+            key={m.id ?? m.nombre}
+            className="surface-card space-y-4 rounded-2xl p-5"
+          >
+            <div className="flex items-center gap-3 border-b border-bark-100 pb-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-terracotta-50 text-terracotta-500">
+                <PawPrint size={20} />
+              </div>
+              <div>
+                <h3 className="font-display text-base font-semibold text-bark-700">
+                  Ficha de mascota
+                </h3>
+                <p className="text-sm text-bark-500">Solo lectura</p>
               </div>
             </div>
-          ))}
-        </div>
-      ) : null}
+
+            <div>
+              <label className={labelClass}>Nombre de la mascota</label>
+              <input
+                type="text"
+                value={m.nombre}
+                readOnly
+                disabled
+                className={inputReadOnly}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Tipo de mascota</label>
+              <input
+                type="text"
+                value={tipoLabel}
+                readOnly
+                disabled
+                className={inputReadOnly}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Fecha de nacimiento</label>
+              <input
+                type="date"
+                value={m.fechaNacimiento}
+                readOnly
+                disabled
+                className={inputReadOnly}
+              />
+            </div>
+
+            <p className="text-xs leading-relaxed text-bark-500">{MENSAJE_SOPORTE}</p>
+          </div>
+        );
+      })}
 
       {puedeAgregar ? (
         <form
@@ -186,16 +177,13 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
                 Agregar mascota
               </h3>
               <p className="text-sm text-bark-500">
-                Nombre y fecha de nacimiento son obligatorios.
+                Completá todos los campos obligatorios.
               </p>
             </div>
           </div>
 
           <div>
-            <label
-              htmlFor="mascota-nombre"
-              className="text-xs font-semibold uppercase tracking-wide text-bark-500"
-            >
+            <label htmlFor="mascota-nombre" className={labelClass}>
               Nombre de la mascota
             </label>
             <input
@@ -211,10 +199,18 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
           </div>
 
           <div>
-            <label
-              htmlFor="mascota-fecha"
-              className="text-xs font-semibold uppercase tracking-wide text-bark-500"
-            >
+            <label htmlFor="mascota-tipo" className={labelClass}>
+              Tipo de mascota
+            </label>
+            <SelectTipoMascota
+              id="mascota-tipo"
+              value={tipo}
+              onChange={setTipo}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="mascota-fecha" className={labelClass}>
               Fecha de nacimiento
             </label>
             <input
@@ -246,12 +242,6 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
             Guardar mascota
           </button>
         </form>
-      ) : null}
-
-      {!puedeAgregar && error ? (
-        <p className="px-1 text-sm font-medium text-red-600" role="alert">
-          {error}
-        </p>
       ) : null}
     </section>
   );

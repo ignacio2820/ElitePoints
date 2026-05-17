@@ -10,20 +10,15 @@ import { Badge } from "@/components/ui/Badge";
 import { edadMascotaAnios, esCumpleanos } from "@/lib/huellitas/engine";
 import type { Especie, Mascota } from "@/lib/huellitas/types";
 
+import { labelTipoMascota, resolverEspecieMascota } from "@/lib/huellitas/tiposMascota";
+
 const especieEmoji: Record<Especie, string> = {
   perro: "🐶",
   gato: "🐱",
   ave: "🐦",
+  roedor: "🐹",
   reptil: "🦎",
   otro: "🐾"
-};
-
-const especieLabel: Record<Especie, string> = {
-  perro: "Perro",
-  gato: "Gato",
-  ave: "Ave",
-  reptil: "Reptil",
-  otro: "Otro"
 };
 
 /**
@@ -31,6 +26,7 @@ const especieLabel: Record<Especie, string> = {
  * la consulte al escanear el QR del cliente. Muestra todo lo cargado.
  */
 export function FichaMascota({ mascota }: { mascota: Mascota }) {
+  const especie = resolverEspecieMascota(mascota);
   const edad = edadMascotaAnios(mascota);
   const cumple = esCumpleanos(mascota);
 
@@ -38,7 +34,7 @@ export function FichaMascota({ mascota }: { mascota: Mascota }) {
     <div className="surface-card overflow-hidden">
       <div className="flex items-start gap-4 border-b border-bark-100 bg-gradient-to-br from-cream-50 to-cream-100 p-5">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white text-4xl ring-1 ring-bark-100">
-          <span aria-hidden>{especieEmoji[mascota.especie]}</span>
+          <span aria-hidden>{especieEmoji[especie]}</span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -52,7 +48,7 @@ export function FichaMascota({ mascota }: { mascota: Mascota }) {
             ) : null}
           </div>
           <div className="text-sm text-[color:var(--muted)]">
-            {especieLabel[mascota.especie]}
+            {labelTipoMascota(mascota.tipo, especie)}
             {mascota.raza ? ` · ${mascota.raza}` : ""}
             {" · "}
             {edad === 0 ? "Recién nacido" : `${edad} ${edad === 1 ? "año" : "años"}`}

@@ -193,7 +193,14 @@ export const CONFIGURACION_DEFAULT: ConfiguracionLocal = {
 // MASCOTA (ficha sofisticada)
 // ──────────────────────────────────────────────────────────────────────────────
 
-export const EspecieSchema = z.enum(["perro", "gato", "ave", "reptil", "otro"]);
+export const EspecieSchema = z.enum([
+  "perro",
+  "gato",
+  "ave",
+  "roedor",
+  "reptil",
+  "otro"
+]);
 export type Especie = z.infer<typeof EspecieSchema>;
 
 export const SexoSchema = z.enum(["macho", "hembra", "desconocido"]);
@@ -202,6 +209,8 @@ export type Sexo = z.infer<typeof SexoSchema>;
 export const MascotaSchema = z.object({
   id: z.string().optional(),
   nombre: z.string().min(1, "El nombre es obligatorio").max(60),
+  /** Tipo visible (Perro, Gato, …). Se guarda junto con `especie` para compatibilidad. */
+  tipo: z.string().min(1).max(20).optional(),
   especie: EspecieSchema,
   raza: z.string().max(80).optional(),
   fechaNacimiento: z

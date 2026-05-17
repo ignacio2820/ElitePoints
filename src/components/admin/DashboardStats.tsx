@@ -303,6 +303,8 @@ function especieLabel(e: MascotaRanking["especie"]): string {
       return "Gato";
     case "ave":
       return "Ave";
+    case "roedor":
+      return "Roedor";
     case "reptil":
       return "Reptil";
     default:

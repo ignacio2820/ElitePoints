@@ -4,7 +4,7 @@ import { ArrowLeft, ScanLine } from "lucide-react";
 import { getSesion } from "@/lib/auth/server";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { NivelBadge } from "@/components/NivelBadge";
-import { FichaMascota } from "@/components/FichaMascota";
+import { GestionMascotasAdmin } from "@/components/admin/GestionMascotasAdmin";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { calcularNivel, progresoNivel } from "@/lib/huellitas/engine";
 import {
@@ -244,17 +244,11 @@ export default async function ScanClientePage({
         </span>
       </div>
 
-      {cliente.mascotas.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-bark-200 p-8 text-center text-sm text-[color:var(--muted)]">
-          Este cliente todavía no completó la ficha de su mascota.
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {cliente.mascotas.map((m) => (
-            <FichaMascota key={m.id ?? m.nombre} mascota={m} />
-          ))}
-        </div>
-      )}
+      <GestionMascotasAdmin
+        clienteId={cliente.id}
+        mascotasIniciales={cliente.mascotas}
+        soloLectura={cliente.id === "demo"}
+      />
     </div>
   );
 }

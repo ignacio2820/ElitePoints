@@ -25,6 +25,7 @@ const especieEmoji: Record<Especie, string> = {
   perro: "🐶",
   gato: "🐱",
   ave: "🐦",
+  roedor: "🐹",
   reptil: "🦎",
   otro: "🐾"
 };
@@ -146,16 +147,19 @@ export function MascotaFormPro({
               placeholder="Coco"
             />
           </Field>
-          <Field label="Especie">
+          <Field label="Tipo de mascota">
             <Select
               value={m.especie ?? "perro"}
-              onChange={(e) =>
-                set("especie", EspecieSchema.parse(e.target.value))
-              }
+              onChange={(e) => {
+                const v = EspecieSchema.parse(e.target.value);
+                set("especie", v);
+                set("tipo", v);
+              }}
             >
               <option value="perro">Perro</option>
               <option value="gato">Gato</option>
               <option value="ave">Ave</option>
+              <option value="roedor">Roedor</option>
               <option value="reptil">Reptil</option>
               <option value="otro">Otro</option>
             </Select>

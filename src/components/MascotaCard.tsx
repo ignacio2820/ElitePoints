@@ -5,23 +5,19 @@ import { edadMascotaAnios, esCumpleanos } from "@/lib/huellitas/engine";
 import type { Mascota } from "@/lib/huellitas/types";
 import { Badge } from "@/components/ui/Badge";
 
+import { labelTipoMascota, resolverEspecieMascota } from "@/lib/huellitas/tiposMascota";
+
 const especieEmoji: Record<Mascota["especie"], string> = {
   perro: "🐶",
   gato: "🐱",
   ave: "🐦",
+  roedor: "🐹",
   reptil: "🦎",
   otro: "🐾"
 };
 
-const especieLabel: Record<Mascota["especie"], string> = {
-  perro: "Perro",
-  gato: "Gato",
-  ave: "Ave",
-  reptil: "Reptil",
-  otro: "Otro"
-};
-
 export function MascotaCard({ mascota }: { mascota: Mascota }) {
+  const especie = resolverEspecieMascota(mascota);
   const edad = edadMascotaAnios(mascota);
   const cumple = esCumpleanos(mascota);
 
@@ -29,7 +25,7 @@ export function MascotaCard({ mascota }: { mascota: Mascota }) {
     <div className="surface-card p-5 transition hover:-translate-y-0.5">
       <div className="flex items-start gap-4">
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cream-100 text-3xl">
-          <span aria-hidden>{especieEmoji[mascota.especie]}</span>
+          <span aria-hidden>{especieEmoji[especie]}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -43,7 +39,7 @@ export function MascotaCard({ mascota }: { mascota: Mascota }) {
             ) : null}
           </div>
           <div className="mt-1 text-sm text-[color:var(--muted)]">
-            {especieLabel[mascota.especie]}
+            {labelTipoMascota(mascota.tipo, especie)}
             {mascota.raza ? ` · ${mascota.raza}` : ""}
             {" · "}
             {edad === 0 ? "Recién nacido" : `${edad} ${edad === 1 ? "año" : "años"}`}

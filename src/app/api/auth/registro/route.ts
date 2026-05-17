@@ -150,6 +150,7 @@ export async function POST(req: Request) {
           mascotas: [
             {
               nombre: data.mascota.nombre,
+              tipo: data.mascota.especie,
               especie: data.mascota.especie,
               raza: data.mascota.raza ?? "",
               fechaNacimiento: fechaNac

@@ -43,16 +43,22 @@ export async function agregarMascotaCliente(
     throw new Error("Cliente no encontrado");
   }
 
+  const actuales = normalizarMascotas((snap.data() as { mascotas?: Mascota[] }).mascotas);
+  if (actuales.length > 0) {
+    throw new Error("Ya tenés una mascota registrada. Contactá al local para cambios.");
+  }
+
+  const especie = input.especie ?? "perro";
   const mascotaId = randomUUID();
   const mascota: Mascota = {
     id: mascotaId,
     nombre: input.nombre.trim(),
-    especie: input.especie ?? "perro",
+    tipo: especie,
+    especie,
     fechaNacimiento: input.fechaNacimiento,
     fechaNacimientoBloqueada: true
   };
 
-  const actuales = normalizarMascotas((snap.data() as { mascotas?: Mascota[] }).mascotas);
   const siguientes = [...actuales, mascota];
 
   await ref.set({ mascotas: siguientes }, { merge: true });
