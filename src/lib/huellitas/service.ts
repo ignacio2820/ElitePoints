@@ -2,12 +2,14 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import {
-  incrementHuellitasActuales,
   leerHuellitasActuales,
   leerHuellitasHistoricas,
-  patchHuellitasHistoricas,
-  patchIncrementoVenta,
+  patchHuellitasHistoricas
 } from "@/lib/huellitas/saldosCliente";
+import {
+  incrementHuellitasActuales,
+  patchIncrementoVenta
+} from "@/lib/huellitas/saldosCliente.server";
 import {
   calcularBonificaciones,
   calcularCanje,

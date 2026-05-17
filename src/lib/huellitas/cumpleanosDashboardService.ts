@@ -10,6 +10,12 @@ import {
   etiquetaDiaCumple,
   fechaProximoCumple
 } from "./cumpleanosProximos";
+import {
+  diaMesDesdeFechaNacimiento,
+  estadoCumpleEnMes,
+  mascotaCumpleEnMesCalendario,
+  type EstadoDiaMes
+} from "./cumpleanosCarteleraUtils";
 import { fusionarMascotasCliente } from "./fusionarMascotasCliente";
 import { normalizarFechaNacimientoMascota } from "./fechaNacimientoMascota";
 import type { Cliente, Mascota } from "@/lib/huellitas/types";
@@ -25,6 +31,9 @@ export interface CumpleanoProximo {
   fechaCumple: Date;
   diaCumpleEtiqueta: string;
   diasRestantes: number;
+  /** Día del mes (1–31) para ordenar la cartelera. */
+  diaMes: number;
+  estadoMes?: EstadoDiaMes;
 }
 
 const LIMITE_CLIENTES = 2000;
@@ -76,6 +85,8 @@ function agregarMascotaSiAplica(
   const fechaCumple = fechaProximoCumple(fechaISO, args.hoy);
   if (!fechaCumple) return;
 
+  const diaMes = diaMesDesdeFechaNacimiento(fechaISO) ?? fechaCumple.getDate();
+
   visto.add(clave);
   acumulado.push({
     mascotaId: args.mascotaId,
@@ -87,7 +98,8 @@ function agregarMascotaSiAplica(
     fechaNacimiento: fechaISO,
     fechaCumple,
     diaCumpleEtiqueta: etiquetaDiaCumple(fechaCumple),
-    diasRestantes: dias
+    diasRestantes: dias,
+    diaMes
   });
 }
 
@@ -203,4 +215,110 @@ export async function listarCumpleanosDashboardAgrupados(
   estaSemana.sort(ordenar);
   proximasSemanas.sort(ordenar);
   return { estaSemana, proximasSemanas };
+}
+
+function agregarMascotaMesActual(
+  acumulado: CumpleanoProximo[],
+  visto: Set<string>,
+  args: {
+    mascotaId: string;
+    mascota: Partial<Mascota>;
+    clienteId: string;
+    nombreDueno: string;
+    email: string;
+    telefono: string;
+    hoy: Date;
+  }
+): void {
+  const clave = `${args.clienteId}:${args.mascotaId}`;
+  if (visto.has(clave)) return;
+
+  const nombreMascota = args.mascota.nombre?.trim();
+  if (!nombreMascota) return;
+
+  const fechaISO = normalizarFechaNacimientoMascota(args.mascota.fechaNacimiento);
+  if (!fechaISO || !mascotaCumpleEnMesCalendario(fechaISO, args.hoy)) return;
+
+  const diaMes = diaMesDesdeFechaNacimiento(fechaISO);
+  if (diaMes === null) return;
+
+  const estadoMes = estadoCumpleEnMes(fechaISO, args.hoy);
+  const anio = args.hoy.getFullYear();
+  const [, mesStr, diaStr] = fechaISO.split("-");
+  const fechaCumple = new Date(anio, Number(mesStr) - 1, Number(diaStr), 12, 0, 0, 0);
+
+  visto.add(clave);
+  acumulado.push({
+    mascotaId: args.mascotaId,
+    nombreMascota,
+    nombreDueno: args.nombreDueno,
+    clienteId: args.clienteId,
+    email: args.email,
+    telefono: args.telefono,
+    fechaNacimiento: fechaISO,
+    fechaCumple,
+    diaCumpleEtiqueta: etiquetaDiaCumple(fechaCumple),
+    diasRestantes: estadoMes === "hoy" ? 0 : estadoMes === "proximo" ? diaMes - args.hoy.getDate() : -1,
+    diaMes,
+    estadoMes: estadoMes ?? undefined
+  });
+}
+
+/**
+ * Cartelera del mes en curso: todas las mascotas cuyo cumple cae en este mes,
+ * ordenadas por día del mes (ignorando el año de nacimiento).
+ */
+export async function listarCumpleanosMesActual(
+  localId: string,
+  opts?: { hoy?: Date }
+): Promise<CumpleanoProximo[]> {
+  const hoy = opts?.hoy ?? new Date();
+  const db = adminDb();
+  const clientesSnap = await cols.clientes(db, localId).limit(LIMITE_CLIENTES).get();
+  const acumulado: CumpleanoProximo[] = [];
+
+  const porCliente = await mapEnLotes(clientesSnap.docs, CONCURRENCIA, async (cDoc) => {
+    const filas: CumpleanoProximo[] = [];
+    const visto = new Set<string>();
+    const cliente = cDoc.data() as Partial<Cliente>;
+    const nombreDueno = (cliente.nombre ?? "—").trim() || "—";
+    const email = (cliente.email as string | undefined)?.trim() ?? "";
+    const telefono = (cliente.telefono as string | undefined)?.trim() ?? "";
+    const base = {
+      clienteId: cDoc.id,
+      nombreDueno,
+      email,
+      telefono,
+      hoy
+    };
+
+    const embebidas = (cliente.mascotas ?? []) as Mascota[];
+    let subcoleccion: Mascota[] = [];
+    try {
+      const mascotasSnap = await cols.mascotas(db, localId, cDoc.id).get();
+      subcoleccion = mascotasSnap.docs.map((mDoc) => ({
+        id: mDoc.id,
+        ...(mDoc.data() as Mascota)
+      }));
+    } catch {
+      // legacy
+    }
+
+    for (const m of fusionarMascotasCliente(embebidas, subcoleccion)) {
+      agregarMascotaMesActual(filas, visto, {
+        ...base,
+        mascotaId: m.id ?? m.nombre,
+        mascota: m
+      });
+    }
+    return filas;
+  });
+
+  porCliente.flat().forEach((c) => acumulado.push(c));
+
+  return acumulado.sort(
+    (a, b) =>
+      a.diaMes - b.diaMes ||
+      a.nombreMascota.localeCompare(b.nombreMascota, "es")
+  );
 }

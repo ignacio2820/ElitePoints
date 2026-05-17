@@ -1,9 +1,9 @@
-import { FieldValue } from "firebase-admin/firestore";
 import { calcularNivel, progresoNivel } from "@/lib/huellitas/engine";
 import type { NivelLealtad } from "@/lib/huellitas/types";
 
 /**
- * Saldos del cliente en Firestore.
+ * Lectura y parches numéricos de saldos — seguro para Client Components.
+ * Para incrementos Firestore (FieldValue), usar `saldosCliente.server.ts`.
  *
  * - `huellitasActuales` / `saldoHuellitas`: saldo para canjes (baja al canjear).
  * - `huellitasHistoricas` / `acumuladoHistorico`: total de por vida (solo sube con
@@ -40,33 +40,6 @@ export function patchHuellitasHistoricas(valor: number): Record<string, number> 
   return {
     huellitasHistoricas: n,
     acumuladoHistorico: n
-  };
-}
-
-export function incrementHuellitasActuales(delta: number): Record<string, unknown> {
-  const d = Math.round(delta);
-  return {
-    huellitasActuales: FieldValue.increment(d),
-    saldoHuellitas: FieldValue.increment(d)
-  };
-}
-
-export function incrementHuellitasHistoricas(delta: number): Record<string, unknown> {
-  const d = Math.round(delta);
-  return {
-    huellitasHistoricas: FieldValue.increment(d),
-    acumuladoHistorico: FieldValue.increment(d)
-  };
-}
-
-/** Venta / emisión: suben actuales e históricas en paralelo. */
-export function patchIncrementoVenta(
-  deltaActuales: number,
-  deltaHistoricas: number
-): Record<string, unknown> {
-  return {
-    ...incrementHuellitasActuales(deltaActuales),
-    ...incrementHuellitasHistoricas(deltaHistoricas)
   };
 }
 

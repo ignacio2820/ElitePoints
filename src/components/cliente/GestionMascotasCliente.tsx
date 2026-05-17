@@ -9,6 +9,7 @@ import {
   resolverEspecieMascota,
   type TipoMascotaValor
 } from "@/lib/huellitas/tiposMascota";
+import { BadgeCumpleanosMascota } from "@/components/cliente/BadgeCumpleanosMascota";
 import type { Mascota } from "@/lib/huellitas/types";
 
 type Props = {
@@ -127,13 +128,16 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
 
             <div>
               <label className={labelClass}>Nombre de la mascota</label>
-              <input
-                type="text"
-                value={m.nombre}
-                readOnly
-                disabled
-                className={inputReadOnly}
-              />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  value={m.nombre}
+                  readOnly
+                  disabled
+                  className={`${inputReadOnly} min-w-[8rem] flex-1`}
+                />
+                <BadgeCumpleanosMascota mascota={m} />
+              </div>
             </div>
 
             <div>

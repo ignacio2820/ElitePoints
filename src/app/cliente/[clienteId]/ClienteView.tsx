@@ -7,8 +7,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { calcularNivelCliente } from "@/lib/huellitas/saldosCliente";
-import type { ConfiguracionLocal, Premio } from "@/lib/huellitas/types";
+import type { ConfiguracionLocal, NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { formatNumber } from "@/lib/utils";
 
 export type HistorialPuntoCliente = {
@@ -36,6 +35,7 @@ export interface ClienteViewProps {
   membresiaExpirada?: boolean;
   /** Vista demo pública: catálogo sin generar cupones reales. */
   modoDemo?: boolean;
+  nivelCliente: NivelLealtad;
 }
 
 function formatearFechaCorta(iso: string): string {
@@ -60,9 +60,9 @@ export function ClienteView({
   nombreLocal,
   baseUrl,
   membresiaExpirada = false,
-  modoDemo = false
+  modoDemo = false,
+  nivelCliente
 }: ClienteViewProps) {
-  const nivel = calcularNivelCliente(cliente, cfg.niveles);
   const qrHref = `/cliente/${cliente.id}/qr?localId=${encodeURIComponent(localId)}`;
 
   return (
@@ -159,7 +159,7 @@ export function ClienteView({
           premios={premios}
           saldoCliente={saldoDisponible}
           valorMonetarioHuellita={cfg.valorMonetarioHuellita}
-          nivelCliente={nivel}
+          nivelCliente={nivelCliente}
           niveles={cfg.niveles}
           puedeCanjear={!modoDemo}
         />

@@ -39,6 +39,7 @@ export interface CustomerPanelProps {
 const NAV_LINKS = [
   { href: "/mi-cuenta", label: "Mi Cuenta" },
   { href: "/mi-cuenta#catalogo", label: "Catálogo" },
+  { href: "/mi-cuenta/sorteos", label: "Sorteos" },
   { href: "/mi-cuenta/qr", label: "Mi QR" },
   { href: "#ayuda", label: "Ayuda" }
 ] as const;

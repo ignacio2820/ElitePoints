@@ -7,6 +7,7 @@ import {
   diagnosticarPrograma,
   edadMascotaAnios,
   esCumpleanos,
+  esMesCumpleanos,
   esLoteVigente,
   planConsumoFIFO,
   progresoNivel,
@@ -238,6 +239,15 @@ describe("diagnosticarPrograma", () => {
 });
 
 describe("cumpleaños", () => {
+  it("detecta el mes de cumpleaños", () => {
+    expect(
+      esMesCumpleanos({ fechaNacimiento: "2020-06-15" }, new Date(2026, 5, 1))
+    ).toBe(true);
+    expect(
+      esMesCumpleanos({ fechaNacimiento: "2020-06-15" }, new Date(2026, 6, 1))
+    ).toBe(false);
+  });
+
   it("detecta el cumpleaños del día", () => {
     expect(
       esCumpleanos({ fechaNacimiento: "2020-06-15" }, new Date("2026-06-15T10:00:00"))

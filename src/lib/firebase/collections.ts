@@ -77,5 +77,16 @@ export const cols = {
 
   /** Alertas en tiempo casi-real para el dashboard del dueño. */
   notificacionesCanjes: (db: Firestore, localId: string) =>
-    db.collection(`Locales/${localId}/NotificacionesCanje`)
+    db.collection(`Locales/${localId}/NotificacionesCanje`),
+
+  sorteos: (db: Firestore, localId: string) =>
+    db.collection(`Locales/${localId}/Sorteos`),
+
+  sorteo: (db: Firestore, localId: string, sorteoId: string) =>
+    db.doc(`Locales/${localId}/Sorteos/${sorteoId}`),
+
+  transaccionesCliente: (db: Firestore, localId: string, clienteId: string) =>
+    db.collection(
+      `Locales/${localId}/Clientes/${clienteId}/Transacciones`
+    )
 };

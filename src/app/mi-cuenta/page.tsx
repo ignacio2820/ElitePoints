@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { ChevronRight, QrCode } from "lucide-react";
+import { ChevronRight, QrCode, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
@@ -188,6 +188,28 @@ export default async function MiCuentaPage({
                 </p>
                 <p className="text-sm text-bark-500">
                   El local lo escanea para sumar Huellitas
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="text-bark-400 transition group-hover:translate-x-1" />
+          </div>
+        </Link>
+
+        <Link
+          href="/mi-cuenta/sorteos"
+          className="surface-card group block overflow-hidden rounded-2xl p-5 transition active:scale-[0.99]"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-bark-600 to-terracotta-500 text-cream-50 shadow-soft">
+                <Sparkles size={26} />
+              </div>
+              <div>
+                <p className="font-display text-lg font-semibold tracking-tight text-bark-700">
+                  Sorteos activos
+                </p>
+                <p className="text-sm text-bark-500">
+                  Potenciá tus chances con huellitas
                 </p>
               </div>
             </div>

@@ -321,6 +321,18 @@ export function diagnosticarPrograma(
  * Devuelve true si HOY es cumpleaños de la mascota en zona horaria local.
  * Compara mes y día (ignora año), tolerante con 29-feb (cae el 28-feb en años no bisiestos).
  */
+/**
+ * true si el mes de nacimiento coincide con el mes actual (ignora año y día).
+ */
+export function esMesCumpleanos(
+  m: Pick<Mascota, "fechaNacimiento">,
+  hoy: Date = new Date()
+): boolean {
+  const [, mes] = m.fechaNacimiento.split("-").map(Number);
+  if (!mes || mes < 1 || mes > 12) return false;
+  return mes === hoy.getMonth() + 1;
+}
+
 export function esCumpleanos(
   m: Pick<Mascota, "fechaNacimiento">,
   hoy: Date = new Date()

@@ -13,6 +13,7 @@ import {
   type Premio
 } from "@/lib/huellitas/types";
 import { PREMIOS_DEMO } from "@/components/CatalogoPremios";
+import { calcularNivelCliente } from "@/lib/huellitas/saldosCliente";
 
 const NOMBRE_LOCAL_DEMO = "Pet Shop Patitas";
 
@@ -217,6 +218,7 @@ export default async function ClientePage({
   const saldoDisponible = Math.max(0, saldoBruto - reservadas);
   const modoDemo = params.clienteId === "demo";
   const baseUrl = resolvePublicBaseUrl(headers());
+  const nivelCliente = calcularNivelCliente(data.cliente, data.cfg.niveles);
 
   return (
     <ClienteView
@@ -231,6 +233,7 @@ export default async function ClientePage({
       saldoDisponible={saldoDisponible}
       huellitasReservadas={reservadas}
       modoDemo={modoDemo}
+      nivelCliente={nivelCliente}
     />
   );
 }
