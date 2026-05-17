@@ -7,12 +7,12 @@ import {
   setCustomClaims
 } from "@/lib/auth/server";
 import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
+import { normalizarEmailCliente } from "@/lib/huellitas/validarEmailCliente";
 import {
-  EmailClienteDuplicadoError,
-  ERROR_EMAIL_CLIENTE_DUPLICADO,
-  assertEmailClienteDisponible,
-  normalizarEmailCliente
-} from "@/lib/huellitas/validarEmailCliente";
+  esEmailDuplicadoEnLocal,
+  respuestaApiEmailDuplicado,
+  validarEmailAntesDeCrearCliente
+} from "@/lib/auth/persistenciaCliente";
 import { crearClienteConReferido } from "@/lib/huellitas/referidosService";
 import { mayExposeDevMagicLink } from "@/lib/auth/allowedOrigins";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
@@ -76,18 +76,8 @@ export async function POST(req: Request) {
     const nombreLocal =
       (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
-    // 2. Correo único: no permitir duplicar perfil (índice + scan legacy)
-    try {
-      await assertEmailClienteDisponible(data.email, localId);
-    } catch (e) {
-      if (e instanceof EmailClienteDuplicadoError) {
-        return NextResponse.json(
-          { ok: false, error: ERROR_EMAIL_CLIENTE_DUPLICADO },
-          { status: 409 }
-        );
-      }
-      throw e;
-    }
+    // 2. Correo único en este local (query directa Admin SDK)
+    await validarEmailAntesDeCrearCliente({ localId, email: data.email });
 
     // 3. Validar rápido que Firebase Auth está accesible — si no,
     //    no creamos cliente en Firestore para evitar inconsistencias.
@@ -226,11 +216,8 @@ export async function POST(req: Request) {
       nombreLocal
     });
   } catch (err) {
-    if (err instanceof EmailClienteDuplicadoError) {
-      return NextResponse.json(
-        { ok: false, error: ERROR_EMAIL_CLIENTE_DUPLICADO },
-        { status: 409 }
-      );
+    if (esEmailDuplicadoEnLocal(err)) {
+      return NextResponse.json(respuestaApiEmailDuplicado(), { status: 400 });
     }
     const msg = err instanceof Error ? err.message : "Error desconocido";
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });

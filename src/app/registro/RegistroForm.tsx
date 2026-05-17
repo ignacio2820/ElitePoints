@@ -5,7 +5,7 @@ import { Check, UserPlus } from "lucide-react";
 import { Field, TextInput } from "@/components/ui/Field";
 import { esCodigoValido, normalizarCodigo } from "@/lib/huellitas/referidos";
 import {
-  ERROR_EMAIL_CLIENTE_DUPLICADO,
+  CODIGO_ERROR_EMAIL_DUPLICADO,
   validarEmailClienteAntesDeGuardar
 } from "@/lib/huellitas/verificarEmailCliente.client";
 
@@ -67,14 +67,25 @@ export function RegistroForm({
             codigoReferido: codigo ? normalizarCodigo(codigo) : undefined
           })
         });
-        const data = await res.json();
+        const data = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          message?: string;
+          codigoReferido?: string;
+          clienteId?: string;
+        };
         if (!res.ok || !data.ok) {
-          const msg = data.error ?? "No pudimos crear tu cuenta";
-          if (res.status === 409 || msg === ERROR_EMAIL_CLIENTE_DUPLICADO) {
-            setErrorEmail(msg);
+          if (res.status === 400 && data.error === CODIGO_ERROR_EMAIL_DUPLICADO) {
+            setErrorEmail(
+              data.message ??
+                "Este correo electrónico ya está registrado en este local."
+            );
             return;
           }
-          throw new Error(msg);
+          throw new Error(data.message ?? data.error ?? "No pudimos crear tu cuenta");
+        }
+        if (!data.codigoReferido || !data.clienteId) {
+          throw new Error("Respuesta incompleta del servidor.");
         }
         setDone({ codigo: data.codigoReferido, clienteId: data.clienteId });
       } catch (e) {

@@ -15,9 +15,12 @@ import {
 import { setCustomClaims } from "@/lib/auth/server";
 import { reasignarPasskeysAlUid } from "@/lib/auth/passkeys";
 
-function normalizarEmail(email: string): string {
+export function normalizarEmail(email: string): string {
   return email.trim().toLowerCase();
 }
+
+/** Alias usado en formularios y Zod. */
+export const normalizarEmailCliente = normalizarEmail;
 
 function aResumenDesdeDoc(
   localId: string,
@@ -137,4 +140,78 @@ export async function emailYaRegistradoComoCliente(
   localIdPreferido?: string
 ): Promise<boolean> {
   return (await buscarClientePorEmailRobusto(email, localIdPreferido)) !== null;
+}
+
+/** Código estable para que el frontend detecte duplicado en el mismo local. */
+export const CODIGO_ERROR_EMAIL_DUPLICADO = "EMAIL_DUPLICATED" as const;
+
+export const MENSAJE_EMAIL_DUPLICADO_EN_LOCAL =
+  "Este correo electrónico ya está registrado en este local.";
+
+/** Mensaje para el panel admin (toast / alerta). */
+export const MENSAJE_EMAIL_DUPLICADO_ADMIN =
+  "¡Error! No se puede registrar: el correo electrónico ya pertenece a un cliente activo.";
+
+export class EmailDuplicadoEnLocalError extends Error {
+  readonly code = CODIGO_ERROR_EMAIL_DUPLICADO;
+
+  constructor(
+    public readonly localId: string,
+    public readonly email: string,
+    message = MENSAJE_EMAIL_DUPLICADO_EN_LOCAL
+  ) {
+    super(message);
+    this.name = "EmailDuplicadoEnLocalError";
+  }
+}
+
+export function esEmailDuplicadoEnLocal(
+  err: unknown
+): err is EmailDuplicadoEnLocalError {
+  return err instanceof EmailDuplicadoEnLocalError;
+}
+
+/**
+ * Consulta directa en Locales/{localId}/Clientes (Admin SDK).
+ * Es la fuente de verdad para duplicados dentro del mismo local.
+ */
+export async function emailExisteEnLocal(
+  localId: string,
+  email: string
+): Promise<boolean> {
+  const e = normalizarEmail(email);
+  if (!e || !localId.trim()) return false;
+
+  const db = adminDb();
+  const snapshot = await cols
+    .clientes(db, localId)
+    .where("email", "==", e)
+    .limit(1)
+    .get();
+
+  return !snapshot.empty;
+}
+
+/**
+ * Bloqueo obligatorio antes de cualquier `set`/`add` en Clientes del local.
+ * Lanza EmailDuplicadoEnLocalError si el correo ya está en uso.
+ */
+export async function validarEmailAntesDeCrearCliente(input: {
+  localId: string;
+  email: string;
+}): Promise<void> {
+  const e = normalizarEmail(input.email);
+  if (!e) return;
+
+  if (await emailExisteEnLocal(input.localId, e)) {
+    throw new EmailDuplicadoEnLocalError(input.localId, e);
+  }
+}
+
+export function respuestaApiEmailDuplicado() {
+  return {
+    ok: false as const,
+    error: CODIGO_ERROR_EMAIL_DUPLICADO,
+    message: MENSAJE_EMAIL_DUPLICADO_EN_LOCAL
+  };
 }

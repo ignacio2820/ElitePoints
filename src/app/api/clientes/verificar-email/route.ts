@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  emailClienteDisponible,
-  normalizarEmailCliente
-} from "@/lib/huellitas/validarEmailCliente";
+import { emailExisteEnLocal, normalizarEmail } from "@/lib/auth/persistenciaCliente";
 
 export const runtime = "nodejs";
 
 const Body = z.object({
   email: z.string().min(1, "Email requerido"),
-  localId: z.string().min(1).optional()
+  localId: z.string().min(1, "localId requerido")
 });
 
 /**
- * Comprueba si un email de cliente está libre (consulta índice + Firestore).
- * Usado por formularios antes de enviar el alta.
+ * Comprueba si un email está libre en Locales/{localId}/Clientes.
  */
 export async function POST(req: Request) {
   let raw: unknown;
@@ -32,14 +28,14 @@ export async function POST(req: Request) {
     );
   }
 
-  const email = normalizarEmailCliente(parsed.data.email);
+  const email = normalizarEmail(parsed.data.email);
   if (!email.includes("@")) {
     return NextResponse.json({ ok: false, error: "Email inválido" }, { status: 400 });
   }
 
   try {
-    const disponible = await emailClienteDisponible(email, parsed.data.localId);
-    return NextResponse.json({ ok: true, disponible });
+    const existe = await emailExisteEnLocal(parsed.data.localId, email);
+    return NextResponse.json({ ok: true, disponible: !existe });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error";
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });

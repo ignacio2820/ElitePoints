@@ -1,9 +1,9 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import {
-  assertEmailClienteDisponible,
-  normalizarEmailCliente
-} from "@/lib/huellitas/validarEmailCliente";
+  normalizarEmail,
+  validarEmailAntesDeCrearCliente
+} from "@/lib/auth/persistenciaCliente";
 import { cols } from "@/lib/firebase/collections";
 import {
   esCodigoValido,
@@ -93,10 +93,11 @@ export async function crearClienteConReferido(input: {
   codigoCliente: string;
   referidoPor?: string;
 }> {
-  const emailNorm = normalizarEmailCliente(input.cliente.email ?? "");
-  if (emailNorm) {
-    await assertEmailClienteDisponible(emailNorm, input.localId);
-  }
+  const emailNorm = normalizarEmail(input.cliente.email ?? "");
+  await validarEmailAntesDeCrearCliente({
+    localId: input.localId,
+    email: emailNorm
+  });
 
   const db = adminDb();
   const referente = input.codigoReferenteRaw

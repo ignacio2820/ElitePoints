@@ -25,7 +25,7 @@ import {
 } from "@/lib/auth/client";
 import { guardarUltimoEmail, leerUltimoEmail } from "@/lib/auth/ultimoEmail";
 import {
-  ERROR_EMAIL_CLIENTE_DUPLICADO,
+  CODIGO_ERROR_EMAIL_DUPLICADO,
   validarEmailClienteAntesDeGuardar
 } from "@/lib/huellitas/verificarEmailCliente.client";
 
@@ -166,8 +166,10 @@ export function LoginForm() {
     setEnviando(false);
     if (!res.ok) {
       const msg = res.error ?? "Error desconocido";
-      if (msg === ERROR_EMAIL_CLIENTE_DUPLICADO) {
-        setErrorEmail(msg);
+      if (msg === CODIGO_ERROR_EMAIL_DUPLICADO || res.error === CODIGO_ERROR_EMAIL_DUPLICADO) {
+        setErrorEmail(
+          "Este correo electrónico ya está registrado en este local."
+        );
       } else {
         setError(msg);
       }

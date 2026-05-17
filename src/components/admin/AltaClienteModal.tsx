@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, UserPlus, X } from "lucide-react";
+import { AlertCircle, Loader2, UserPlus, X } from "lucide-react";
 import { Field, TextInput } from "@/components/ui/Field";
 import {
-  ERROR_EMAIL_CLIENTE_DUPLICADO,
-  validarEmailClienteAntesDeGuardar
+  CODIGO_ERROR_EMAIL_DUPLICADO,
+  MENSAJE_EMAIL_DUPLICADO_ADMIN
 } from "@/lib/huellitas/verificarEmailCliente.client";
 
 interface Props {
@@ -18,13 +18,13 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [errorEmail, setErrorEmail] = useState<string | null>(null);
+  const [toastDuplicado, setToastDuplicado] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setErrorEmail(null);
+    setToastDuplicado(false);
 
     const nombreTrim = nombre.trim();
     if (nombreTrim.length < 2) {
@@ -33,13 +33,6 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
     }
 
     const emailNorm = email.trim().toLowerCase();
-    if (emailNorm) {
-      const msgEmail = await validarEmailClienteAntesDeGuardar(emailNorm);
-      if (msgEmail) {
-        setErrorEmail(msgEmail);
-        return;
-      }
-    }
 
     setGuardando(true);
     try {
@@ -53,19 +46,21 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
           telefono: telefono.trim() || undefined
         })
       });
+
       const data = (await r.json()) as {
         ok: boolean;
         error?: string;
+        message?: string;
         clienteId?: string;
       };
 
       if (!r.ok || !data.ok || !data.clienteId) {
-        const msg = data.error ?? "No pudimos crear el cliente.";
-        if (r.status === 409 || msg === ERROR_EMAIL_CLIENTE_DUPLICADO) {
-          setErrorEmail(msg);
-        } else {
-          setError(msg);
+        if (r.status === 400 && data.error === CODIGO_ERROR_EMAIL_DUPLICADO) {
+          setToastDuplicado(true);
+          return;
         }
+        const msg = data.message ?? data.error ?? "No pudimos crear el cliente.";
+        setError(msg);
         return;
       }
 
@@ -98,8 +93,7 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
               Nuevo cliente
             </h2>
             <p className="mt-1 text-sm text-bark-500">
-              Registrá un cliente en tu local. El email no puede repetirse en el
-              sistema.
+              El email no puede repetirse entre clientes de tu local.
             </p>
           </div>
           <button
@@ -112,6 +106,16 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
           </button>
         </div>
 
+        {toastDuplicado ? (
+          <div
+            className="mb-4 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
+            role="alert"
+          >
+            <AlertCircle size={18} className="mt-0.5 shrink-0 text-rose-600" />
+            <p className="font-medium">{MENSAJE_EMAIL_DUPLICADO_ADMIN}</p>
+          </div>
+        ) : null}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field label="Nombre">
             <TextInput
@@ -123,22 +127,17 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
             />
           </Field>
 
-          <Field label="Email" hint="Opcional. Debe ser único si lo completás.">
+          <Field label="Email" hint="Opcional. Debe ser único en tu local si lo completás.">
             <TextInput
               type="email"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                setErrorEmail(null);
+                setToastDuplicado(false);
               }}
               placeholder="lucia@ejemplo.com"
-              aria-invalid={!!errorEmail}
+              aria-invalid={toastDuplicado}
             />
-            {errorEmail ? (
-              <p className="mt-1.5 text-sm text-terracotta-500" role="alert">
-                {errorEmail}
-              </p>
-            ) : null}
           </Field>
 
           <Field label="Teléfono" hint="Opcional.">

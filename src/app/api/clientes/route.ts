@@ -4,10 +4,11 @@ import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { normalizarCodigo } from "@/lib/huellitas/referidos";
 import {
-  EmailClienteDuplicadoError,
-  ERROR_EMAIL_CLIENTE_DUPLICADO,
-  normalizarEmailCliente
-} from "@/lib/huellitas/validarEmailCliente";
+  esEmailDuplicadoEnLocal,
+  normalizarEmail,
+  respuestaApiEmailDuplicado,
+  validarEmailAntesDeCrearCliente
+} from "@/lib/auth/persistenciaCliente";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ const Body = z.object({
   email: z
     .string()
     .optional()
-    .transform((s) => (s?.trim() ? normalizarEmailCliente(s) : "")),
+    .transform((s) => (s?.trim() ? normalizarEmail(s) : "")),
   telefono: z.string().max(30).optional(),
   codigoReferido: z.string().max(20).optional()
 });
@@ -52,6 +53,11 @@ export async function POST(req: Request) {
       );
     }
 
+    await validarEmailAntesDeCrearCliente({
+      localId: data.localId,
+      email: data.email
+    });
+
     const { crearClienteConReferido } = await import(
       "@/lib/huellitas/referidosService"
     );
@@ -68,11 +74,8 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
-    if (err instanceof EmailClienteDuplicadoError) {
-      return NextResponse.json(
-        { ok: false, error: ERROR_EMAIL_CLIENTE_DUPLICADO },
-        { status: 409 }
-      );
+    if (esEmailDuplicadoEnLocal(err)) {
+      return NextResponse.json(respuestaApiEmailDuplicado(), { status: 400 });
     }
     const msg = err instanceof Error ? err.message : "Error desconocido";
     return NextResponse.json({ ok: false, error: msg }, { status: 400 });
