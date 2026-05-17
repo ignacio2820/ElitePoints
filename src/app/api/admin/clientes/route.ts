@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { adminDb } from "@/lib/firebase/admin";
-import { cols } from "@/lib/firebase/collections";
-import { normalizarCodigo } from "@/lib/huellitas/referidos";
+import { requireAdmin } from "@/lib/auth/server";
+import { crearClienteConReferido } from "@/lib/huellitas/referidosService";
 import {
   EmailClienteDuplicadoError,
   ERROR_EMAIL_CLIENTE_DUPLICADO,
@@ -12,18 +11,26 @@ import {
 export const runtime = "nodejs";
 
 const Body = z.object({
-  localId: z.string().min(1, "localId requerido"),
   nombre: z.string().min(2).max(120),
   email: z
     .string()
     .optional()
     .transform((s) => (s?.trim() ? normalizarEmailCliente(s) : "")),
-  telefono: z.string().max(30).optional(),
-  codigoReferido: z.string().max(20).optional()
+  telefono: z.string().max(30).optional()
 });
 
+/**
+ * Alta de cliente desde el panel admin (cartera).
+ */
 export async function POST(req: Request) {
-  let raw: unknown = {};
+  let sesion;
+  try {
+    sesion = await requireAdmin();
+  } catch {
+    return NextResponse.json({ ok: false, error: "No autenticado" }, { status: 401 });
+  }
+
+  let raw: unknown;
   try {
     raw = await req.json();
   } catch {
@@ -37,6 +44,8 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+
+  const localId = sesion.claims.localId;
   const data = parsed.data;
 
   if (data.email && !data.email.includes("@")) {
@@ -44,27 +53,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    const localSnap = await cols.local(adminDb(), data.localId).get();
-    if (!localSnap.exists) {
-      return NextResponse.json(
-        { ok: false, error: `El local "${data.localId}" no existe.` },
-        { status: 404 }
-      );
-    }
-
-    const { crearClienteConReferido } = await import(
-      "@/lib/huellitas/referidosService"
-    );
     const result = await crearClienteConReferido({
-      localId: data.localId,
+      localId,
       cliente: {
         nombre: data.nombre.trim(),
         email: data.email,
         telefono: data.telefono?.trim() ?? ""
-      },
-      codigoReferenteRaw: data.codigoReferido
-        ? normalizarCodigo(data.codigoReferido)
-        : undefined
+      }
     });
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {

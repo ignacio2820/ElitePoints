@@ -1,5 +1,9 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
+import {
+  assertEmailClienteDisponible,
+  normalizarEmailCliente
+} from "@/lib/huellitas/validarEmailCliente";
 import { cols } from "@/lib/firebase/collections";
 import {
   esCodigoValido,
@@ -89,6 +93,11 @@ export async function crearClienteConReferido(input: {
   codigoCliente: string;
   referidoPor?: string;
 }> {
+  const emailNorm = normalizarEmailCliente(input.cliente.email ?? "");
+  if (emailNorm) {
+    await assertEmailClienteDisponible(emailNorm, input.localId);
+  }
+
   const db = adminDb();
   const referente = input.codigoReferenteRaw
     ? await getReferentePorCodigo(input.localId, input.codigoReferenteRaw)
@@ -99,7 +108,7 @@ export async function crearClienteConReferido(input: {
   const clienteData: Cliente = {
     localId: input.localId,
     nombre: input.cliente.nombre,
-    email: (input.cliente.email ?? "").trim().toLowerCase(),
+    email: emailNorm,
     telefono: input.cliente.telefono ?? "",
     saldoHuellitas: 0,
     huellitasReservadas: 0,

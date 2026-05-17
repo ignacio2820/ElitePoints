@@ -4,6 +4,10 @@ import { useState, useTransition } from "react";
 import { Check, UserPlus } from "lucide-react";
 import { Field, TextInput } from "@/components/ui/Field";
 import { esCodigoValido, normalizarCodigo } from "@/lib/huellitas/referidos";
+import {
+  ERROR_EMAIL_CLIENTE_DUPLICADO,
+  validarEmailClienteAntesDeGuardar
+} from "@/lib/huellitas/verificarEmailCliente.client";
 
 export interface RegistroFormProps {
   localId: string;
@@ -23,11 +27,13 @@ export function RegistroForm({
   const [telefono, setTelefono] = useState("");
   const [codigo, setCodigo] = useState(codigoReferido ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [errorEmail, setErrorEmail] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [done, setDone] = useState<{ codigo: string; clienteId: string } | null>(null);
 
   const submit = () => {
     setError(null);
+    setErrorEmail(null);
     if (!nombre.trim() || nombre.trim().length < 2) {
       setError("Decinos cómo te llamás");
       return;
@@ -38,20 +44,37 @@ export function RegistroForm({
     }
     start(async () => {
       try {
+        const emailNorm = email.trim().toLowerCase();
+        if (emailNorm) {
+          const msgEmail = await validarEmailClienteAntesDeGuardar(
+            emailNorm,
+            localId
+          );
+          if (msgEmail) {
+            setErrorEmail(msgEmail);
+            return;
+          }
+        }
+
         const res = await fetch("/api/clientes", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             localId,
             nombre: nombre.trim(),
-            email: email.trim() || undefined,
+            email: emailNorm || undefined,
             telefono: telefono.trim() || undefined,
             codigoReferido: codigo ? normalizarCodigo(codigo) : undefined
           })
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {
-          throw new Error(data.error ?? "No pudimos crear tu cuenta");
+          const msg = data.error ?? "No pudimos crear tu cuenta";
+          if (res.status === 409 || msg === ERROR_EMAIL_CLIENTE_DUPLICADO) {
+            setErrorEmail(msg);
+            return;
+          }
+          throw new Error(msg);
         }
         setDone({ codigo: data.codigoReferido, clienteId: data.clienteId });
       } catch (e) {
@@ -105,9 +128,18 @@ export function RegistroForm({
           <TextInput
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setErrorEmail(null);
+            }}
             placeholder="lucia@ejemplo.com"
+            aria-invalid={!!errorEmail}
           />
+          {errorEmail ? (
+            <p className="mt-1.5 text-sm text-terracotta-500" role="alert">
+              {errorEmail}
+            </p>
+          ) : null}
         </Field>
         <Field label="Teléfono" hint="Opcional.">
           <TextInput

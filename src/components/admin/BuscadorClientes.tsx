@@ -18,6 +18,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { formatARS, formatNumber } from "@/lib/utils";
+import { AltaClienteModal } from "./AltaClienteModal";
 import { AsignarHuellitasModal } from "./AsignarHuellitasModal";
 import { CanjeManualModal } from "./CanjeManualModal";
 
@@ -41,6 +42,7 @@ export function BuscadorClientes({
   const [buscando, setBuscando] = useState(false);
   const [seleccionado, setSeleccionado] = useState<ClienteResumen | null>(null);
   const [canjeCliente, setCanjeCliente] = useState<ClienteResumen | null>(null);
+  const [altaAbierta, setAltaAbierta] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -105,7 +107,16 @@ export function BuscadorClientes({
               ? `${resultados.length} resultados${q ? ` para "${q}"` : ""}`
               : `${total} cliente${total === 1 ? "" : "s"} en tu local`}
           </span>
-          <span>1 Huellita = {formatARS(valorMonetarioHuellita)}</span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setAltaAbierta(true)}
+              className="inline-flex items-center gap-1 rounded-lg bg-bark-700 px-2.5 py-1 text-[11px] font-semibold text-cream-50 transition hover:bg-bark-600"
+            >
+              <Plus size={12} /> Nuevo cliente
+            </button>
+            <span>1 Huellita = {formatARS(valorMonetarioHuellita)}</span>
+          </div>
         </div>
       </div>
 
@@ -225,6 +236,25 @@ export function BuscadorClientes({
             setResultados((prev) =>
               prev.map((c) => (c.id === actualizado.id ? actualizado : c))
             );
+          }}
+        />
+      )}
+
+      {altaAbierta && (
+        <AltaClienteModal
+          onClose={() => setAltaAbierta(false)}
+          onCreado={(clienteId) => {
+            void fetch(`/api/admin/clientes/${encodeURIComponent(clienteId)}`, {
+              cache: "no-store",
+              credentials: "same-origin"
+            })
+              .then((r) => r.json())
+              .then((data: { ok?: boolean; cliente?: ClienteResumen }) => {
+                if (data.ok && data.cliente) {
+                  setResultados((prev) => [data.cliente!, ...prev]);
+                }
+              })
+              .catch(() => undefined);
           }}
         />
       )}

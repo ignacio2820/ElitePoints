@@ -24,6 +24,10 @@ import {
   type RegistrarInput
 } from "@/lib/auth/client";
 import { guardarUltimoEmail, leerUltimoEmail } from "@/lib/auth/ultimoEmail";
+import {
+  ERROR_EMAIL_CLIENTE_DUPLICADO,
+  validarEmailClienteAntesDeGuardar
+} from "@/lib/huellitas/verificarEmailCliente.client";
 
 type Modo = "ingresar" | "registrar";
 type Especie = RegistrarInput["mascota"]["especie"];
@@ -99,10 +103,12 @@ export function LoginForm() {
     creada?: boolean;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorEmail, setErrorEmail] = useState<string | null>(null);
 
   function reset() {
     setExito(null);
     setError(null);
+    setErrorEmail(null);
   }
 
   async function onLogin(e: React.FormEvent) {
@@ -137,9 +143,18 @@ export function LoginForm() {
       setEnviando(false);
       return;
     }
+
+    const emailNorm = email.trim().toLowerCase();
+    const msgEmail = await validarEmailClienteAntesDeGuardar(emailNorm, localId);
+    if (msgEmail) {
+      setErrorEmail(msgEmail);
+      setEnviando(false);
+      return;
+    }
+
     const res = await registrarseYRecibirMagicLink({
       localId,
-      email: email.trim(),
+      email: emailNorm,
       nombre: nombre.trim(),
       mascota: {
         nombre: mascotaNombre.trim(),
@@ -149,14 +164,21 @@ export function LoginForm() {
       codigoReferido: refCode
     });
     setEnviando(false);
-    if (!res.ok) setError(res.error ?? "Error desconocido");
-    else
+    if (!res.ok) {
+      const msg = res.error ?? "Error desconocido";
+      if (msg === ERROR_EMAIL_CLIENTE_DUPLICADO) {
+        setErrorEmail(msg);
+      } else {
+        setError(msg);
+      }
+    } else {
       setExito({
         devLink: res.devLink,
         sent: !!res.sent,
         creada: true,
         role: "cliente"
       });
+    }
   }
 
   return (
@@ -218,7 +240,6 @@ export function LoginForm() {
                 mascotaNombre={mascotaNombre}
                 mascotaEspecie={mascotaEspecie}
                 mascotaFecha={mascotaFecha}
-                onEmailChange={setEmail}
                 onNombreChange={setNombre}
                 onMascotaNombreChange={setMascotaNombre}
                 onMascotaEspecieChange={setMascotaEspecie}
@@ -226,6 +247,11 @@ export function LoginForm() {
                 onSubmit={onRegistro}
                 enviando={enviando}
                 error={error}
+                errorEmail={errorEmail}
+                onEmailChange={(v) => {
+                  setEmail(v);
+                  setErrorEmail(null);
+                }}
                 onVolverAIngresar={() => {
                   reset();
                   setModo("ingresar");
@@ -510,6 +536,7 @@ function FormRegistro({
   onSubmit,
   enviando,
   error,
+  errorEmail,
   onVolverAIngresar,
   refCode
 }: {
@@ -527,6 +554,7 @@ function FormRegistro({
   onSubmit: (e: React.FormEvent) => void;
   enviando: boolean;
   error: string | null;
+  errorEmail?: string | null;
   onVolverAIngresar: () => void;
   refCode?: string;
 }) {
@@ -579,7 +607,11 @@ function FormRegistro({
         </div>
       </label>
 
-      <CampoEmail value={email} onChange={onEmailChange} />
+      <CampoEmail
+        value={email}
+        onChange={onEmailChange}
+        error={errorEmail}
+      />
 
       <div className="rounded-2xl border border-dashed border-bark-200 bg-cream-50/60 p-4 space-y-4">
         <div className="flex items-center gap-2">
@@ -679,13 +711,15 @@ function CampoEmail({
   onChange,
   onBlur,
   readOnly,
-  onEdit
+  onEdit,
+  error
 }: {
   value: string;
   onChange: (v: string) => void;
   onBlur?: () => void;
   readOnly?: boolean;
   onEdit?: () => void;
+  error?: string | null;
 }) {
   return (
     <label className="block">
@@ -717,8 +751,14 @@ function CampoEmail({
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           className="w-full bg-transparent text-base text-bark-700 outline-none placeholder:text-bark-300 read-only:cursor-default"
+          aria-invalid={!!error}
         />
       </div>
+      {error ? (
+        <p className="mt-1.5 text-sm text-terracotta-500" role="alert">
+          {error}
+        </p>
+      ) : null}
     </label>
   );
 }

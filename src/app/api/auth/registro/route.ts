@@ -7,7 +7,12 @@ import {
   setCustomClaims
 } from "@/lib/auth/server";
 import { vincularUsuarioACliente } from "@/lib/huellitas/clientesService";
-import { emailYaRegistradoComoCliente } from "@/lib/auth/persistenciaCliente";
+import {
+  EmailClienteDuplicadoError,
+  ERROR_EMAIL_CLIENTE_DUPLICADO,
+  assertEmailClienteDisponible,
+  normalizarEmailCliente
+} from "@/lib/huellitas/validarEmailCliente";
 import { crearClienteConReferido } from "@/lib/huellitas/referidosService";
 import { mayExposeDevMagicLink } from "@/lib/auth/allowedOrigins";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
@@ -19,7 +24,7 @@ import { RUTA_PORTAL } from "@/lib/auth/redirect";
 export const runtime = "nodejs";
 
 const Body = z.object({
-  email: z.string().email().transform((s) => s.trim().toLowerCase()),
+  email: z.string().email().transform((s) => normalizarEmailCliente(s)),
   nombre: z.string().min(2, "Tu nombre es obligatorio").max(120),
   telefono: z.string().max(30).optional(),
   localId: z.string().min(1, "Falta el local"),
@@ -72,17 +77,16 @@ export async function POST(req: Request) {
       (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
     // 2. Correo único: no permitir duplicar perfil (índice + scan legacy)
-    const existente = await emailYaRegistradoComoCliente(data.email, localId);
-    if (existente) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Ya hay una cuenta asociada a este email. " +
-            "Volvé a la pantalla de ingreso para entrar."
-        },
-        { status: 409 }
-      );
+    try {
+      await assertEmailClienteDisponible(data.email, localId);
+    } catch (e) {
+      if (e instanceof EmailClienteDuplicadoError) {
+        return NextResponse.json(
+          { ok: false, error: ERROR_EMAIL_CLIENTE_DUPLICADO },
+          { status: 409 }
+        );
+      }
+      throw e;
     }
 
     // 3. Validar rápido que Firebase Auth está accesible — si no,
@@ -222,6 +226,12 @@ export async function POST(req: Request) {
       nombreLocal
     });
   } catch (err) {
+    if (err instanceof EmailClienteDuplicadoError) {
+      return NextResponse.json(
+        { ok: false, error: ERROR_EMAIL_CLIENTE_DUPLICADO },
+        { status: 409 }
+      );
+    }
     const msg = err instanceof Error ? err.message : "Error desconocido";
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
