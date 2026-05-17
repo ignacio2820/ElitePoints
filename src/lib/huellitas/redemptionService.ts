@@ -6,6 +6,11 @@ import {
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import {
+  calcularNivelCliente,
+  leerHuellitasActuales,
+  patchSoloHuellitasActuales,
+} from "@/lib/huellitas/saldosCliente";
+import {
   calcularNivel,
   planConsumoFIFO,
   saldoVigente,
@@ -102,10 +107,7 @@ export async function handleRedemption(
     }));
 
     const saldoReal = saldoVigente(lotes);
-    const nivelCliente = calcularNivel(
-      cliente.acumuladoHistorico ?? 0,
-      cfg.niveles
-    );
+    const nivelCliente = calcularNivelCliente(cliente, cfg.niveles);
     const validacion = validarCanje({
       premio,
       saldoCliente: saldoReal,
@@ -133,9 +135,9 @@ export async function handleRedemption(
 
     const saldoFinal = Math.max(
       0,
-      (cliente.saldoHuellitas ?? 0) - premio.costoHuellitas
+      leerHuellitasActuales(cliente) - premio.costoHuellitas
     );
-    tx.update(clienteRef, { saldoHuellitas: saldoFinal });
+    tx.update(clienteRef, patchSoloHuellitasActuales(saldoFinal));
 
     let stockRestante: number | null = null;
     const stock = premio.stock;

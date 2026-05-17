@@ -2,6 +2,13 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import {
+  incrementHuellitasActuales,
+  leerHuellitasActuales,
+  leerHuellitasHistoricas,
+  patchHuellitasHistoricas,
+  patchIncrementoVenta,
+} from "@/lib/huellitas/saldosCliente";
+import {
   calcularBonificaciones,
   calcularCanje,
   calcularEmision,
@@ -159,7 +166,7 @@ export async function registrarVenta(
       primerCompraRegistrada?: boolean;
       nombre?: string;
     };
-    const acumuladoActual = cliente.acumuladoHistorico ?? 0;
+    const acumuladoActual = leerHuellitasHistoricas(cliente);
     const nivelAnteriorId = cliente.nivelId ?? "cachorro";
 
     // ¿Es la PRIMERA compra Y vino por referido Y todavía no se activó?
@@ -405,11 +412,11 @@ export async function registrarVenta(
         });
 
         // Saldo y acumulado histórico del REFERENTE
-        const refAcum = (referente.acumuladoHistorico ?? 0) + bonusReferente;
+        const refAcum = leerHuellitasHistoricas(referente) + bonusReferente;
         const refNivelNuevo = calcularNivel(refAcum, cfg.niveles);
         tx.update(referenteSnap.ref, {
-          saldoHuellitas: FieldValue.increment(bonusReferente),
-          acumuladoHistorico: refAcum,
+          ...incrementHuellitasActuales(bonusReferente),
+          ...patchHuellitasHistoricas(refAcum),
           nivelId: refNivelNuevo.id,
           referidosActivados: FieldValue.increment(1)
         });
@@ -434,12 +441,11 @@ export async function registrarVenta(
         fecha: FieldValue.serverTimestamp()
       });
 
-      const saldoDocRef = cliente.saldoHuellitas ?? 0;
+      const saldoDocRef = leerHuellitasActuales(cliente);
       const deltaSaldoRef = saldoEstimado - saldoDocRef;
       const deltaAcumRef = acumuladoConBonus - acumuladoActual;
       tx.update(clienteRef, {
-        saldoHuellitas: FieldValue.increment(deltaSaldoRef),
-        acumuladoHistorico: FieldValue.increment(deltaAcumRef),
+        ...patchIncrementoVenta(deltaSaldoRef, deltaAcumRef),
         nivelId: nivelTrasBonus.id,
         referidoActivado: true,
         primerCompraRegistrada: true
@@ -464,7 +470,7 @@ export async function registrarVenta(
             huellitasGanadas: bonusReferente,
             nombreLocal: input.localId, // se sobreescribe abajo si hay nombre real
             saldoActualReferente:
-              (referente.saldoHuellitas ?? 0) + bonusReferente
+              leerHuellitasActuales(referente) + bonusReferente
           }
         };
       }
@@ -502,12 +508,11 @@ export async function registrarVenta(
     }
 
     // 7. Caso normal (sin activación de referido)
-    const saldoDoc = cliente.saldoHuellitas ?? 0;
+    const saldoDoc = leerHuellitasActuales(cliente);
     const deltaSaldo = saldoEstimado - saldoDoc;
     const deltaAcum = acumuladoBase - acumuladoActual;
     tx.update(clienteRef, {
-      saldoHuellitas: FieldValue.increment(deltaSaldo),
-      acumuladoHistorico: FieldValue.increment(deltaAcum),
+      ...patchIncrementoVenta(deltaSaldo, deltaAcum),
       nivelId: nivelNuevo.id,
       primerCompraRegistrada: true
     });

@@ -12,7 +12,11 @@ import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import { RUTA_PORTAL } from "@/lib/auth/redirect";
 import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
-import { progresoNivel } from "@/lib/huellitas/engine";
+import {
+  leerHuellitasActuales,
+  leerHuellitasHistoricas,
+  progresoNivelCliente
+} from "@/lib/huellitas/saldosCliente";
 import { GestionMascotasCliente } from "@/components/cliente/GestionMascotasCliente";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
@@ -62,7 +66,7 @@ export default async function MiCuentaPage({
   }
 
   const clienteRaw = clienteSnap.data() as Cliente;
-  const saldoBruto = Number(clienteRaw.saldoHuellitas ?? 0);
+  const saldoBruto = leerHuellitasActuales(clienteRaw);
   const reservadas = Number(clienteRaw.huellitasReservadas ?? 0);
   const cliente = {
     id: clienteSnap.id,
@@ -74,7 +78,8 @@ export default async function MiCuentaPage({
      * esas huellitas están reservadas y no las puede volver a canjear.
      */
     saldoDisponible: Math.max(0, saldoBruto - reservadas),
-    acumuladoHistorico: Number(clienteRaw.acumuladoHistorico ?? 0),
+    acumuladoHistorico: leerHuellitasHistoricas(clienteRaw),
+    huellitasHistoricas: leerHuellitasHistoricas(clienteRaw),
     codigoCliente: clienteRaw.codigoCliente,
     codigoReferido: clienteRaw.codigoReferido,
     referidosTotales: Number(clienteRaw.referidosTotales ?? 0),
@@ -87,7 +92,7 @@ export default async function MiCuentaPage({
   const logoUrl = dataLocal.logoUrl ?? null;
   const telefonoWhatsapp = dataLocal.telefonoWhatsapp ?? null;
 
-  const progreso = progresoNivel(cliente.acumuladoHistorico, cfg.niveles);
+  const progreso = progresoNivelCliente(clienteRaw, cfg.niveles);
   const mascotasRaw = (clienteRaw.mascotas as Mascota[] | undefined) ?? [];
   const mascotas: Mascota[] = mascotasRaw.map((m) => ({
     id: typeof m.id === "string" ? m.id : undefined,

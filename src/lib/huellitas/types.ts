@@ -18,7 +18,8 @@ import { z } from "zod";
  *  - Huellitas modeladas en LOTES (vencimiento FIFO real).
  *  - "Costo de Acumulación" y "Valor de Canje" separados explícitamente.
  *  - Niveles de lealtad CONFIGURABLES por local (nada hardcodeado en código).
- *  - `acumuladoHistorico` del cliente nunca decrece: define el rango/nivel.
+ *  - `huellitasHistoricas` / `acumuladoHistorico` nunca decrecen: definen el rango/nivel.
+ *  - `huellitasActuales` / `saldoHuellitas` bajan al canjear premios.
  */
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -251,7 +252,11 @@ export const ClienteSchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   telefono: z.string().max(30).optional().default(""),
 
-  /** Saldo CACHE de huellitas vigentes (suma de lotes no vencidos). */
+  /**
+   * Saldo disponible para canjes (suma de lotes vigentes, cache).
+   * Alias legacy en código: `saldoHuellitas`.
+   */
+  huellitasActuales: z.number().int().nonnegative().optional(),
   saldoHuellitas: z.number().int().nonnegative().default(0),
 
   /**
@@ -266,9 +271,11 @@ export const ClienteSchema = z.object({
   huellitasReservadas: z.number().int().nonnegative().default(0),
 
   /**
-   * Acumulado histórico de huellitas EMITIDAS (incluye multiplicador de nivel).
+   * Total histórico de huellitas emitidas (incluye multiplicador de nivel).
    * Nunca decrece al canjear: es la métrica que define el rango.
+   * Alias legacy: `acumuladoHistorico`.
    */
+  huellitasHistoricas: z.number().int().nonnegative().optional(),
   acumuladoHistorico: z.number().int().nonnegative().default(0),
 
   /** Nivel actual denormalizado para queries rápidas. */

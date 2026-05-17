@@ -12,7 +12,7 @@ import {
   Users,
   X
 } from "lucide-react";
-import { calcularNivel, progresoNivel } from "@/lib/huellitas/engine";
+import { calcularNivelCliente, progresoNivelCliente } from "@/lib/huellitas/saldosCliente";
 import { NivelBadge } from "@/components/NivelBadge";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
@@ -138,8 +138,8 @@ export function BuscadorClientes({
       {/* Grid de resultados */}
       <div className="grid gap-3 md:grid-cols-2">
         {resultados.map((c) => {
-          const nivel = calcularNivel(c.acumuladoHistorico, niveles);
-          const prog = progresoNivel(c.acumuladoHistorico, niveles);
+          const nivel = calcularNivelCliente(c, niveles);
+          const prog = progresoNivelCliente(c, niveles);
           const valorPesos = c.saldoHuellitas * valorMonetarioHuellita;
           return (
             <div

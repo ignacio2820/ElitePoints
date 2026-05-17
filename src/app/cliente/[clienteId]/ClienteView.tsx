@@ -7,7 +7,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { calcularNivel } from "@/lib/huellitas/engine";
+import { calcularNivelCliente } from "@/lib/huellitas/saldosCliente";
 import type { ConfiguracionLocal, Premio } from "@/lib/huellitas/types";
 import { formatNumber } from "@/lib/utils";
 
@@ -62,7 +62,7 @@ export function ClienteView({
   membresiaExpirada = false,
   modoDemo = false
 }: ClienteViewProps) {
-  const nivel = calcularNivel(cliente.acumuladoHistorico, cfg.niveles);
+  const nivel = calcularNivelCliente(cliente, cfg.niveles);
   const qrHref = `/cliente/${cliente.id}/qr?localId=${encodeURIComponent(localId)}`;
 
   return (

@@ -5,6 +5,10 @@ import {
   normalizarCodigoCliente
 } from "./codigosClientes";
 import { buscarClientePorCodigoCorto } from "./codigosClientesService";
+import {
+  leerHuellitasActuales,
+  leerHuellitasHistoricas
+} from "@/lib/huellitas/saldosCliente";
 import type { Cliente } from "./types";
 
 /**
@@ -20,6 +24,8 @@ export interface ClienteResumen {
   telefono: string;
   saldoHuellitas: number;
   acumuladoHistorico: number;
+  huellitasActuales: number;
+  huellitasHistoricas: number;
   nivelId: string;
   /** Código corto humano-amigable (ej "ABC-123") para identificación en caja. */
   codigoCliente?: string;
@@ -33,8 +39,10 @@ function aResumen(id: string, data: Partial<Cliente> & { uid?: string }, localId
     nombre: data.nombre ?? "—",
     email: (data.email as string) ?? "",
     telefono: (data.telefono as string) ?? "",
-    saldoHuellitas: data.saldoHuellitas ?? 0,
-    acumuladoHistorico: data.acumuladoHistorico ?? 0,
+    saldoHuellitas: leerHuellitasActuales(data),
+    acumuladoHistorico: leerHuellitasHistoricas(data),
+    huellitasActuales: leerHuellitasActuales(data),
+    huellitasHistoricas: leerHuellitasHistoricas(data),
     nivelId: data.nivelId ?? "cachorro",
     codigoCliente: data.codigoCliente,
     uid: data.uid

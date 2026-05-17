@@ -8,6 +8,7 @@ import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { EnlaceTerminos } from "@/components/legal/EnlaceTerminos";
 
 async function getCfg(localId: string) {
   try {
@@ -140,6 +141,7 @@ export default async function RegistroPage({
               referidosActivos={cfg.referidos.activo}
             />
           </Card>
+          <EnlaceTerminos variant="light" className="mt-6" />
         </div>
       </section>
     </main>

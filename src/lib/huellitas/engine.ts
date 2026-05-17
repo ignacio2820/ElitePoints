@@ -370,6 +370,7 @@ export function niveleseOrdenados(niveles: NivelLealtad[]): NivelLealtad[] {
  * Calcula el nivel actual del cliente a partir de su acumulado histórico.
  * Devuelve el de mayor `umbralHistorico` que el cliente haya superado.
  */
+/** @param acumuladoHistorico — usar `huellitasHistoricas` del cliente (nunca el saldo actual). */
 export function calcularNivel(
   acumuladoHistorico: number,
   niveles: NivelLealtad[]

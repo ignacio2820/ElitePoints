@@ -8,6 +8,12 @@ import {
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import {
+  calcularNivelCliente,
+  leerHuellitasActuales,
+  leerHuellitasHistoricas,
+  patchSoloHuellitasActuales,
+} from "@/lib/huellitas/saldosCliente";
+import {
   calcularNivel,
   planConsumoFIFO,
   saldoVigente,
@@ -125,7 +131,7 @@ export async function crearTicketCanje(
             valorDescuento: vd
           },
           clienteNombre: String(data.clienteNombre ?? ""),
-          saldoDisponibleFinal: Math.max(0, cli.saldoHuellitas ?? 0)
+          saldoDisponibleFinal: Math.max(0, leerHuellitasActuales(cli))
         };
       }
     }
@@ -166,10 +172,7 @@ export async function crearTicketCanje(
         }));
 
         const saldoReal = saldoVigente(lotes);
-        const nivelCliente = calcularNivel(
-          cliente.acumuladoHistorico ?? 0,
-          cfg.niveles
-        );
+        const nivelCliente = calcularNivelCliente(cliente, cfg.niveles);
         const validacion = validarCanje({
           premio,
           saldoCliente: saldoReal,
@@ -199,9 +202,9 @@ export async function crearTicketCanje(
 
         const saldoFinal = Math.max(
           0,
-          (cliente.saldoHuellitas ?? 0) - premio.costoHuellitas
+          leerHuellitasActuales(cliente) - premio.costoHuellitas
         );
-        tx.update(clienteRef, { saldoHuellitas: saldoFinal });
+        tx.update(clienteRef, patchSoloHuellitasActuales(saldoFinal));
 
         const payload: Record<string, unknown> = {
           localId: input.localId,
@@ -321,7 +324,7 @@ export async function cancelarTicketCanje(input: {
     }
 
     tx.update(clienteRef, {
-      saldoHuellitas: Math.max(0, (cli.saldoHuellitas ?? 0) + costo)
+      saldoHuellitas: Math.max(0, leerHuellitasActuales(cli) + costo)
     });
 
     tx.update(canjeRef, {
@@ -600,7 +603,7 @@ export async function confirmarTicketCanje(
     const plan = planConsumoFIFO(lotes, ticket.costoHuellitas);
     const saldoFinal = Math.max(
       0,
-      (cliente.saldoHuellitas ?? 0) - ticket.costoHuellitas
+      leerHuellitasActuales(cliente) - ticket.costoHuellitas
     );
 
     // ── Fase 2: escrituras legacy (descuenta huellitas + marca entregado) ──
@@ -636,7 +639,7 @@ export async function confirmarTicketCanje(
     });
 
     tx.update(clienteRef, {
-      saldoHuellitas: saldoFinal,
+      ...patchSoloHuellitasActuales(saldoFinal),
       huellitasReservadas: FieldValue.increment(-ticket.costoHuellitas)
     });
 
@@ -703,7 +706,7 @@ function escribirExpiracionCanjeCola(
     });
   }
   tx.update(clienteRef, {
-    saldoHuellitas: Math.max(0, (cliente.saldoHuellitas ?? 0) + costo)
+    saldoHuellitas: Math.max(0, leerHuellitasActuales(cliente) + costo)
   });
   tx.update(canjeRef, {
     estado: "expirado" as EstadoCanje,

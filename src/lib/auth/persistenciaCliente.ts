@@ -45,8 +45,14 @@ function aResumenDesdeDoc(
     nombre: data.nombre ?? "—",
     email,
     telefono: (data.telefono as string) ?? "",
-    saldoHuellitas: data.saldoHuellitas ?? 0,
-    acumuladoHistorico: data.acumuladoHistorico ?? 0,
+    saldoHuellitas:
+      data.huellitasActuales ?? data.saldoHuellitas ?? 0,
+    acumuladoHistorico:
+      data.huellitasHistoricas ?? data.acumuladoHistorico ?? 0,
+    huellitasActuales:
+      data.huellitasActuales ?? data.saldoHuellitas ?? 0,
+    huellitasHistoricas:
+      data.huellitasHistoricas ?? data.acumuladoHistorico ?? 0,
     nivelId: data.nivelId ?? "cachorro",
     codigoCliente: data.codigoCliente,
     uid: data.uid

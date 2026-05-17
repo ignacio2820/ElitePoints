@@ -15,6 +15,7 @@ import {
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { LoginPasswordDueno } from "@/components/auth/LoginPasswordDueno";
 import { PasskeyLoginButton } from "@/components/auth/PasskeyLoginButton";
+import { EnlaceTerminos } from "@/components/legal/EnlaceTerminos";
 import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
 import {
   consultarRolEmail,
@@ -266,7 +267,9 @@ export function LoginForm() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-bark-100">
+        <EnlaceTerminos variant="dark" className="mt-6" />
+
+        <p className="mt-4 text-center text-xs text-bark-100">
           ¿Problemas para entrar?{" "}
           <a
             href={mailtoContact()}

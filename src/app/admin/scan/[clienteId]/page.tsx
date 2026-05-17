@@ -6,7 +6,12 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Ca
 import { NivelBadge } from "@/components/NivelBadge";
 import { GestionMascotasAdmin } from "@/components/admin/GestionMascotasAdmin";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
-import { calcularNivel, progresoNivel } from "@/lib/huellitas/engine";
+import {
+  calcularNivelCliente,
+  leerHuellitasActuales,
+  leerHuellitasHistoricas,
+  progresoNivelCliente
+} from "@/lib/huellitas/saldosCliente";
 import {
   CONFIGURACION_DEFAULT,
   type ConfiguracionLocal,
@@ -111,8 +116,8 @@ async function loadScan(
         nombre: cli.nombre,
         email: cli.email,
         telefono: cli.telefono,
-        saldoHuellitas: cli.saldoHuellitas ?? 0,
-        acumuladoHistorico: cli.acumuladoHistorico ?? 0,
+        saldoHuellitas: leerHuellitasActuales(cli),
+        acumuladoHistorico: leerHuellitasHistoricas(cli),
         nivelId: cli.nivelId ?? "cachorro",
         mascotas
       },
@@ -142,8 +147,8 @@ export default async function ScanClientePage({
   }
 
   const { cliente, cfg } = data;
-  const nivel = calcularNivel(cliente.acumuladoHistorico, cfg.niveles);
-  const prog = progresoNivel(cliente.acumuladoHistorico, cfg.niveles);
+  const nivel = calcularNivelCliente(cliente, cfg.niveles);
+  const prog = progresoNivelCliente(cliente, cfg.niveles);
 
   return (
     <div>
