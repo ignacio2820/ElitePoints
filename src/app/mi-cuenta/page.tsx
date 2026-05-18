@@ -20,7 +20,9 @@ import {
 import { GestionMascotasCliente } from "@/components/cliente/GestionMascotasCliente";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
+import { BannerSorteoActivoCliente } from "@/components/cliente/BannerSorteoActivoCliente";
 import { MiCuentaClienteShell } from "@/components/cliente/MiCuentaClienteShell";
+import { clienteTieneSorteoActivoElegible } from "@/lib/huellitas/sorteosService";
 import { MiCuentaPasskeyCard } from "@/components/cliente/MiCuentaPasskeyCard";
 import type { Cliente, Mascota, Premio } from "@/lib/huellitas/types";
 
@@ -54,12 +56,14 @@ export default async function MiCuentaPage({
   }
   const db = adminDb();
 
-  const [clienteSnap, localSnap, cfg, premiosSnap] = await Promise.all([
-    cols.cliente(db, localId, clienteId).get(),
-    cols.local(db, localId).get(),
-    getConfiguracion(localId),
-    cols.premios(db, localId).where("activo", "==", true).get()
-  ]);
+  const [clienteSnap, localSnap, cfg, premiosSnap, haySorteoActivo] =
+    await Promise.all([
+      cols.cliente(db, localId, clienteId).get(),
+      cols.local(db, localId).get(),
+      getConfiguracion(localId),
+      cols.premios(db, localId).where("activo", "==", true).get(),
+      clienteTieneSorteoActivoElegible(localId, clienteId)
+    ]);
 
   if (!clienteSnap.exists) {
     redirect("/login?intent=cliente");
@@ -147,6 +151,11 @@ export default async function MiCuentaPage({
   return (
     <div className="pb-28 antialiased text-bark-800">
       <MiCuentaClienteShell
+        bannerInicio={
+          haySorteoActivo && !membresiaExpirada ? (
+            <BannerSorteoActivoCliente />
+          ) : null
+        }
         nombreLocal={nombreLocal}
         logoUrl={logoUrl}
         nombreCliente={cliente.nombre}

@@ -8,6 +8,7 @@ import type { NivelLealtad } from "@/lib/huellitas/types";
 import type { Sorteo } from "@/lib/huellitas/sorteosTypes";
 import { labelFiltroNivel } from "@/lib/huellitas/sorteosUtils";
 import { niveleseOrdenados } from "@/lib/huellitas/engine";
+import { ahoraDatetimeLocal, DateTimePickerField } from "@/components/ui/DateTimePickerField";
 import { formatNumber } from "@/lib/utils";
 
 type Props = {
@@ -270,16 +271,13 @@ export function SorteosAdminPanel({ niveles, sorteosIniciales }: Props) {
               ) : null}
             </label>
           </label>
-          <label className="block">
-            <span className="label-elegant">Fecha y hora de cierre</span>
-            <input
-              type="datetime-local"
-              required
-              value={fechaHoraFin}
-              onChange={(e) => setFechaHoraFin(e.target.value)}
-              className="input-elegant mt-2"
-            />
-          </label>
+          <DateTimePickerField
+            label="Fecha y hora de cierre"
+            required
+            value={fechaHoraFin}
+            onChange={setFechaHoraFin}
+            min={ahoraDatetimeLocal()}
+          />
           <label className="block sm:col-span-2">
             <span className="label-elegant">Nivel mínimo (huellitas históricas)</span>
             <select

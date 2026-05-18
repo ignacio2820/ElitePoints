@@ -33,6 +33,8 @@ export interface CustomerPanelProps {
   montoParaUnaHuellita: number;
   diasVencimiento: number;
   recompensas?: React.ReactNode;
+  /** Banner promocional arriba del contenido principal (ej. sorteo activo). */
+  bannerInicio?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -59,6 +61,7 @@ export function CustomerPanel({
   montoParaUnaHuellita,
   diasVencimiento,
   recompensas,
+  bannerInicio,
   children
 }: CustomerPanelProps) {
   const primerNombre = nombreCliente.split(" ")[0] ?? nombreCliente;
@@ -159,6 +162,7 @@ export function CustomerPanel({
         </header>
 
         <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
+          {bannerInicio}
           <div className="mb-6 flex items-center gap-2">
             <HuellitaIcon size={24} className="text-terracotta-400" />
             <h1 className="font-display text-2xl font-bold text-white">

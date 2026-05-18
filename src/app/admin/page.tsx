@@ -45,7 +45,7 @@ export default async function AdminDashboard() {
         href="/admin/nueva-venta"
         className="group mb-10 block focus:outline-none"
       >
-        <div className="relative overflow-hidden rounded-3xl bg-terracotta-400 p-6 text-white shadow-soft ring-1 ring-terracotta-500/20 transition hover:-translate-y-0.5 hover:bg-terracotta-500 sm:p-8">
+        <div className="relative overflow-hidden rounded-3xl bg-green-600 p-6 text-white shadow-soft ring-1 ring-green-500/25 transition hover:-translate-y-0.5 hover:bg-green-700 sm:p-8">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/15 blur-2xl"
@@ -67,7 +67,7 @@ export default async function AdminDashboard() {
                 </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-terracotta-500 shadow-soft transition group-hover:gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-green-700 shadow-soft transition group-hover:gap-3">
               Abrir caja
               <ArrowRight size={16} />
             </span>

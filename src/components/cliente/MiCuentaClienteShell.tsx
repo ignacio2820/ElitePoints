@@ -14,6 +14,7 @@ type Props = Omit<CustomerPanelProps, "saldoHuellitas" | "recompensas"> & {
   nivelCliente: NivelLealtad;
   niveles: NivelLealtad[];
   especiesCliente?: string[];
+  bannerInicio?: React.ReactNode;
 };
 
 export function MiCuentaClienteShell({
@@ -23,6 +24,7 @@ export function MiCuentaClienteShell({
   nivelCliente,
   niveles,
   especiesCliente,
+  bannerInicio,
   ...panelProps
 }: Props) {
   const router = useRouter();
@@ -43,6 +45,7 @@ export function MiCuentaClienteShell({
   return (
     <CustomerPanel
       {...panelProps}
+      bannerInicio={bannerInicio}
       saldoHuellitas={saldoDisponible}
       huellitasReservadas={huellitasReservadas}
       valorMonetarioHuellita={valorMonetarioHuellita}

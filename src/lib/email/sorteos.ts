@@ -51,7 +51,7 @@ export function renderEmailLanzamientoSorteo(p: PayloadLanzamientoSorteo): {
     timeStyle: "short"
   });
 
-  const subject = `🐾 Nuevo sorteo en ${p.nombreLocal}: ${p.premio}`;
+  const subject = `¡Nuevo Sorteo en ${p.nombreLocal}! 🎟️`;
 
   const html = `<!doctype html>
 <html lang="es">
@@ -76,11 +76,11 @@ export function renderEmailLanzamientoSorteo(p: PayloadLanzamientoSorteo): {
               <p style="font-size:13px;color:#6B5848;margin:6px 0 0;">${escHtml(p.nivelLabel)}</p>
             </div>
             <p style="font-size:15px;line-height:1.6;color:#54331A;margin:20px 0 0;">
-              Entrá a la app y <strong>multiplicá tus chances</strong> con tus huellitas (duplicar o triplicar tu peso en el sorteo).
+              Entrá a la app y <strong>multiplicá tus chances</strong> con tus Huellitas: podés duplicar o triplicar tu peso en el sorteo antes del cierre.
             </p>
             <p style="margin:28px 0 0;text-align:center;">
-              <a href="${escHtml(appUrl)}" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#8B5E3C,#E07A5F);color:#FBF8F3;text-decoration:none;border-radius:999px;font-weight:600;font-size:15px;">
-                Ver sorteo en la app
+              <a href="${escHtml(appUrl)}" style="display:inline-block;padding:14px 28px;background:#16a34a;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:600;font-size:15px;">
+                ¡Quiero participar!
               </a>
             </p>
             <p style="font-size:13px;color:#6B5848;margin:24px 0 0;">Con cariño, el equipo de ${escHtml(p.nombreLocal)}.</p>
@@ -93,10 +93,10 @@ export function renderEmailLanzamientoSorteo(p: PayloadLanzamientoSorteo): {
 
   const text =
     `¡Hola ${primerNombre}!\n\n` +
-    `Hay un nuevo sorteo en ${p.nombreLocal}: ${p.premio}.\n` +
+    `¡Nuevo sorteo en ${p.nombreLocal}! Premio: ${p.premio}.\n` +
     `Cierre: ${cierre}.\n` +
     `${p.nivelLabel}.\n\n` +
-    `Entrá a la app para multiplicar tus chances: ${appUrl}\n`;
+    `Entrá a la app para multiplicar tus chances con tus Huellitas: ${appUrl}\n`;
 
   return { subject, html, text };
 }

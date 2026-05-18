@@ -159,6 +159,7 @@ export async function crearSorteo(
   await ref.set(payload);
   const sorteo = mapSorteo(ref.id, localId, payload as Record<string, unknown>);
 
+  // Emails masivos (Resend) + WhatsApp a todos los elegibles por nivelMinimo.
   void notificarLanzamientoSorteo({ localId, sorteo, elegibles }).catch((err) =>
     console.error("[sorteos] notificaciones lanzamiento", err)
   );
@@ -339,6 +340,15 @@ export async function listarSorteosActivosCliente(
 ): Promise<SorteoVistaCliente[]> {
   const todos = await listarSorteosParaCliente(localId, clienteId);
   return todos.filter((s) => s.estado === "activo");
+}
+
+/** True si hay al menos un sorteo activo (no vencido) apto para el nivel del cliente. */
+export async function clienteTieneSorteoActivoElegible(
+  localId: string,
+  clienteId: string
+): Promise<boolean> {
+  const activos = await listarSorteosActivosCliente(localId, clienteId);
+  return activos.some((s) => s.elegible);
 }
 
 async function registrarTransaccionSorteo(
