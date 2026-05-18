@@ -9,8 +9,7 @@ import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import type { Cliente } from "@/lib/huellitas/types";
 import { rutaConLocalId } from "@/lib/huellitas/tenant";
 import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
-import { CodigoBarrasLectorFisico } from "@/components/qr/CodigoBarrasLectorFisico";
-import { QrEscanerFisicoSvg } from "@/components/qr/QrEscanerFisicoSvg";
+import { CredencialDigitalCliente } from "@/components/qr/CredencialDigitalCliente";
 import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 
 export const dynamic = "force-dynamic";
@@ -81,9 +80,8 @@ export default async function ClienteQrPage({
           </p>
         </div>
 
-        <div className="mt-8 flex w-full flex-col items-center gap-5">
-          <QrEscanerFisicoSvg payload={payload} size={300} />
-          <CodigoBarrasLectorFisico value={payload} />
+        <div className="mt-8 w-full">
+          <CredencialDigitalCliente payload={payload} qrSize={300} />
         </div>
 
         <div className="mt-6 text-center">

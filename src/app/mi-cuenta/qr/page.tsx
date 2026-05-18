@@ -10,8 +10,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { formatHuellitas } from "@/lib/utils";
 import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
-import { CodigoBarrasLectorFisico } from "@/components/qr/CodigoBarrasLectorFisico";
-import { QrEscanerFisicoSvg } from "@/components/qr/QrEscanerFisicoSvg";
+import { CredencialDigitalCliente } from "@/components/qr/CredencialDigitalCliente";
 import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 import type { Cliente } from "@/lib/huellitas/types";
 
@@ -73,7 +72,7 @@ export default async function MiQRPage({
       </header>
 
       <div className="flex flex-1 flex-col items-center justify-center px-5 py-6">
-        <div className="w-full max-w-sm text-center">
+        <div className="w-full max-w-lg text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-bark-500">
             {nombreLocal}
           </p>
@@ -84,9 +83,8 @@ export default async function MiQRPage({
             <p className="mt-1 text-sm text-bark-600">Mascota: {nombreMascota}</p>
           ) : null}
 
-          <div className="mt-8 flex w-full flex-col items-center gap-5">
-            <QrEscanerFisicoSvg payload={payload} size={300} />
-            <CodigoBarrasLectorFisico value={payload} />
+          <div className="mt-8 w-full max-w-full">
+            <CredencialDigitalCliente payload={payload} qrSize={300} />
           </div>
 
           <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-neutral-200 bg-[#FFFFFF] px-4 py-3">

@@ -4,6 +4,8 @@ export interface QrEscanerFisicoSvgProps {
   payload: string;
   size?: number;
   className?: string;
+  /** Sin marco propio: va dentro de `CredencialDigitalCliente`. */
+  embedded?: boolean;
 }
 
 const TAMANO_DEFAULT = 300;
@@ -14,20 +16,33 @@ const TAMANO_DEFAULT = 300;
 export async function QrEscanerFisicoSvg({
   payload,
   size = TAMANO_DEFAULT,
-  className = ""
+  className = "",
+  embedded = false
 }: QrEscanerFisicoSvgProps) {
   const svg = await generarQrSvg(payload, { width: size });
 
+  const qrInner = (
+    <div
+      className="mx-auto flex max-w-full items-center justify-center bg-white [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
+      style={{ width: size, maxWidth: "100%" }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+
+  if (embedded) {
+    return (
+      <div className={className} style={{ colorScheme: "light" }}>
+        {qrInner}
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`inline-block rounded-2xl bg-[#FFFFFF] p-6 ${className}`}
+      className={`inline-block rounded-2xl bg-white p-6 ${className}`}
       style={{ colorScheme: "light" }}
     >
-      <div
-        className="mx-auto flex items-center justify-center bg-[#FFFFFF] [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
-        style={{ width: size, maxWidth: "100%" }}
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+      {qrInner}
     </div>
   );
 }
