@@ -10,6 +10,7 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { formatHuellitas } from "@/lib/utils";
 import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
+import { CodigoBarrasLectorFisico } from "@/components/qr/CodigoBarrasLectorFisico";
 import { QrEscanerFisicoSvg } from "@/components/qr/QrEscanerFisicoSvg";
 import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 import type { Cliente } from "@/lib/huellitas/types";
@@ -83,8 +84,9 @@ export default async function MiQRPage({
             <p className="mt-1 text-sm text-bark-600">Mascota: {nombreMascota}</p>
           ) : null}
 
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex w-full flex-col items-center gap-5">
             <QrEscanerFisicoSvg payload={payload} size={300} />
+            <CodigoBarrasLectorFisico value={payload} />
           </div>
 
           <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-neutral-200 bg-[#FFFFFF] px-4 py-3">
@@ -100,8 +102,8 @@ export default async function MiQRPage({
           </div>
 
           <p className="mt-6 text-xs leading-relaxed text-bark-600">
-            Subí el brillo del celular al máximo y mostrá el código sobre fondo
-            blanco. El local lo escanea en caja para sumar Huellitas.
+            Subí el brillo al máximo. El local puede escanear el QR o el código
+            de barras con su lector en caja para sumar Huellitas.
           </p>
           <MascotPointsFooter
             creditLabel="Producido por"

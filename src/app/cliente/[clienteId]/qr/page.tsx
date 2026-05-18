@@ -9,6 +9,7 @@ import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import type { Cliente } from "@/lib/huellitas/types";
 import { rutaConLocalId } from "@/lib/huellitas/tenant";
 import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
+import { CodigoBarrasLectorFisico } from "@/components/qr/CodigoBarrasLectorFisico";
 import { QrEscanerFisicoSvg } from "@/components/qr/QrEscanerFisicoSvg";
 import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 
@@ -76,12 +77,13 @@ export default async function ClienteQrPage({
             <span className="text-terracotta-600">{nombreLocal}</span>
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-bark-600">
-            Mostrá este código en caja. Subí el brillo del celular al máximo.
+            Mostrá el QR o el código de barras en caja. Subí el brillo al máximo.
           </p>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex w-full flex-col items-center gap-5">
           <QrEscanerFisicoSvg payload={payload} size={300} />
+          <CodigoBarrasLectorFisico value={payload} />
         </div>
 
         <div className="mt-6 text-center">
