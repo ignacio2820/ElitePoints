@@ -1,9 +1,14 @@
-const CACHE = "mascotpoints-shell-v1";
+const CACHE = "mascotpoints-shell-v2";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) =>
-      cache.addAll(["/portal", "/manifest.webmanifest"])
+      cache.addAll([
+        "/portal",
+        "/manifest.webmanifest",
+        "/icons/icon-192.png",
+        "/icons/icon-512.png"
+      ])
     )
   );
   self.skipWaiting();

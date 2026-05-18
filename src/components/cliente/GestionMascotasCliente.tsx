@@ -304,13 +304,13 @@ export function GestionMascotasCliente({ mascotasIniciales }: Props) {
   return (
     <section className="space-y-4">
       <div className="px-1">
-        <h2 className="font-display text-lg font-semibold tracking-tight text-bark-700">
+        <h2 className="font-display text-lg font-semibold tracking-tight text-white">
           Mis mascotas
         </h2>
-        <p className="mt-1 text-sm text-bark-500">
-          Registrá a tu compañero para beneficios de cumpleaños. El nombre y la
-          fecha de nacimiento quedan fijos después del primer guardado; podés
-          actualizar raza, color y peso cuando quieras.
+        <p className="mt-1 text-sm leading-relaxed text-white/90">
+          Registrá a tu compañero para beneficios exclusivos, recompensas, sorteos
+          y más. El nombre y la fecha de nacimiento quedan fijos después del primer
+          guardado; podés actualizar raza, color y peso cuando quieras.
         </p>
       </div>
 

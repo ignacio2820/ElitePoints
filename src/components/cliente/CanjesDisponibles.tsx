@@ -14,6 +14,7 @@ import { formatNumber } from "@/lib/utils";
 import { TicketCanjeModal, type TicketCanje } from "./TicketCanjeModal";
 import { ConfirmarCanjeModal } from "./ConfirmarCanjeModal";
 import { ExitoCanjeModal } from "./ExitoCanjeModal";
+import { PremioCatalogoCard } from "./PremioCatalogoCard";
 
 export interface CanjesDisponiblesProps {
   premios: Premio[];
@@ -29,6 +30,9 @@ export interface CanjesDisponiblesProps {
   niveles: NivelLealtad[];
   especiesCliente?: string[];
   tema?: "premium" | "warm";
+  /** `catalog`: grid 2 cols móvil / auto-fill desktop (vista dedicada). */
+  layout?: "embedded" | "page" | "catalog";
+  /** @deprecated Usar `layout="embedded"`. */
   embedded?: boolean;
   /** Si es false, no se llama a la API (p. ej. vista demo pública). */
   puedeCanjear?: boolean;
@@ -50,10 +54,12 @@ export function CanjesDisponibles({
   nivelCliente,
   niveles,
   especiesCliente,
+  layout: layoutProp,
   embedded = false,
   puedeCanjear = true,
   onCanjeExitoso
 }: CanjesDisponiblesProps) {
+  const layout = layoutProp ?? (embedded ? "embedded" : "page");
   const router = useRouter();
   const [ticket, setTicket] = useState<TicketCanje | null>(null);
   const [pidiendoId, setPidiendoId] = useState<string | null>(null);
@@ -144,7 +150,31 @@ export function CanjesDisponibles({
 
   return (
     <>
-      {embedded ? (
+      {layout === "catalog" ? (
+        <div>
+          {error ? (
+            <div className="mb-4 rounded-2xl bg-red-50 px-3 py-2 font-sans text-sm text-red-700">
+              {error}
+            </div>
+          ) : null}
+          {ordenados.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-bark-200 bg-white px-4 py-12 text-center font-sans text-sm text-bark-500">
+              Todavía no hay premios disponibles en el catálogo.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
+              {ordenados.map((item) => (
+                <PremioCatalogoCard
+                  key={item.premio.id ?? item.premio.nombre}
+                  item={item}
+                  pidiendo={pidiendoId === item.premio.id}
+                  onCanjear={() => abrirConfirmacion(item.premio)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : layout === "embedded" ? (
         <div>
           {error ? (
             <div className="mb-4 rounded-2xl bg-red-50 px-3 py-2 font-sans text-sm text-red-700">

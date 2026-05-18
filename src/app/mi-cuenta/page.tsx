@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { ChevronRight, QrCode, Sparkles } from "lucide-react";
+import { ChevronRight, Gift, QrCode, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
@@ -24,7 +24,7 @@ import { BannerSorteoActivoCliente } from "@/components/cliente/BannerSorteoActi
 import { MiCuentaClienteShell } from "@/components/cliente/MiCuentaClienteShell";
 import { clienteTieneSorteoActivoElegible } from "@/lib/huellitas/sorteosService";
 import { MiCuentaPasskeyCard } from "@/components/cliente/MiCuentaPasskeyCard";
-import type { Cliente, Mascota, Premio } from "@/lib/huellitas/types";
+import type { Cliente, Mascota } from "@/lib/huellitas/types";
 
 export const dynamic = "force-dynamic";
 
@@ -56,14 +56,12 @@ export default async function MiCuentaPage({
   }
   const db = adminDb();
 
-  const [clienteSnap, localSnap, cfg, premiosSnap, haySorteoActivo] =
-    await Promise.all([
-      cols.cliente(db, localId, clienteId).get(),
-      cols.local(db, localId).get(),
-      getConfiguracion(localId),
-      cols.premios(db, localId).where("activo", "==", true).get(),
-      clienteTieneSorteoActivoElegible(localId, clienteId)
-    ]);
+  const [clienteSnap, localSnap, cfg, haySorteoActivo] = await Promise.all([
+    cols.cliente(db, localId, clienteId).get(),
+    cols.local(db, localId).get(),
+    getConfiguracion(localId),
+    clienteTieneSorteoActivoElegible(localId, clienteId)
+  ]);
 
   if (!clienteSnap.exists) {
     redirect("/login?intent=cliente");
@@ -119,32 +117,6 @@ export default async function MiCuentaPage({
       typeof m.esterilizado === "boolean" ? m.esterilizado : undefined
   }));
 
-  // Idem para premios: solo campos primitivos requeridos por los componentes.
-  const premios: Premio[] = premiosSnap.docs.map((d) => {
-    const data = d.data() as Omit<Premio, "id">;
-    return {
-      id: d.id,
-      localId: String(data.localId ?? localId),
-      nombre: String(data.nombre ?? ""),
-      descripcion: data.descripcion ? String(data.descripcion) : "",
-      costoHuellitas: Number(data.costoHuellitas ?? 0),
-      valorDescuento:
-        typeof data.valorDescuento === "number" && data.valorDescuento >= 0
-          ? data.valorDescuento
-          : undefined,
-      nivelMinimoId: String(data.nivelMinimoId ?? "cachorro"),
-      categoria: data.categoria,
-      stock:
-        typeof data.stock === "number"
-          ? data.stock
-          : null,
-      activo: data.activo !== false,
-      especiesObjetivo: Array.isArray(data.especiesObjetivo)
-        ? data.especiesObjetivo
-        : []
-    };
-  });
-
   const h = headers();
   const baseUrl = resolvePublicBaseUrl(h);
 
@@ -171,10 +143,6 @@ export default async function MiCuentaPage({
         esLeyenda={!progreso.nivelSiguiente}
         montoParaUnaHuellita={cfg.montoParaUnaHuellita}
         diasVencimiento={cfg.diasVencimiento}
-        premios={premios}
-        nivelCliente={progreso.nivelActual}
-        niveles={cfg.niveles}
-        especiesCliente={mascotas.map((m) => m.especie)}
       >
         {membresiaExpirada ? (
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
@@ -197,6 +165,28 @@ export default async function MiCuentaPage({
                 </p>
                 <p className="text-sm text-bark-500">
                   El local lo escanea para sumar Huellitas
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="text-bark-400 transition group-hover:translate-x-1" />
+          </div>
+        </Link>
+
+        <Link
+          href="/mi-cuenta/catalogo"
+          className="surface-card group block overflow-hidden rounded-2xl p-5 transition active:scale-[0.99]"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 text-cream-50 shadow-soft">
+                <Gift size={26} />
+              </div>
+              <div>
+                <p className="font-display text-lg font-semibold tracking-tight text-bark-700">
+                  Catálogo de recompensas
+                </p>
+                <p className="text-sm text-bark-500">
+                  Canjeá tus Huellitas por premios del local
                 </p>
               </div>
             </div>

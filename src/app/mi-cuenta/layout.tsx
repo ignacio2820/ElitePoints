@@ -25,7 +25,7 @@ export default async function MiCuentaLayout({
         <InstalarAppBanner />
       </div>
       <div className="flex-1">{children}</div>
-      <MascotPointsFooter className="print:hidden" />
+      <MascotPointsFooter variant="onDark" className="print:hidden" />
     </div>
   );
 }

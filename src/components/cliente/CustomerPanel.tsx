@@ -32,7 +32,6 @@ export interface CustomerPanelProps {
   esLeyenda: boolean;
   montoParaUnaHuellita: number;
   diasVencimiento: number;
-  recompensas?: React.ReactNode;
   /** Banner promocional arriba del contenido principal (ej. sorteo activo). */
   bannerInicio?: React.ReactNode;
   children?: React.ReactNode;
@@ -40,7 +39,7 @@ export interface CustomerPanelProps {
 
 const NAV_LINKS = [
   { href: "/mi-cuenta", label: "Mi Cuenta" },
-  { href: "/mi-cuenta#catalogo", label: "Catálogo" },
+  { href: "/mi-cuenta/catalogo", label: "Catálogo" },
   { href: "/mi-cuenta/sorteos", label: "Sorteos" },
   { href: "/mi-cuenta/qr", label: "Mi QR" },
   { href: "#ayuda", label: "Ayuda" }
@@ -60,7 +59,6 @@ export function CustomerPanel({
   esLeyenda,
   montoParaUnaHuellita,
   diasVencimiento,
-  recompensas,
   bannerInicio,
   children
 }: CustomerPanelProps) {
@@ -170,7 +168,7 @@ export function CustomerPanel({
             </h1>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="max-w-xl">
             <section className="relative overflow-hidden rounded-3xl bg-bark-800 p-6 shadow-soft ring-1 ring-white/5 lg:p-7">
               <div
                 aria-hidden
@@ -232,26 +230,13 @@ export function CustomerPanel({
                 </div>
 
                 <Link
-                  href="#catalogo"
+                  href="/mi-cuenta/catalogo"
                   className="btn-primary mt-6 inline-flex w-full justify-center lg:w-auto"
                 >
-                  Ver recompensas
+                  Ver catálogo
                   <ArrowRight size={16} />
                 </Link>
               </div>
-            </section>
-
-            <section id="catalogo" className="space-y-4">
-              <div>
-                <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/75">
-                  <HuellitaIcon size={12} className="text-terracotta-400" />
-                  Recompensas disponibles
-                </p>
-                <p className="mt-1 text-sm text-white/75">
-                  Elegí un premio y canjealo con tus Huellitas.
-                </p>
-              </div>
-              {recompensas}
             </section>
           </div>
 

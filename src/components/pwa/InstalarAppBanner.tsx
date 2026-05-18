@@ -1,31 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Download, X } from "lucide-react";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
+import { Download, Share, X } from "lucide-react";
+import {
+  PWA_INSTALL_READY,
+  appInstaladaComoPwa,
+  esIosSinInstallPrompt,
+  obtenerInstallPrompt,
+  type DeferredInstallPromptEvent
+} from "@/lib/pwa/installPrompt";
 
 const STORAGE_KEY = "mascotpoints:pwa-install-dismiss";
 
-function appYaInstalada(): boolean {
-  if (typeof window === "undefined") return false;
-  if (window.matchMedia("(display-mode: standalone)").matches) return true;
-  const nav = window.navigator as Navigator & { standalone?: boolean };
-  return nav.standalone === true;
-}
-
 export function InstalarAppBanner() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
+  const [deferred, setDeferred] = useState<DeferredInstallPromptEvent | null>(
     null
   );
   const [oculto, setOculto] = useState(true);
   const [instalando, setInstalando] = useState(false);
+  const [ios, setIos] = useState(false);
+
+  const sincronizarPrompt = useCallback(() => {
+    const existente = obtenerInstallPrompt();
+    if (existente) setDeferred(existente);
+  }, []);
 
   useEffect(() => {
-    if (appYaInstalada()) {
+    if (appInstaladaComoPwa()) {
       setOculto(true);
       return;
     }
@@ -34,16 +36,17 @@ export function InstalarAppBanner() {
       return;
     }
 
+    setIos(esIosSinInstallPrompt());
     setOculto(false);
+    sincronizarPrompt();
 
-    function onBip(e: Event) {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
+    function onListo() {
+      sincronizarPrompt();
     }
 
-    window.addEventListener("beforeinstallprompt", onBip);
-    return () => window.removeEventListener("beforeinstallprompt", onBip);
-  }, []);
+    window.addEventListener(PWA_INSTALL_READY, onListo);
+    return () => window.removeEventListener(PWA_INSTALL_READY, onListo);
+  }, [sincronizarPrompt]);
 
   function descartar() {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -51,48 +54,83 @@ export function InstalarAppBanner() {
   }
 
   async function instalar() {
-    if (deferred) {
+    const prompt = deferred ?? obtenerInstallPrompt();
+    if (prompt) {
       setInstalando(true);
       try {
-        await deferred.prompt();
-        await deferred.userChoice;
+        await prompt.prompt();
+        await prompt.userChoice;
       } finally {
         setInstalando(false);
         setOculto(true);
       }
       return;
     }
-    alert(
-      "Para instalar: en Chrome/Edge usá el menú ⋮ → «Instalar app». " +
-        "En iPhone: tocá Compartir → «Agregar a pantalla de inicio»."
-    );
+
+    // Android/Chrome: reintentar por si el evento llegó justo después del tap.
+    const retry = obtenerInstallPrompt();
+    if (retry) {
+      setDeferred(retry);
+      setInstalando(true);
+      try {
+        await retry.prompt();
+        await retry.userChoice;
+      } finally {
+        setInstalando(false);
+        setOculto(true);
+      }
+    }
   }
 
-  if (oculto || appYaInstalada()) return null;
+  if (oculto || appInstaladaComoPwa()) return null;
+
+  const puedeInstalarDirecto = Boolean(deferred ?? obtenerInstallPrompt());
 
   return (
     <div className="mb-6 overflow-hidden rounded-2xl border border-terracotta-200/40 bg-cream-50 p-4 shadow-soft">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-terracotta-100 text-terracotta-500">
-          <Download size={18} />
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl shadow-soft ring-1 ring-bark-100">
+          <Image
+            src="/icons/icon-192.png"
+            alt="MascotPoints"
+            width={56}
+            height={56}
+            className="h-full w-full object-cover"
+            priority
+          />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-bark-700">
             Instalar App de MascotPoints
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-bark-500">
-            Guardá el acceso en tu pantalla de inicio para ver tus huellitas más
-            rápido la próxima vez.
+            {ios
+              ? "Tocá Compartir en Safari y elegí «Agregar a pantalla de inicio» para ver el logo en tu inicio."
+              : puedeInstalarDirecto
+                ? "Guardá el acceso en tu pantalla de inicio con el logo de MascotPoints."
+                : "Preparando la instalación… Si no aparece el diálogo, recargá la página."}
           </p>
-          <button
-            type="button"
-            onClick={() => void instalar()}
-            disabled={instalando}
-            className="btn-primary mt-3 inline-flex items-center gap-2 text-xs"
-          >
-            <Download size={14} />
-            {instalando ? "Instalando…" : "Instalar ahora"}
-          </button>
+
+          {ios ? (
+            <p className="mt-3 inline-flex items-center gap-2 rounded-xl bg-bark-50 px-3 py-2 text-xs font-medium text-bark-600">
+              <Share size={14} className="shrink-0 text-terracotta-500" />
+              Compartir → Agregar a pantalla de inicio
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void instalar()}
+              disabled={instalando || !puedeInstalarDirecto}
+              className="btn-primary mt-3 inline-flex items-center gap-2 text-xs disabled:cursor-wait disabled:opacity-70"
+            >
+              <Download size={14} />
+              {instalando
+                ? "Instalando…"
+                : puedeInstalarDirecto
+                  ? "Instalar ahora"
+                  : "Preparando…"}
+            </button>
+          )}
         </div>
         <button
           type="button"
