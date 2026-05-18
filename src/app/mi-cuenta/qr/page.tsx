@@ -9,7 +9,6 @@ import { asegurarLocalIdEnRuta, rutaCliente } from "@/lib/huellitas/tenant";
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import { formatHuellitas } from "@/lib/utils";
-import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
 import { CredencialDigitalCliente } from "@/components/qr/CredencialDigitalCliente";
 import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 import type { Cliente } from "@/lib/huellitas/types";
@@ -54,8 +53,6 @@ export default async function MiQRPage({
   const nombreLocal =
     (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
-  const payload = payloadQrCliente(clienteId);
-
   return (
     <PantallaQrCliente>
       <header className="flex items-center justify-between border-b border-neutral-200 bg-[#FFFFFF] px-4 py-4">
@@ -84,7 +81,7 @@ export default async function MiQRPage({
           ) : null}
 
           <div className="mt-8 w-full max-w-full">
-            <CredencialDigitalCliente payload={payload} qrSize={300} />
+            <CredencialDigitalCliente clienteId={clienteId} qrSize={300} />
           </div>
 
           <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-neutral-200 bg-[#FFFFFF] px-4 py-3">

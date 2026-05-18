@@ -4,7 +4,7 @@ import Barcode from "react-barcode";
 import { cn } from "@/lib/utils";
 
 export interface CodigoBarrasLectorFisicoProps {
-  /** Mismo valor que el QR (p. ej. `MP-CLIENTE:{id}`). */
+  /** Payload Code 39 (p. ej. `MP-CLIENTE-{id}`). */
   value: string;
   className?: string;
   /** Dentro de `CredencialDigitalCliente` (sin tarjeta propia). */
@@ -12,30 +12,46 @@ export interface CodigoBarrasLectorFisicoProps {
 }
 
 /**
- * Parámetros screen-to-laser (jsbarcode vía react-barcode).
- * `quietZone` del brief = marginLeft/Right en JsBarcode (no existe prop quietZone).
+ * Code 39 + contenedor sin compresión (screen-to-laser / Megawin).
+ * `quietZone` → márgenes JsBarcode (no existe prop quietZone en react-barcode).
  */
-const BARRAS_SCREEN_TO_LASER = {
-  format: "CODE128" as const,
-  width: 5,
-  height: 100,
+const BARRAS_MEGAWIN = {
+  format: "CODE39" as const,
+  width: 3,
+  height: 80,
   displayValue: true,
   background: "#FFFFFF",
   lineColor: "#000000",
-  margin: 30,
-  marginLeft: 30,
-  marginRight: 30,
-  marginTop: 20,
-  marginBottom: 16,
-  textMargin: 10,
-  fontSize: 14,
+  margin: 20,
+  marginLeft: 20,
+  marginRight: 20,
+  marginTop: 16,
+  marginBottom: 12,
+  textMargin: 8,
+  fontSize: 13,
   renderer: "svg" as const
 };
 
 /**
- * Code 128 para lectores láser en mostrador (Megawin, RS-232, etc.).
- * Mismo payload que el QR → `extraerClienteIdDesdeQr`.
+ * Evita que el SVG se encoja dentro del flex: tamaño nativo + scroll horizontal.
  */
+function BarrasSinCompresion({ value }: { value: string }) {
+  return (
+    <div className="w-full overflow-x-auto flex items-center justify-center rounded-xl bg-white p-4 [-webkit-overflow-scrolling:touch]">
+      <div
+        className="inline-flex shrink-0 min-w-max origin-center [&_svg]:block [&_svg]:!max-w-none [&_svg]:!h-auto [&_svg]:opacity-100"
+        style={{
+          transform: "scaleX(1.12)",
+          transformOrigin: "center center",
+          imageRendering: "pixelated"
+        }}
+      >
+        <Barcode value={value} {...BARRAS_MEGAWIN} />
+      </div>
+    </div>
+  );
+}
+
 export function CodigoBarrasLectorFisico({
   value,
   className,
@@ -44,22 +60,16 @@ export function CodigoBarrasLectorFisico({
   const codigo = value.trim();
   if (!codigo) return null;
 
-  const barras = (
-    <div className="flex w-full min-w-0 justify-center overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-      <Barcode value={codigo} {...BARRAS_SCREEN_TO_LASER} />
-    </div>
-  );
-
   if (embedded) {
     return (
       <section
-        className={cn("w-full min-w-0 bg-white p-6 sm:p-8", className)}
+        className={cn("w-full min-w-0 bg-white p-4 sm:p-6", className)}
         aria-label="Código de barras para lector láser"
       >
-        <p className="mb-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-bark-500">
-          Lector láser — Code 128
+        <p className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-bark-500">
+          Lector láser — Code 39
         </p>
-        {barras}
+        <BarrasSinCompresion value={codigo} />
       </section>
     );
   }
@@ -67,14 +77,14 @@ export function CodigoBarrasLectorFisico({
   return (
     <div
       className={cn(
-        "w-full max-w-full rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8",
+        "w-full max-w-full rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm",
         className
       )}
     >
-      <p className="mb-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-bark-500">
+      <p className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-bark-500">
         También con lector láser
       </p>
-      {barras}
+      <BarrasSinCompresion value={codigo} />
     </div>
   );
 }

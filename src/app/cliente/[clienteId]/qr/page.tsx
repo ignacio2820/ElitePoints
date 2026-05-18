@@ -8,7 +8,6 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 import type { Cliente } from "@/lib/huellitas/types";
 import { rutaConLocalId } from "@/lib/huellitas/tenant";
-import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
 import { CredencialDigitalCliente } from "@/components/qr/CredencialDigitalCliente";
 import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 
@@ -42,7 +41,6 @@ export default async function ClienteQrPage({
   const nombreLocal =
     (localSnap.data() as { nombre?: string } | undefined)?.nombre ?? localId;
 
-  const payload = payloadQrCliente(params.clienteId);
   const volverHref = rutaConLocalId(`/cliente/${params.clienteId}`, localId);
 
   return (
@@ -81,7 +79,7 @@ export default async function ClienteQrPage({
         </div>
 
         <div className="mt-8 w-full">
-          <CredencialDigitalCliente payload={payload} qrSize={300} />
+          <CredencialDigitalCliente clienteId={params.clienteId} qrSize={300} />
         </div>
 
         <div className="mt-6 text-center">

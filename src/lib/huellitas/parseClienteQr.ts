@@ -11,8 +11,11 @@ export function extraerClienteIdDesdeQr(raw: string): string | null {
   const t = raw.trim();
   if (!t) return null;
 
-  const prefijo = t.match(/^MP-CLIENTE:([A-Za-z0-9_-]+)/i);
-  if (prefijo?.[1]) return prefijo[1].trim();
+  const prefijoQr = t.match(/^MP-CLIENTE:([A-Za-z0-9_-]+)/i);
+  if (prefijoQr?.[1]) return prefijoQr[1].trim();
+
+  const prefijoBarras = t.match(/^MP-CLIENTE-([A-Za-z0-9_-]+)/i);
+  if (prefijoBarras?.[1]) return prefijoBarras[1].trim();
 
   try {
     const url = /^https?:\/\//i.test(t)

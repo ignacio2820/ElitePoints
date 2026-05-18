@@ -1,22 +1,29 @@
 import { cn } from "@/lib/utils";
+import {
+  payloadCodigoBarrasCliente,
+  payloadQrCliente
+} from "@/lib/qr/scannerPayloads";
 import { CodigoBarrasLectorFisico } from "@/components/qr/CodigoBarrasLectorFisico";
 import { QrEscanerFisicoSvg } from "@/components/qr/QrEscanerFisicoSvg";
 
 export interface CredencialDigitalClienteProps {
-  /** Payload `MP-CLIENTE:{id}` (QR y barras). */
-  payload: string;
+  /** ID Firestore del cliente. */
+  clienteId: string;
   qrSize?: number;
   className?: string;
 }
 
 /**
- * Tarjeta única: QR arriba + divisor + código de barras grande (screen-to-laser).
+ * Tarjeta única: QR (Code 128 matrix) + Code 39 en barras para láser Megawin.
  */
 export async function CredencialDigitalCliente({
-  payload,
+  clienteId,
   qrSize = 300,
   className
 }: CredencialDigitalClienteProps) {
+  const payloadQr = payloadQrCliente(clienteId);
+  const payloadBarras = payloadCodigoBarrasCliente(clienteId);
+
   return (
     <article
       className={cn(
@@ -25,7 +32,7 @@ export async function CredencialDigitalCliente({
       )}
     >
       <div className="flex flex-col items-center bg-white px-4 pt-6 sm:px-6 sm:pt-8">
-        <QrEscanerFisicoSvg payload={payload} size={qrSize} embedded />
+        <QrEscanerFisicoSvg payload={payloadQr} size={qrSize} embedded />
       </div>
 
       <div
@@ -34,7 +41,7 @@ export async function CredencialDigitalCliente({
         aria-hidden
       />
 
-      <CodigoBarrasLectorFisico value={payload} embedded />
+      <CodigoBarrasLectorFisico value={payloadBarras} embedded />
     </article>
   );
 }

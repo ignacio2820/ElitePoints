@@ -4,6 +4,8 @@
  */
 
 export const PREFIJO_CLIENTE = "MP-CLIENTE:";
+/** Variante sin `:` para Code 39 (lectores láser Megawin). */
+export const PREFIJO_CLIENTE_BARRAS = "MP-CLIENTE-";
 export const PREFIJO_CANJE = "MP-CANJE:";
 
 /** QR de identificación del cliente en caja (solo ID Firestore). */
@@ -11,6 +13,13 @@ export function payloadQrCliente(clienteId: string): string {
   const id = clienteId.trim();
   if (!id) throw new Error("clienteId vacío");
   return `${PREFIJO_CLIENTE}${id}`;
+}
+
+/** Código de barras Code 39 (mismo ID, prefijo compatible con alfabeto Code 39). */
+export function payloadCodigoBarrasCliente(clienteId: string): string {
+  const id = clienteId.trim();
+  if (!id) throw new Error("clienteId vacío");
+  return `${PREFIJO_CLIENTE_BARRAS}${id}`;
 }
 
 /** QR de cupón de canje (código alfanumérico corto). */
