@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HuellitaIcon, HuellitasStack } from "@/components/HuellitaIcon";
+import { LandingMarketingSections } from "@/components/landing/LandingMarketingSections";
 
 export default function Home() {
   return (
@@ -81,6 +82,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <LandingMarketingSections />
     </main>
   );
 }

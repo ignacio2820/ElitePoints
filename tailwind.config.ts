@@ -88,6 +88,18 @@ const config: Config = {
       backgroundImage: {
         "paw-pattern":
           "radial-gradient(circle at 1px 1px, rgba(27, 67, 50, 0.08) 1px, transparent 0)"
+      },
+      keyframes: {
+        fadeInUp: {
+          "0%": { opacity: "0", transform: "translateY(18px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" }
+        }
+      },
+      animation: {
+        "fade-in-up": "fadeInUp 0.65s ease-out both",
+        "fade-in-up-delay-1": "fadeInUp 0.65s ease-out 0.1s both",
+        "fade-in-up-delay-2": "fadeInUp 0.65s ease-out 0.2s both",
+        "fade-in-up-delay-3": "fadeInUp 0.65s ease-out 0.3s both"
       }
     }
   },
