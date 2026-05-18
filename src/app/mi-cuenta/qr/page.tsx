@@ -63,7 +63,7 @@ export default async function MiQRPage({
           <ArrowLeft size={18} />
         </Link>
         <p className="font-display text-lg font-semibold text-bark-700">
-          Mi código QR
+          Mi credencial
         </p>
         <div className="w-10" />
       </header>
@@ -81,7 +81,7 @@ export default async function MiQRPage({
           ) : null}
 
           <div className="mt-8 w-full max-w-full">
-            <CredencialDigitalCliente clienteId={clienteId} qrSize={300} />
+            <CredencialDigitalCliente clienteId={clienteId} qrSize={320} />
           </div>
 
           <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-neutral-200 bg-[#FFFFFF] px-4 py-3">
@@ -97,8 +97,8 @@ export default async function MiQRPage({
           </div>
 
           <p className="mt-6 text-xs leading-relaxed text-bark-600">
-            Subí el brillo al máximo. El local puede escanear el QR o el código
-            de barras con su lector en caja para sumar Huellitas.
+            Subí el brillo al máximo. Elegí «Código QR» o «Código de barras» según
+            el equipo del local y mostrá solo ese código en caja.
           </p>
           <MascotPointsFooter
             creditLabel="Producido por"

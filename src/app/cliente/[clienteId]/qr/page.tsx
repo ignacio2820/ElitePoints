@@ -74,12 +74,12 @@ export default async function ClienteQrPage({
             <span className="text-terracotta-600">{nombreLocal}</span>
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-bark-600">
-            Mostrá el QR o el código de barras en caja. Subí el brillo al máximo.
+            Elegí el modo según el lector del local. Subí el brillo al máximo.
           </p>
         </div>
 
         <div className="mt-8 w-full">
-          <CredencialDigitalCliente clienteId={params.clienteId} qrSize={300} />
+          <CredencialDigitalCliente clienteId={params.clienteId} qrSize={320} />
         </div>
 
         <div className="mt-6 text-center">
