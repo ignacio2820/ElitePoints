@@ -12,3 +12,4 @@ tsconfig.tsbuildinfo
 .vscode
 .idea
 coverage
+.vercel

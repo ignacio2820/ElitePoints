@@ -5,7 +5,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Cron diario: envía por Resend el enlace de encuesta cuando venció
+ * Encuestas pendientes (invocado desde `/api/cron/daily` — ver `vercel.json`).
+ * Envía por Resend el enlace cuando venció
  * `fechaEnvioEncuesta` (24 h post-compra). Idempotente con `emailEnviado`.
  */
 export async function GET(req: Request) {

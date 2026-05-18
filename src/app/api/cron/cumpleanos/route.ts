@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Cron diario (Vercel: 09:00 — ver `vercel.json`).
+ * Cron diario (invocado desde `/api/cron/daily` — ver `vercel.json`).
  *
  * Para cada local con emails de cumpleaños activos:
  * - Mascotas que cumplen HOY (mes/día, sin año) reciben huellitas de regalo.

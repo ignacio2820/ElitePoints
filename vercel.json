@@ -3,12 +3,8 @@
   "framework": "nextjs",
   "crons": [
     {
-      "path": "/api/cron/cumpleanos",
-      "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/cron/encuestas",
-      "schedule": "0 * * * *"
+      "path": "/api/cron/daily",
+      "schedule": "0 3 * * *"
     }
   ]
 }
