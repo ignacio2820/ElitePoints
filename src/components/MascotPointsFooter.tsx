@@ -1,10 +1,16 @@
 import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
+import { inferFooterTone, type FooterVariant } from "@/lib/footerTone";
 import { cn } from "@/lib/utils";
 
 export interface MascotPointsFooterProps {
   className?: string;
-  /** `onDark`: texto claro sobre fondo verde del portal cliente. */
-  variant?: "dashboard" | "poster" | "onDark";
+  /**
+   * `onDark`: pie sobre fondo oscuro del portal cliente.
+   * `dashboard` / `poster`: fondo claro por defecto; si `className` incluye `bg-*-800`, el tono se ajusta solo.
+   */
+  variant?: FooterVariant;
+  /** Fuerza texto claro u oscuro (prioridad sobre `variant` y detección). */
+  tone?: "light" | "dark";
   creditLabel?: string;
 }
 
@@ -20,10 +26,12 @@ export function MascotPointsBrand({ className }: { className?: string }) {
 export function MascotPointsFooter({
   className,
   variant = "dashboard",
+  tone,
   creditLabel = "Desarrollado por"
 }: MascotPointsFooterProps) {
   const isPoster = variant === "poster";
-  const isOnDark = variant === "onDark";
+  const resolvedTone = tone ?? inferFooterTone(variant, className);
+  const onDark = resolvedTone === "dark";
 
   return (
     <footer
@@ -31,16 +39,24 @@ export function MascotPointsFooter({
         "text-center",
         isPoster
           ? "mt-8 border-t border-[#E8DCC8] pt-5 text-[11px] leading-relaxed tracking-[0.12em] text-[#6B5848]"
-          : isOnDark
+          : onDark
             ? "border-t border-white/15 px-6 py-5 text-xs text-zinc-100"
-            : "border-t border-bark-100/80 px-6 py-5 text-xs text-bark-500",
+            : "border-t border-bark-100/80 px-6 py-5 text-xs text-zinc-800",
         className
       )}
     >
-      <p>
+      <p className={onDark && !isPoster ? "text-zinc-100" : undefined}>
         {creditLabel}{" "}
         <MascotPointsBrand /> ·{" "}
-        <span className={isOnDark ? "text-zinc-100" : undefined}>
+        <span
+          className={
+            isPoster
+              ? undefined
+              : onDark
+                ? "text-zinc-200"
+                : "text-zinc-700"
+          }
+        >
           Agencia WebElite SOLUTIONS
         </span>
       </p>
@@ -49,9 +65,11 @@ export function MascotPointsFooter({
           href={mailtoContact()}
           className={cn(
             "font-medium underline-offset-2 hover:underline",
-            isOnDark
-              ? "text-zinc-100 hover:text-white"
-              : "text-bark-600"
+            isPoster
+              ? "text-[#5C4A3A] hover:text-[#3D2E22]"
+              : onDark
+                ? "text-zinc-200 hover:text-white"
+                : "text-zinc-700 hover:text-zinc-900"
           )}
         >
           {CONTACT_EMAIL}

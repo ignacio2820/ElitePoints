@@ -52,7 +52,14 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const [telefonoWhatsapp, setTelefono] = useState(initial.telefonoWhatsapp ?? "");
+  const [telefonoUrgencias, setTelefonoUrgencias] = useState(
+    initial.telefonoUrgencias ?? ""
+  );
+  const [email, setEmail] = useState(initial.email ?? "");
   const [direccion, setDireccion] = useState(initial.direccion ?? "");
+  const [horariosAtencion, setHorariosAtencion] = useState(
+    initial.horariosAtencion ?? ""
+  );
   const [pending, startTransition] = useTransition();
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -78,8 +85,19 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
     setNombre(initial.nombre);
     setSavedLogoUrl((initial.logoUrl ?? "").trim());
     setTelefono(initial.telefonoWhatsapp ?? "");
+    setTelefonoUrgencias(initial.telefonoUrgencias ?? "");
+    setEmail(initial.email ?? "");
     setDireccion(initial.direccion ?? "");
-  }, [initial.nombre, initial.logoUrl, initial.telefonoWhatsapp, initial.direccion]);
+    setHorariosAtencion(initial.horariosAtencion ?? "");
+  }, [
+    initial.nombre,
+    initial.logoUrl,
+    initial.telefonoWhatsapp,
+    initial.telefonoUrgencias,
+    initial.email,
+    initial.direccion,
+    initial.horariosAtencion
+  ]);
 
   useEffect(() => {
     const remoto = logoUrlFirestore.trim();
@@ -106,7 +124,10 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
             nombre,
             logoUrl: savedLogoUrl.trim() || "",
             telefonoWhatsapp,
-            direccion
+            telefonoUrgencias,
+            email,
+            direccion,
+            horariosAtencion
           })
         });
         const data = await res.json();
@@ -313,12 +334,49 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
           </div>
         </Field>
 
+        <Field
+          label="Teléfono de urgencias"
+          hint="Visible en Ayuda del cliente. Ej: 0341 555-1234"
+        >
+          <input
+            className="input-elegant"
+            maxLength={40}
+            value={telefonoUrgencias}
+            onChange={(e) => setTelefonoUrgencias(e.target.value)}
+            placeholder="0341 555-1234"
+          />
+        </Field>
+
+        <Field label="Email del local (opcional)">
+          <input
+            className="input-elegant"
+            type="email"
+            maxLength={120}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="contacto@veterinaria.com"
+          />
+        </Field>
+
         <Field label="Direccion (opcional)">
           <input
             className="input-elegant"
             maxLength={300}
             value={direccion}
             onChange={(e) => setDireccion(e.target.value)}
+          />
+        </Field>
+
+        <Field
+          label="Horarios de atención"
+          hint="Texto libre. Ej: Lun a Vie 9–20 hs, Sáb 9–13 hs"
+        >
+          <textarea
+            className="input-elegant min-h-[88px] resize-y"
+            maxLength={500}
+            value={horariosAtencion}
+            onChange={(e) => setHorariosAtencion(e.target.value)}
+            placeholder="Lunes a viernes 9:00 a 20:00 hs"
           />
         </Field>
       </div>

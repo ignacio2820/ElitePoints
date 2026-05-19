@@ -6,6 +6,7 @@ import {
   Ticket
 } from "lucide-react";
 import { LandingContactForm } from "@/components/landing/LandingContactForm";
+import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 
 const FEATURES = [
   {
@@ -157,12 +158,10 @@ export function LandingMarketingSections() {
 
       <LandingContactForm />
 
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-sm text-bark-200">
-        <p>
-          MascotPoints · Desarrollado por{" "}
-          <span className="font-semibold text-white/90">WebElite SOLUTIONS</span>
-        </p>
-      </footer>
+      <MascotPointsFooter
+        variant="onDark"
+        className="border-white/10 bg-bark-900 text-left sm:text-center"
+      />
     </>
   );
 }

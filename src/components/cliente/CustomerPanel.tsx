@@ -11,6 +11,10 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
 import type { NivelLealtad } from "@/lib/huellitas/types";
 import { formatARS, formatHuellitas, formatNumber } from "@/lib/utils";
+import {
+  AyudaNavButton,
+  type DatosContactoLocal
+} from "@/components/cliente/AyudaContactoModal";
 
 export interface CustomerPanelProps {
   nombreLocal: string;
@@ -35,14 +39,14 @@ export interface CustomerPanelProps {
   /** Banner promocional arriba del contenido principal (ej. sorteo activo). */
   bannerInicio?: React.ReactNode;
   children?: React.ReactNode;
+  datosContacto: DatosContactoLocal;
 }
 
 const NAV_LINKS = [
   { href: "/mi-cuenta", label: "Mi Cuenta" },
   { href: "/mi-cuenta/catalogo", label: "Catálogo" },
   { href: "/mi-cuenta/sorteos", label: "Sorteos" },
-  { href: "/mi-cuenta/qr", label: "Mi QR" },
-  { href: "#ayuda", label: "Ayuda" }
+  { href: "/mi-cuenta/qr", label: "Mi QR" }
 ] as const;
 
 export function CustomerPanel({
@@ -60,7 +64,8 @@ export function CustomerPanel({
   montoParaUnaHuellita,
   diasVencimiento,
   bannerInicio,
-  children
+  children,
+  datosContacto
 }: CustomerPanelProps) {
   const primerNombre = nombreCliente.split(" ")[0] ?? nombreCliente;
   const saldoEntero = formatHuellitas(saldoHuellitas);
@@ -156,6 +161,7 @@ export function CustomerPanel({
                 {link.label}
               </Link>
             ))}
+            <AyudaNavButton datos={datosContacto} />
           </nav>
         </header>
 
@@ -241,7 +247,7 @@ export function CustomerPanel({
           </div>
 
           <section
-            id="ayuda"
+            id="como-sumar-huellitas"
             className="mt-8 rounded-3xl bg-bark-800 p-5 shadow-soft ring-1 ring-white/5 lg:p-6"
           >
             <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/75">

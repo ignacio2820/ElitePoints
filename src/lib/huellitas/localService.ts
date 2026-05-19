@@ -9,8 +9,11 @@ export interface InfoLocal {
   nombre: string;
   logoUrl?: string;
   telefonoWhatsapp?: string;
+  /** Teléfono visible para urgencias (puede coincidir con WhatsApp). */
+  telefonoUrgencias?: string;
   email?: string;
   direccion?: string;
+  horariosAtencion?: string;
   estadoMembresia?: string;
   membresiaEstado?: string;
   membresiaPlan?: PlanMembresia;
@@ -50,6 +53,8 @@ export async function getInfoLocal(localId: string): Promise<InfoLocal> {
     telefonoWhatsapp: data.telefonoWhatsapp as string | undefined,
     email: data.email as string | undefined,
     direccion: data.direccion as string | undefined,
+    telefonoUrgencias: data.telefonoUrgencias as string | undefined,
+    horariosAtencion: data.horariosAtencion as string | undefined,
     estadoMembresia: data.estadoMembresia as string | undefined,
     membresiaEstado: data.membresiaEstado as string | undefined,
     membresiaPlan: data.membresiaPlan as PlanMembresia | undefined,
@@ -68,7 +73,15 @@ export function membresiaActiva(info: InfoLocal): boolean {
 export async function setInfoLocal(
   localId: string,
   patch: Partial<
-    Pick<InfoLocal, "nombre" | "telefonoWhatsapp" | "email" | "direccion"> & {
+    Pick<
+      InfoLocal,
+      | "nombre"
+      | "telefonoWhatsapp"
+      | "telefonoUrgencias"
+      | "email"
+      | "direccion"
+      | "horariosAtencion"
+    > & {
       logoUrl?: string | null;
     }
   >
@@ -88,6 +101,12 @@ export async function setInfoLocal(
   }
   if (typeof patch.email === "string") update.email = patch.email.trim();
   if (typeof patch.direccion === "string") update.direccion = patch.direccion.trim();
+  if (typeof patch.telefonoUrgencias === "string") {
+    update.telefonoUrgencias = patch.telefonoUrgencias.replace(/[^0-9+()\s-]/g, "").trim();
+  }
+  if (typeof patch.horariosAtencion === "string") {
+    update.horariosAtencion = patch.horariosAtencion.trim();
+  }
   if (Object.keys(update).length === 0) return;
   await cols.local(db, localId).set(update, { merge: true });
 }

@@ -27,8 +27,10 @@ const Body = z.object({
     .max(30)
     .optional()
     .transform((s) => (typeof s === "string" ? s.replace(/[^0-9]/g, "") : s)),
-  email: z.string().email().optional(),
-  direccion: z.string().max(300).optional()
+  direccion: z.string().max(300).optional(),
+  telefonoUrgencias: z.string().max(40).optional(),
+  horariosAtencion: z.string().max(500).optional(),
+  email: z.string().email().optional().or(z.literal(""))
 });
 
 export async function GET() {

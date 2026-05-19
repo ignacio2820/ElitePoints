@@ -143,6 +143,15 @@ export default async function MiCuentaPage({
         esLeyenda={!progreso.nivelSiguiente}
         montoParaUnaHuellita={cfg.montoParaUnaHuellita}
         diasVencimiento={cfg.diasVencimiento}
+        datosContacto={{
+          nombreLocal,
+          direccion: infoLocal.direccion,
+          telefonoWhatsapp:
+            infoLocal.telefonoWhatsapp ?? telefonoWhatsapp ?? undefined,
+          telefonoUrgencias: infoLocal.telefonoUrgencias,
+          email: infoLocal.email,
+          horariosAtencion: infoLocal.horariosAtencion
+        }}
       >
         {membresiaExpirada ? (
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
