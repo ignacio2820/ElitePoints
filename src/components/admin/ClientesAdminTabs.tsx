@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AlertTriangle, MessageSquare, Users } from "lucide-react";
 import { BuscadorClientes } from "@/components/admin/BuscadorClientes";
 import { AlertasEncuestasPanel } from "@/components/admin/encuestas/AlertasEncuestasPanel";
-import { FeedbackEncuestasPanel } from "@/components/admin/encuestas/FeedbackEncuestasPanel";
+import { OpinionesQuejasClientesPanel } from "@/components/admin/encuestas/OpinionesQuejasClientesPanel";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { cn } from "@/lib/utils";
@@ -66,7 +66,7 @@ export function ClientesAdminTabs({
           )}
         >
           <MessageSquare size={16} />
-          Opiniones
+          Opiniones y quejas
         </button>
         <button
           type="button"
@@ -109,7 +109,7 @@ export function ClientesAdminTabs({
           montoParaUnaHuellita={montoParaUnaHuellita}
         />
       ) : tab === "opiniones" ? (
-        <FeedbackEncuestasPanel />
+        <OpinionesQuejasClientesPanel />
       ) : (
         <AlertasEncuestasPanel onCountChange={setBadgeAlertas} />
       )}

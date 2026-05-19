@@ -43,7 +43,13 @@ function canalLabel(canal?: string): string {
   return "Clásica";
 }
 
-export function FeedbackEncuestasPanel() {
+type FeedbackEncuestasPanelProps = {
+  descripcion?: string;
+};
+
+export function FeedbackEncuestasPanel({
+  descripcion
+}: FeedbackEncuestasPanelProps = {}) {
   const [items, setItems] = useState<EncuestaFeedbackAdmin[]>([]);
   const [resumen, setResumen] = useState<ResumenFeedbackEncuestas | null>(null);
   const [filtro, setFiltro] = useState<Filtro>("todas");
@@ -149,9 +155,8 @@ export function FeedbackEncuestasPanel() {
   return (
     <section className="space-y-5">
       <p className="text-sm leading-relaxed text-bark-600">
-        Acá ves todas las encuestas post-compra: cómo califican la atención, si
-        esperaron mucho, si encontraron lo que buscaban y qué comentan. Podés
-        eliminar filas viejas para mantener el panel ordenado.
+        {descripcion ??
+          "Acá ves todas las encuestas post-compra: cómo califican la atención, si esperaron mucho, si encontraron lo que buscaban y qué comentan. Podés eliminar filas viejas para mantener el panel ordenado."}
       </p>
 
       {resumen ? (

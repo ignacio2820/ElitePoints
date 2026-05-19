@@ -17,7 +17,6 @@ import type { NivelLealtad } from "@/lib/huellitas/types";
 import { reproducirSonidoExitoVenta } from "@/lib/sound";
 import { formatARS, formatNumber } from "@/lib/utils";
 import { EscanerQrClienteMovil } from "@/components/admin/EscanerQrClienteMovil";
-import { LectorSerialCaja } from "@/components/admin/LectorSerialCaja";
 import { SelectorCliente } from "./SelectorCliente";
 
 interface VentaResponse {
@@ -237,7 +236,6 @@ export function NuevaVentaForm({
                 aria-labelledby="titulo-nueva-venta"
               >
                 <div className="flex flex-col gap-3 md:gap-4">
-                  <LectorSerialCaja onClienteId={onClienteDesdeEscaneo} />
                   <SelectorCliente
                     clienteIdInicial={clienteIdInicial}
                     escaneoQr={escaneoQr}
