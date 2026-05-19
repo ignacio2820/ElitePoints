@@ -79,7 +79,12 @@ export default async function ClienteQrPage({
         </div>
 
         <div className="mt-8 w-full">
-          <CredencialDigitalCliente clienteId={params.clienteId} qrSize={320} />
+          <CredencialDigitalCliente
+            clienteId={params.clienteId}
+            telefono={cliente.telefono}
+            dni={cliente.dni}
+            qrSize={320}
+          />
         </div>
 
         <div className="mt-6 text-center">

@@ -4,6 +4,11 @@ import {
   esCodigoClienteValido,
   normalizarCodigoCliente
 } from "./codigosClientes";
+import {
+  clienteCoincideClaveBarras,
+  esEntradaIdentificadorBarras,
+  normalizarClaveBarras
+} from "./identificadorBarras";
 import { buscarClientePorCodigoCorto } from "./codigosClientesService";
 import {
   leerHuellitasActuales,
@@ -124,6 +129,11 @@ export async function listarClientes(
     return [];
   }
 
+  if (esEntradaIdentificadorBarras(qRaw)) {
+    const hit = await lookupPorIdentificadorBarras(localId, qRaw);
+    return hit ? [hit] : [];
+  }
+
   const q = qRaw.toLowerCase();
   let snap;
   try {
@@ -138,13 +148,19 @@ export async function listarClientes(
 
   if (!q) return todos;
 
+  const claveBarras = normalizarClaveBarras(qRaw);
   return todos.filter((c) => {
     return (
       c.nombre.toLowerCase().includes(q) ||
       c.email.toLowerCase().includes(q) ||
       c.telefono.includes(q) ||
       c.id.toLowerCase().includes(q) ||
-      (c.codigoCliente ?? "").toLowerCase().includes(q)
+      (c.codigoCliente ?? "").toLowerCase().includes(q) ||
+      (claveBarras !== "" &&
+        clienteCoincideClaveBarras(
+          { telefono: c.telefono, claveBarras: undefined },
+          claveBarras
+        ))
     );
   });
 }
@@ -164,6 +180,37 @@ export async function lookupPorCodigoCorto(
   const hit = await buscarClientePorCodigoCorto(localId, codigoInput);
   if (!hit) return null;
   return getCliente(localId, hit.clienteId);
+}
+
+/**
+ * Resuelve DNI o teléfono leído por el escáner (CODE128 numérico en credencial).
+ */
+export async function lookupPorIdentificadorBarras(
+  localId: string,
+  entrada: string
+): Promise<ClienteResumen | null> {
+  const clave = normalizarClaveBarras(entrada);
+  if (!clave) return null;
+
+  const db = adminDb();
+  const porIndice = await cols
+    .clientes(db, localId)
+    .where("claveBarras", "==", clave)
+    .limit(1)
+    .get();
+  if (!porIndice.empty) {
+    const d = porIndice.docs[0];
+    return aResumen(d.id, d.data() as Partial<Cliente>, localId);
+  }
+
+  const snap = await cols.clientes(db, localId).limit(500).get();
+  for (const doc of snap.docs) {
+    const data = doc.data() as Partial<Cliente>;
+    if (clienteCoincideClaveBarras(data, clave)) {
+      return aResumen(doc.id, data, localId);
+    }
+  }
+  return null;
 }
 
 export async function getCliente(

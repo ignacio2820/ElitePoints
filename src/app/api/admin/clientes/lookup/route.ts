@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
-import { lookupPorCodigoCorto } from "@/lib/huellitas/clientesService";
+import {
+  lookupPorCodigoCorto,
+  lookupPorIdentificadorBarras
+} from "@/lib/huellitas/clientesService";
+import { esCodigoClienteValido } from "@/lib/huellitas/codigosClientes";
+import { esEntradaIdentificadorBarras } from "@/lib/huellitas/identificadorBarras";
 import { assertAccesoOperativo } from "@/lib/huellitas/requireMembresiaActiva";
 
 export const runtime = "nodejs";
@@ -26,13 +31,19 @@ export async function GET(req: Request) {
     if (!q) {
       return NextResponse.json({ ok: false, reason: "invalido" });
     }
-    const cliente = await lookupPorCodigoCorto(sesion.claims.localId, q);
+    let cliente = null;
+    if (esCodigoClienteValido(q)) {
+      cliente = await lookupPorCodigoCorto(sesion.claims.localId, q);
+    } else if (esEntradaIdentificadorBarras(q)) {
+      cliente = await lookupPorIdentificadorBarras(sesion.claims.localId, q);
+    }
     if (!cliente) {
+      const invalido =
+        q.replace(/[^A-Za-z0-9-]/g, "").length === 0 &&
+        !esEntradaIdentificadorBarras(q);
       return NextResponse.json({
         ok: false,
-        reason: q.replace(/[^A-Za-z0-9-]/g, "").length === 0
-          ? "invalido"
-          : "no-encontrado"
+        reason: invalido ? "invalido" : "no-encontrado"
       });
     }
     return NextResponse.json({ ok: true, cliente });

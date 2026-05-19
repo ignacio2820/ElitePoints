@@ -15,7 +15,10 @@ export function payloadQrCliente(clienteId: string): string {
   return `${PREFIJO_CLIENTE}${id}`;
 }
 
-/** Código de barras Code 39 (mismo ID, prefijo compatible con alfabeto Code 39). */
+/**
+ * @deprecated El barcode en credencial usa DNI/teléfono (`valorCodigoBarrasDesdeCliente`).
+ * Se mantiene el prefijo solo para QR/barras impresos antiguos en `parseClienteQr`.
+ */
 export function payloadCodigoBarrasCliente(clienteId: string): string {
   const id = clienteId.trim();
   if (!id) throw new Error("clienteId vacío");

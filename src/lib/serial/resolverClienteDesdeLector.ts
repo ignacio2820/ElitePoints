@@ -1,4 +1,5 @@
 import { esCodigoClienteValido } from "@/lib/huellitas/codigosClientes";
+import { esEntradaIdentificadorBarras } from "@/lib/huellitas/identificadorBarras";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import { extraerClienteIdDesdeQr } from "@/lib/huellitas/parseClienteQr";
 
@@ -14,7 +15,7 @@ export async function resolverClienteIdDesdeLector(
   const desdeQr = extraerClienteIdDesdeQr(linea);
   if (desdeQr) return desdeQr;
 
-  if (esCodigoClienteValido(linea)) {
+  if (esCodigoClienteValido(linea) || esEntradaIdentificadorBarras(linea)) {
     try {
       const r = await fetch(
         `/api/admin/clientes/lookup?q=${encodeURIComponent(linea)}`,

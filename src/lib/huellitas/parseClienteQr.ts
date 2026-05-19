@@ -39,6 +39,8 @@ export function extraerClienteIdDesdeQr(raw: string): string | null {
   }
 
   const simple = t.replace(/\s/g, "");
+  // DNI / teléfono del barcode (CODE128): lo resuelve lookup en caja, no es ID Firestore.
+  if (/^\d{7,15}$/.test(simple)) return null;
   if (/^[A-Za-z0-9_-]{8,128}$/.test(simple)) return simple;
 
   return null;

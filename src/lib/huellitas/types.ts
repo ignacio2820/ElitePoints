@@ -282,6 +282,13 @@ export const ClienteSchema = z.object({
   nombre: z.string().min(1).max(120),
   email: z.string().email().optional().or(z.literal("")),
   telefono: z.string().max(30).optional().default(""),
+  /** Documento nacional (solo dígitos en barcode). Opcional. */
+  dni: z.string().max(15).optional(),
+  /**
+   * Clave numérica indexada para lector láser (DNI o teléfono normalizado).
+   * Se mantiene al crear/actualizar el cliente.
+   */
+  claveBarras: z.string().max(15).optional(),
 
   /**
    * Saldo disponible para canjes (suma de lotes vigentes, cache).

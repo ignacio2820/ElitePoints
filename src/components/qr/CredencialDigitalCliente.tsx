@@ -1,9 +1,12 @@
 import { generarQrSvg } from "@/lib/qr/generate";
 import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
+import { valorCodigoBarrasDesdeCliente } from "@/lib/huellitas/identificadorBarras";
 import { CredencialDigitalClientePanel } from "@/components/qr/CredencialDigitalClientePanel";
 
 export interface CredencialDigitalClienteProps {
   clienteId: string;
+  telefono?: string;
+  dni?: string;
   qrSize?: number;
   className?: string;
 }
@@ -13,16 +16,20 @@ export interface CredencialDigitalClienteProps {
  */
 export async function CredencialDigitalCliente({
   clienteId,
+  telefono,
+  dni,
   qrSize = 320,
   className
 }: CredencialDigitalClienteProps) {
   const payloadQr = payloadQrCliente(clienteId);
   const qrSvgHtml = await generarQrSvg(payloadQr, { width: qrSize });
+  const valorBarras = valorCodigoBarrasDesdeCliente({ telefono, dni });
 
   return (
     <CredencialDigitalClientePanel
       clienteId={clienteId}
       qrSvgHtml={qrSvgHtml}
+      valorBarras={valorBarras}
       qrSize={qrSize}
       className={className}
     />

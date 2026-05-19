@@ -11,6 +11,7 @@ import {
   normalizarCodigo
 } from "./referidos";
 import { asegurarCodigoClienteUnico } from "./codigosClientesService";
+import { claveBarrasDesdeCliente } from "./identificadorBarras";
 import type { Cliente, ReferidoIndex } from "./types";
 
 /**
@@ -85,7 +86,7 @@ export async function getReferentePorCodigo(
  */
 export async function crearClienteConReferido(input: {
   localId: string;
-  cliente: Pick<Cliente, "nombre" | "email" | "telefono">;
+  cliente: Pick<Cliente, "nombre" | "email" | "telefono"> & { dni?: string };
   codigoReferenteRaw?: string;
 }): Promise<{
   clienteId: string;
@@ -106,11 +107,16 @@ export async function crearClienteConReferido(input: {
 
   // 1. Crear el doc del cliente (sin códigos aún — los asignamos después)
   const clienteRef = cols.clientes(db, input.localId).doc();
+  const claveBarras = claveBarrasDesdeCliente({
+    telefono: input.cliente.telefono,
+    dni: input.cliente.dni
+  });
   const clienteData: Cliente = {
     localId: input.localId,
     nombre: input.cliente.nombre,
     email: emailNorm,
     telefono: input.cliente.telefono ?? "",
+    ...(claveBarras ? { claveBarras } : {}),
     huellitasActuales: 0,
     saldoHuellitas: 0,
     huellitasReservadas: 0,

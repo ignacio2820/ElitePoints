@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Barcode as BarcodeIcon, QrCode } from "lucide-react";
 import { CodigoBarrasLectorFisico } from "@/components/qr/CodigoBarrasLectorFisico";
-import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
 import { cn } from "@/lib/utils";
 
 export type CredencialDisplayMode = "qr" | "barcode";
@@ -11,6 +10,8 @@ export type CredencialDisplayMode = "qr" | "barcode";
 export interface CredencialDigitalClientePanelProps {
   clienteId: string;
   qrSvgHtml: string;
+  /** DNI o teléfono normalizado para CODE128 (lector láser). */
+  valorBarras: string | null;
   qrSize?: number;
   className?: string;
 }
@@ -19,13 +20,14 @@ export interface CredencialDigitalClientePanelProps {
  * Credencial con pestañas: un solo código a la vez, tamaño generoso para escaneo.
  */
 export function CredencialDigitalClientePanel({
-  clienteId,
+  clienteId: _clienteId,
   qrSvgHtml,
+  valorBarras,
   qrSize = 320,
   className
 }: CredencialDigitalClientePanelProps) {
+  void _clienteId;
   const [displayMode, setDisplayMode] = useState<CredencialDisplayMode>("qr");
-  const payloadBarras = payloadQrCliente(clienteId);
 
   return (
     <article
@@ -74,12 +76,15 @@ export function CredencialDigitalClientePanel({
         <p className="mt-3 text-center text-xs text-bark-500">
           {displayMode === "qr"
             ? "Para cámara o lector 2D en el mostrador"
-            : "Para lector láser Megawin — barras grandes en pantalla"}
+            : "Para lector láser Megawin — DNI o teléfono en barras"}
         </p>
       </div>
 
       <div
-        className="flex min-h-[min(72vh,22rem)] w-full items-center justify-center bg-white px-4 py-6 sm:min-h-[20rem] sm:px-6 sm:py-8"
+        className={cn(
+          "flex min-h-[min(72vh,22rem)] w-full flex-col items-center justify-center bg-white px-4 py-6 sm:min-h-[20rem] sm:px-6 sm:py-8",
+          displayMode === "barcode" && "overflow-hidden"
+        )}
         role="tabpanel"
       >
         {displayMode === "qr" ? (
@@ -93,8 +98,13 @@ export function CredencialDigitalClientePanel({
               dangerouslySetInnerHTML={{ __html: qrSvgHtml }}
             />
           </div>
+        ) : valorBarras ? (
+          <CodigoBarrasLectorFisico value={valorBarras} fullscreen />
         ) : (
-          <CodigoBarrasLectorFisico value={payloadBarras} fullscreen />
+          <p className="max-w-xs text-center text-sm leading-relaxed text-bark-600">
+            Para usar el código de barras, registrá tu teléfono en tu perfil o
+            pedile al local que lo agregue a tu ficha.
+          </p>
         )}
       </div>
     </article>

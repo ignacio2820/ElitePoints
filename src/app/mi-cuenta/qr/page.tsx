@@ -81,7 +81,12 @@ export default async function MiQRPage({
           ) : null}
 
           <div className="mt-8 w-full max-w-full">
-            <CredencialDigitalCliente clienteId={clienteId} qrSize={320} />
+            <CredencialDigitalCliente
+              clienteId={clienteId}
+              telefono={cliente?.telefono}
+              dni={cliente?.dni}
+              qrSize={320}
+            />
           </div>
 
           <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-neutral-200 bg-[#FFFFFF] px-4 py-3">
