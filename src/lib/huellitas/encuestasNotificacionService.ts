@@ -14,6 +14,59 @@ export type ResultadoCronEncuestas = {
 };
 
 /**
+ * Envía el correo de agradecimiento + encuesta para una invitación concreta.
+ * Se invoca al registrar la venta (inmediato) y como respaldo desde el cron diario.
+ */
+export async function enviarEmailEncuestaInvitacion(
+  localId: string,
+  token: string
+): Promise<"enviado" | "omitido" | "sin-email" | "desactivado"> {
+  const db = adminDb();
+  const cfgSnap = await cols.configuracion(db, localId).get();
+  if (cfgSnap.data()?.emailsEncuestaActivos === false) {
+    return "desactivado";
+  }
+
+  const invRef = cols.invitacionEncuesta(db, localId, token);
+  const invSnap = await invRef.get();
+  if (!invSnap.exists) return "omitido";
+
+  const inv = invSnap.data() as InvitacionEncuesta & { emailEnviado?: boolean };
+  if (inv.estado !== "pendiente" || inv.emailEnviado === true) {
+    return "omitido";
+  }
+
+  const [clienteSnap, localSnap] = await Promise.all([
+    cols.cliente(db, localId, inv.clienteId).get(),
+    cols.local(db, localId).get()
+  ]);
+  if (!clienteSnap.exists) return "omitido";
+
+  const email = (clienteSnap.data() as Cliente).email?.trim();
+  if (!email) return "sin-email";
+
+  const nombreLocal =
+    String((localSnap.data() as { nombre?: string } | undefined)?.nombre ?? "").trim() ||
+    "tu Pet Shop";
+
+  await enviarEmailEncuestaSatisfaccion({
+    emailCliente: email,
+    nombreCliente:
+      (clienteSnap.data() as Cliente).nombre?.trim() || "Cliente",
+    nombreLocal,
+    urlEncuesta: urlEncuestaPublica(localId, token),
+    huellitasRegalo: HUELLITAS_REGALO_ENCUESTA
+  });
+
+  await invRef.update({
+    emailEnviado: true,
+    emailEnviadoEn: new Date().toISOString()
+  });
+
+  return "enviado";
+}
+
+/**
  * Envía por Resend el enlace de encuesta cuando `fechaEnvioEncuesta` ya venció.
  * Idempotente: `emailEnviado` en la invitación.
  */
@@ -62,39 +115,12 @@ export async function procesarEmailsEncuestasPendientes(
       if (envioMs > ahoraMs) continue;
 
       const token = invDoc.id;
-      const clienteSnap = await cols
-        .cliente(db, localId, inv.clienteId)
-        .get();
-
-      if (!clienteSnap.exists) {
-        resultado.errores.push(`${localId}/${token}: cliente inexistente`);
-        continue;
-      }
-
-      const cliente = clienteSnap.data() as Cliente;
-      const email = cliente.email?.trim();
-      if (!email) {
-        resultado.sinEmail += 1;
-        continue;
-      }
-
-      const url = urlEncuestaPublica(localId, token);
 
       try {
-        await enviarEmailEncuestaSatisfaccion({
-          emailCliente: email,
-          nombreCliente: cliente.nombre?.trim() || "Cliente",
-          nombreLocal,
-          urlEncuesta: url,
-          huellitasRegalo: HUELLITAS_REGALO_ENCUESTA
-        });
-
-        await cols.invitacionEncuesta(db, localId, token).update({
-          emailEnviado: true,
-          emailEnviadoEn: new Date().toISOString()
-        });
-
-        resultado.emailsEnviados += 1;
+        const r = await enviarEmailEncuestaInvitacion(localId, token);
+        if (r === "enviado") resultado.emailsEnviados += 1;
+        else if (r === "sin-email") resultado.sinEmail += 1;
+        else resultado.omitidos += 1;
       } catch (err) {
         resultado.errores.push(
           `${localId}/${token}: ${

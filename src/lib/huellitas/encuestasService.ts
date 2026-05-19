@@ -7,6 +7,7 @@ import {
   HUELLITAS_REGALO_ENCUESTA,
   UMBRAL_ALERTA_INSATISFACCION
 } from "@/lib/huellitas/encuestasConstants";
+import { enviarEmailEncuestaInvitacion } from "@/lib/huellitas/encuestasNotificacionService";
 import { notificarAlertaEncuestaBaja } from "@/lib/notifications/encuestaAlerta";
 import type {
   EncuestaRespuesta,
@@ -24,8 +25,8 @@ export function urlEncuestaPublica(localId: string, token: string): string {
 }
 
 /**
- * Programa invitación 24 h después de una venta con huellitas emitidas.
- * El enlace queda en `Locales/{localId}/InvitacionesEncuesta/{token}`.
+ * Tras una venta con huellitas emitidas: invitación en app (inmediata) + email de agradecimiento.
+ * El doc queda en `Locales/{localId}/InvitacionesEncuesta/{token}`.
  */
 export async function programarInvitacionEncuesta(input: {
   localId: string;
@@ -36,7 +37,7 @@ export async function programarInvitacionEncuesta(input: {
   const db = adminDb();
   const token = generarTokenEncuesta();
   const base = input.fechaVenta ?? new Date();
-  const fechaEnvio = new Date(base.getTime() + ENCUESTA_DELAY_MS);
+  const fechaEnvioEmail = new Date(base.getTime() + ENCUESTA_DELAY_MS);
 
   const payload: InvitacionEncuesta = {
     token,
@@ -44,12 +45,17 @@ export async function programarInvitacionEncuesta(input: {
     clienteId: input.clienteId,
     ventaId: input.ventaId,
     fechaVenta: base.toISOString(),
-    fechaEnvioEncuesta: fechaEnvio.toISOString(),
+    fechaEnvioEncuesta: fechaEnvioEmail.toISOString(),
     estado: "pendiente",
+    disponibleEnApp: true,
     creadoEn: new Date().toISOString()
   };
 
   await cols.invitacionEncuesta(db, input.localId, token).set(payload);
+
+  void enviarEmailEncuestaInvitacion(input.localId, token).catch((err) => {
+    console.error("[encuesta] Email post-compra:", err);
+  });
 
   return {
     token,

@@ -9,17 +9,13 @@ import {
   X,
   LifeBuoy
 } from "lucide-react";
-import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
+import {
+  tieneDatosContactoComercio,
+  type DatosContactoLocal
+} from "@/lib/huellitas/datosContactoLocal";
 import { cn } from "@/lib/utils";
 
-export interface DatosContactoLocal {
-  nombreLocal: string;
-  direccion?: string;
-  telefonoWhatsapp?: string;
-  telefonoUrgencias?: string;
-  email?: string;
-  horariosAtencion?: string;
-}
+export type { DatosContactoLocal };
 
 function telHref(raw: string): string {
   const d = raw.replace(/[^0-9+]/g, "");
@@ -58,12 +54,7 @@ export function AyudaContactoModal({
 
   if (!open) return null;
 
-  const tieneLocal =
-    datos.direccion?.trim() ||
-    datos.telefonoWhatsapp?.trim() ||
-    datos.telefonoUrgencias?.trim() ||
-    datos.email?.trim() ||
-    datos.horariosAtencion?.trim();
+  const tieneDatos = tieneDatosContactoComercio(datos);
 
   return (
     <div
@@ -105,22 +96,23 @@ export function AyudaContactoModal({
         </div>
 
         <div className="max-h-[min(70vh,28rem)] space-y-4 overflow-y-auto px-5 py-5">
-          {!tieneLocal ? (
+          {!tieneDatos ? (
             <p className="text-sm leading-relaxed text-bark-600">
-              Tu veterinaria aún no cargó todos los datos de contacto. Podés
-              escribirnos a soporte de MascotPoints mientras tanto.
+              {datos.nombreLocal} todavía no publicó sus datos de contacto en la
+              app. Pedí en recepción que los carguen desde el panel de
+              administración.
             </p>
           ) : null}
 
-          {datos.direccion?.trim() ? (
+          {datos.direccion ? (
             <FilaContacto
               icono={<MapPin size={18} />}
               titulo="Dirección"
-              contenido={datos.direccion.trim()}
+              contenido={datos.direccion}
             />
           ) : null}
 
-          {datos.telefonoUrgencias?.trim() ? (
+          {datos.telefonoUrgencias ? (
             <FilaContacto
               icono={<Phone size={18} />}
               titulo="Teléfono de urgencias"
@@ -135,7 +127,7 @@ export function AyudaContactoModal({
             />
           ) : null}
 
-          {datos.telefonoWhatsapp?.trim() ? (
+          {datos.telefonoWhatsapp ? (
             <FilaContacto
               icono={<Phone size={18} />}
               titulo="WhatsApp / consultas"
@@ -152,41 +144,28 @@ export function AyudaContactoModal({
             />
           ) : null}
 
-          {datos.horariosAtencion?.trim() ? (
+          {datos.horariosAtencion ? (
             <FilaContacto
               icono={<Clock size={18} />}
               titulo="Horarios de atención"
-              contenido={datos.horariosAtencion.trim()}
+              contenido={datos.horariosAtencion}
             />
           ) : null}
 
-          {datos.email?.trim() ? (
+          {datos.emailSoporte ? (
             <FilaContacto
               icono={<Mail size={18} />}
-              titulo="Email del local"
+              titulo="Soporte"
               contenido={
                 <a
-                  href={`mailto:${datos.email.trim()}`}
+                  href={`mailto:${datos.emailSoporte}?subject=${encodeURIComponent(`Consulta — ${datos.nombreLocal}`)}`}
                   className="font-semibold text-bark-800 hover:underline"
                 >
-                  {datos.email.trim()}
+                  {datos.emailSoporte}
                 </a>
               }
             />
           ) : null}
-
-          <FilaContacto
-            icono={<Mail size={18} />}
-            titulo="Soporte MascotPoints"
-            contenido={
-              <a
-                href={mailtoContact("Consulta desde la app cliente")}
-                className="font-semibold text-bark-800 hover:underline"
-              >
-                {CONTACT_EMAIL}
-              </a>
-            }
-          />
         </div>
 
         <div className="border-t border-bark-100 bg-cream-50 px-5 py-4">

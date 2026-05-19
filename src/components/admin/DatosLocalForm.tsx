@@ -347,14 +347,17 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
           />
         </Field>
 
-        <Field label="Email del local (opcional)">
+        <Field
+          label="Email de soporte (consultas de clientes)"
+          hint="Se muestra en Ayuda del portal como «Soporte»."
+        >
           <input
             className="input-elegant"
             type="email"
             maxLength={120}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="contacto@veterinaria.com"
+            placeholder="consultas@veterinaria.com"
           />
         </Field>
 

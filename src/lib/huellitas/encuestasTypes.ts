@@ -24,6 +24,12 @@ export const InvitacionEncuestaSchema = z.object({
   encuestaId: z.string().optional(),
   emailEnviado: z.boolean().optional(),
   emailEnviadoEn: z.string().optional(),
+  /** Pop-up en la app del cliente (inmediato tras la venta). */
+  disponibleEnApp: z.boolean().optional(),
+  /** @deprecated Usar `disponibleEnApp`. Si true, el cron de email no enviaba. */
+  soloInApp: z.boolean().optional(),
+  completadaEnApp: z.boolean().optional(),
+  completadaEn: z.string().optional(),
   creadoEn: z.string().optional()
 });
 

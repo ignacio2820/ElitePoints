@@ -102,5 +102,9 @@ export const cols = {
     db.collection(`Locales/${localId}/Encuestas`),
 
   encuesta: (db: Firestore, localId: string, encuestaId: string) =>
-    db.doc(`Locales/${localId}/Encuestas/${encuestaId}`)
+    db.doc(`Locales/${localId}/Encuestas/${encuestaId}`),
+
+  /** Encuestas nativas in-app (colección raíz, multi-tenant por campos). */
+  encuestasSatisfaccion: (db: Firestore) =>
+    db.collection("encuestas_satisfaccion")
 };

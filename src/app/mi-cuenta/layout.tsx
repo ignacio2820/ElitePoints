@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
+import { EncuestaInAppHost } from "@/components/cliente/encuesta/EncuestaInAppHost";
 import { InstalarAppBanner } from "@/components/pwa/InstalarAppBanner";
 import { getSesion } from "@/lib/auth/server";
 import { RUTA_DASHBOARD, RUTA_PORTAL } from "@/lib/auth/redirect";
@@ -25,6 +26,7 @@ export default async function MiCuentaLayout({
         <InstalarAppBanner />
       </div>
       <div className="flex-1">{children}</div>
+      <EncuestaInAppHost />
       <MascotPointsFooter variant="onDark" className="bg-bark-800 print:hidden" />
     </div>
   );

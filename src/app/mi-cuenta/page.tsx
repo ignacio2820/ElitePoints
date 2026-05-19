@@ -6,6 +6,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
 import { getSesion } from "@/lib/auth/server";
 import { getConfiguracion } from "@/lib/huellitas/service";
+import { datosContactoDesdeInfoLocal } from "@/lib/huellitas/datosContactoLocal";
 import { getInfoLocal } from "@/lib/huellitas/localService";
 import { resolvePublicBaseUrl } from "@/lib/auth/continueUrl";
 import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
@@ -143,15 +144,14 @@ export default async function MiCuentaPage({
         esLeyenda={!progreso.nivelSiguiente}
         montoParaUnaHuellita={cfg.montoParaUnaHuellita}
         diasVencimiento={cfg.diasVencimiento}
-        datosContacto={{
-          nombreLocal,
-          direccion: infoLocal.direccion,
-          telefonoWhatsapp:
-            infoLocal.telefonoWhatsapp ?? telefonoWhatsapp ?? undefined,
-          telefonoUrgencias: infoLocal.telefonoUrgencias,
-          email: infoLocal.email,
-          horariosAtencion: infoLocal.horariosAtencion
-        }}
+        datosContacto={datosContactoDesdeInfoLocal(
+          {
+            ...infoLocal,
+            telefonoWhatsapp:
+              infoLocal.telefonoWhatsapp ?? telefonoWhatsapp ?? undefined
+          },
+          nombreLocal
+        )}
       >
         {membresiaExpirada ? (
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />

@@ -11,10 +11,8 @@ import { HuellitaIcon } from "@/components/HuellitaIcon";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
 import type { NivelLealtad } from "@/lib/huellitas/types";
 import { formatARS, formatHuellitas, formatNumber } from "@/lib/utils";
-import {
-  AyudaNavButton,
-  type DatosContactoLocal
-} from "@/components/cliente/AyudaContactoModal";
+import { AyudaNavButton } from "@/components/cliente/AyudaContactoModal";
+import type { DatosContactoLocal } from "@/lib/huellitas/datosContactoLocal";
 
 export interface CustomerPanelProps {
   nombreLocal: string;
