@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Users } from "lucide-react";
+import { AlertTriangle, MessageSquare, Users } from "lucide-react";
 import { BuscadorClientes } from "@/components/admin/BuscadorClientes";
 import { AlertasEncuestasPanel } from "@/components/admin/encuestas/AlertasEncuestasPanel";
+import { FeedbackEncuestasPanel } from "@/components/admin/encuestas/FeedbackEncuestasPanel";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { cn } from "@/lib/utils";
 
-type Tab = "cartera" | "alertas";
+type Tab = "cartera" | "opiniones" | "alertas";
 
 interface Props {
   clientesIniciales: ClienteResumen[];
@@ -55,6 +56,21 @@ export function ClientesAdminTabs({
         <button
           type="button"
           role="tab"
+          aria-selected={tab === "opiniones"}
+          onClick={() => setTab("opiniones")}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition",
+            tab === "opiniones"
+              ? "bg-emerald-800 text-white shadow-sm"
+              : "text-bark-600 hover:bg-cream-50"
+          )}
+        >
+          <MessageSquare size={16} />
+          Opiniones
+        </button>
+        <button
+          type="button"
+          role="tab"
           aria-selected={tab === "alertas"}
           onClick={() => setTab("alertas")}
           className={cn(
@@ -92,10 +108,10 @@ export function ClientesAdminTabs({
           valorMonetarioHuellita={valorMonetarioHuellita}
           montoParaUnaHuellita={montoParaUnaHuellita}
         />
+      ) : tab === "opiniones" ? (
+        <FeedbackEncuestasPanel />
       ) : (
-        <AlertasEncuestasPanel
-          onCountChange={setBadgeAlertas}
-        />
+        <AlertasEncuestasPanel onCountChange={setBadgeAlertas} />
       )}
     </div>
   );

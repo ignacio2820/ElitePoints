@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { HUELLITAS_OPCIONES_DISCULPA } from "@/lib/huellitas/encuestasConstants";
+import { RespuestasEncuestaInAppSchema } from "@/lib/huellitas/encuestasInAppTypes";
 
 export const EstadoInvitacionEncuestaSchema = z.enum([
   "pendiente",
@@ -51,7 +52,10 @@ export const EncuestaRespuestaSchema = z.object({
   resueltoPorEmail: z.string().optional().nullable(),
   resueltoEn: z.string().optional(),
   disculpaHuellitas: z.number().int().positive().optional(),
-  disculpaNota: z.string().max(500).optional()
+  disculpaNota: z.string().max(500).optional(),
+  /** Respuestas estructuradas (encuesta in-app). */
+  respuestas: RespuestasEncuestaInAppSchema.optional(),
+  canal: z.enum(["in_app", "email", "web"]).optional()
 });
 
 export type EncuestaRespuesta = z.infer<typeof EncuestaRespuestaSchema>;

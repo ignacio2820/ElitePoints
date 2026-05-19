@@ -169,6 +169,8 @@ export async function enviarEncuestaInApp(
       token: input.token,
       puntuacion,
       comentario,
+      respuestas: input.respuestas,
+      canal: "in_app",
       huellitasRegalo: HUELLITAS_REGALO_ENCUESTA,
       creadoEn,
       ...(esInsatisfaccion

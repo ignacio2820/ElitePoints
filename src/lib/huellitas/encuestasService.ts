@@ -182,6 +182,7 @@ export async function enviarEncuestaYRecompensar(
       token,
       puntuacion: input.puntuacion,
       comentario: input.comentario?.trim() || undefined,
+      canal: "web",
       huellitasRegalo: HUELLITAS_REGALO_ENCUESTA,
       creadoEn: new Date().toISOString(),
       ...(esInsatisfaccion
