@@ -16,7 +16,14 @@ import {
 } from "./clientesService";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
 import { upsertOwnerIndex } from "@/lib/auth/identityIndex";
-import { RUTA_DASHBOARD } from "@/lib/auth/redirect";
+import {
+  COLECCION_ACTIVATION_TOKENS,
+  fechaVencimientoPorPlan,
+  leerActivationToken,
+  marcarTokenUsadoEnTransaccion,
+  mensajeMotivoToken
+} from "@/lib/huellitas/activationTokenService";
+export const RUTA_ONBOARDING_POST_LOGIN = "/admin/configuracion";
 
 /**
  * Catálogo inicial de premios que se siembra en cada Pet Shop nuevo.
@@ -87,6 +94,7 @@ function premiosInicialesGenericos(localId: string): Premio[] {
  */
 
 export interface OnboardingInput {
+  activationToken: string;
   emailDueno: string;
   nombreLocal: string;
   direccion: string;
@@ -110,7 +118,8 @@ export interface OnboardingError {
     | "email-ya-cliente"
     | "nombre-invalido"
     | "auth-error"
-    | "firestore-error";
+    | "firestore-error"
+    | "token-invalido";
 }
 
 /**
@@ -152,6 +161,16 @@ export async function crearLocalYOnboarding(
 ): Promise<OnboardingResult | OnboardingError> {
   const email = input.emailDueno.trim().toLowerCase();
   const nombreLocal = input.nombreLocal.trim();
+  const activationToken = input.activationToken.trim();
+
+  const tokenPrevio = await leerActivationToken(activationToken);
+  if (typeof tokenPrevio === "string") {
+    return {
+      ok: false,
+      error: mensajeMotivoToken(tokenPrevio),
+      code: "token-invalido"
+    };
+  }
 
   // 1. Validaciones básicas
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
@@ -214,51 +233,77 @@ export async function crearLocalYOnboarding(
 
   try {
     const cfg = configDefault(slug);
-    // Validamos antes de tocar Firestore para no dejar estados parciales.
     ConfiguracionLocalSchema.parse(cfg);
     const premios = premiosInicialesGenericos(slug);
+    const tokenRef = db.collection(COLECCION_ACTIVATION_TOKENS).doc(activationToken);
 
-    const batch = db.batch();
-    batch.set(
-      cols.local(db, slug),
-      {
-        nombre: nombreLocal,
+    await db.runTransaction(async (tx) => {
+      const tokenSnap = await tx.get(tokenRef);
+      if (!tokenSnap.exists) {
+        throw new Error("TOKEN_NOT_FOUND");
+      }
+
+      const tokenInfo = marcarTokenUsadoEnTransaccion(
+        tx,
+        db,
+        activationToken,
         slug,
-        activo: true,
-        creadoEn: ahora,
-        actualizadoEn: ahora,
-        emailDueno: email,
-        direccion: input.direccion.trim(),
-        telefonoWhatsapp: input.telefonoWhatsapp.trim(),
-        logoUrl: input.logoUrl?.trim() || null,
-        estadoMembresia: "pendiente",
-        membresiaEstado: "pendiente"
-      },
-      { merge: true }
-    );
-    batch.set(
-      cols.configuracion(db, slug),
-      {
-        ...cfg,
-        actualizadoEn: ahora,
-        actualizadoPor: "onboarding"
-      },
-      { merge: true }
-    );
+        tokenSnap
+      );
 
-    // Sembramos los premios de muestra (cada uno con su doc-id auto).
-    const premiosCol = cols.premios(db, slug);
-    for (const premio of premios) {
-      const ref = premiosCol.doc();
-      batch.set(ref, {
-        ...premio,
-        creadoEn: ahora,
-        actualizadoEn: ahora
-      });
-    }
+      const fechaVencimiento = Timestamp.fromDate(
+        fechaVencimientoPorPlan(tokenInfo.plan)
+      );
 
-    await batch.commit();
+      tx.set(
+        cols.local(db, slug),
+        {
+          nombre: nombreLocal,
+          slug,
+          activo: true,
+          creadoEn: ahora,
+          actualizadoEn: ahora,
+          emailDueno: email,
+          direccion: input.direccion.trim(),
+          telefonoWhatsapp: input.telefonoWhatsapp.trim(),
+          logoUrl: input.logoUrl?.trim() || null,
+          estadoMembresia: "activo",
+          membresiaEstado: "activo",
+          membresiaPlan: tokenInfo.plan,
+          fechaVencimiento,
+          activationToken
+        },
+        { merge: true }
+      );
+      tx.set(
+        cols.configuracion(db, slug),
+        {
+          ...cfg,
+          actualizadoEn: ahora,
+          actualizadoPor: "onboarding"
+        },
+        { merge: true }
+      );
+
+      const premiosCol = cols.premios(db, slug);
+      for (const premio of premios) {
+        const ref = premiosCol.doc();
+        tx.set(ref, {
+          ...premio,
+          creadoEn: ahora,
+          actualizadoEn: ahora
+        });
+      }
+    });
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.startsWith("TOKEN_") || msg === "TOKEN_NOT_FOUND") {
+      return {
+        ok: false,
+        error: mensajeMotivoToken("used"),
+        code: "token-invalido"
+      };
+    }
     return {
       ok: false,
       error: e instanceof Error ? e.message : "Error escribiendo el local",
@@ -306,7 +351,7 @@ export async function crearLocalYOnboarding(
   //    devuelve directo en dev).
   const continueUrl = urlVerificacionLogin({
     intent: "admin",
-    redirect: RUTA_DASHBOARD
+    redirect: RUTA_ONBOARDING_POST_LOGIN
   });
   const magicLink = await auth.generateSignInWithEmailLink(email, {
     url: continueUrl,

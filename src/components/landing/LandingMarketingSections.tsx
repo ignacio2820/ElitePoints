@@ -6,6 +6,7 @@ import {
   Ticket
 } from "lucide-react";
 import { LandingContactForm } from "@/components/landing/LandingContactForm";
+import { LandingPlanesSection } from "@/components/landing/LandingPlanesSection";
 import { MascotPointsFooter } from "@/components/MascotPointsFooter";
 
 const FEATURES = [
@@ -155,6 +156,8 @@ export function LandingMarketingSections() {
           </ul>
         </div>
       </section>
+
+      <LandingPlanesSection />
 
       <LandingContactForm />
 

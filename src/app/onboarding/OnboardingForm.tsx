@@ -1,7 +1,12 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  OnboardingAccesoRestringido,
+  OnboardingValidando
+} from "./OnboardingAcceso";
 import {
   ArrowRight,
   Building2,
@@ -33,20 +38,79 @@ const LOGO_ACCEPT = "image/*";
 
 const initialState: OnboardingState = { status: "idle" };
 
+type GateEstado = "cargando" | "sin-token" | "invalido" | "ok";
+
 export function OnboardingForm() {
+  const searchParams = useSearchParams();
+  const tokenUrl = searchParams.get("token")?.trim() ?? "";
+
+  const [gate, setGate] = useState<GateEstado>("cargando");
+  const [tokenValidado, setTokenValidado] = useState("");
+  const [planEtiqueta, setPlanEtiqueta] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!tokenUrl) {
+      setGate("sin-token");
+      return;
+    }
+
+    let cancelado = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/onboarding/validar-token?token=${encodeURIComponent(tokenUrl)}`,
+          { cache: "no-store" }
+        );
+        const data = (await res.json()) as {
+          ok?: boolean;
+          plan?: string;
+        };
+        if (cancelado) return;
+        if (data.ok) {
+          setTokenValidado(tokenUrl);
+          setPlanEtiqueta(data.plan ?? null);
+          setGate("ok");
+        } else {
+          setGate("invalido");
+        }
+      } catch {
+        if (!cancelado) setGate("invalido");
+      }
+    })();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [tokenUrl]);
+
   const [state, formAction] = useFormState(registrarPetShop, initialState);
+
+  if (gate === "cargando") return <OnboardingValidando />;
+  if (gate === "sin-token") return <OnboardingAccesoRestringido tipo="sin-token" />;
+  if (gate === "invalido") return <OnboardingAccesoRestringido tipo="token-invalido" />;
 
   if (state.status === "ok") {
     return <ExitoPanel state={state} />;
   }
 
-  return <Formulario errorMsg={state.status === "error" ? state.error : null} formAction={formAction} />;
+  return (
+    <Formulario
+      activationToken={tokenValidado}
+      planEtiqueta={planEtiqueta}
+      errorMsg={state.status === "error" ? state.error : null}
+      formAction={formAction}
+    />
+  );
 }
 
 function Formulario({
+  activationToken,
+  planEtiqueta,
   errorMsg,
   formAction
 }: {
+  activationToken: string;
+  planEtiqueta: string | null;
   errorMsg: string | null;
   formAction: (fd: FormData) => void;
 }) {
@@ -127,11 +191,23 @@ function Formulario({
                 </p>
               </div>
 
+              {planEtiqueta ? (
+                <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900 lg:mt-0">
+                  Membresía incluida: plan{" "}
+                  <span className="capitalize">{planEtiqueta}</span>
+                </p>
+              ) : null}
+
               <form
                 action={formAction}
                 encType="multipart/form-data"
                 className="mt-8 space-y-5 lg:mt-0"
               >
+                <input
+                  type="hidden"
+                  name="activationToken"
+                  value={activationToken}
+                />
                 <CampoConIcono
                   label="Nombre del local"
                   hint={
@@ -381,8 +457,8 @@ function ExitoPanel({
           <code className="rounded-lg bg-cream-100 px-2 py-0.5 font-mono text-sm text-bark-700 ring-1 ring-bark-100">
             {state.localId}
           </code>{" "}
-          y configuramos tu programa de fidelidad con valores saludables (1%
-          de costo).
+          y activamos tu membresía. Completá los datos de tu negocio en
+          Configuración cuando ingreses.
         </p>
 
         {state.sent ? (
@@ -393,12 +469,12 @@ function ExitoPanel({
         ) : state.devLink ? (
           <div className="mt-6 space-y-3">
             <a href={state.devLink} className="btn-primary w-full justify-center">
-              Continuar al panel
+              Ir a configuración
               <ArrowRight size={16} />
             </a>
             <p className="text-xs leading-relaxed text-bark-400">
-              Este botón te lleva al panel directo. En producción te llegaría
-              el link por email.
+              En producción también podés usar el link que te enviamos por email.
+              Te llevamos a Configuración para terminar de cargar tu negocio.
             </p>
           </div>
         ) : null}

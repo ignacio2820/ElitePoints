@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { RUTA_DASHBOARD, RUTA_PORTAL } from "@/lib/auth/redirect";
 import { getSesion } from "@/lib/auth/server";
+import { OnboardingValidando } from "./OnboardingAcceso";
 import { OnboardingForm } from "./OnboardingForm";
 
 export const dynamic = "force-dynamic";
@@ -20,5 +22,9 @@ export default async function OnboardingPage() {
       redirect(RUTA_PORTAL);
     }
   }
-  return <OnboardingForm />;
+  return (
+    <Suspense fallback={<OnboardingValidando />}>
+      <OnboardingForm />
+    </Suspense>
+  );
 }

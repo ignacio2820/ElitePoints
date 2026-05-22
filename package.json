@@ -18,7 +18,8 @@
     "listar-clientes": "tsx scripts/listar-clientes.ts",
     "borrar-cliente": "tsx scripts/borrar-cliente.ts",
     "purgar-firestore": "tsx scripts/purgar-firestore.ts",
-    "fusionar-duplicados": "tsx scripts/fusionar-clientes-duplicados.ts"
+    "fusionar-duplicados": "tsx scripts/fusionar-clientes-duplicados.ts",
+    "generar-token": "node scripts/generateToken.js"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^11.0.0",

@@ -8,6 +8,10 @@ import { mayExposeDevMagicLink } from "@/lib/auth/allowedOrigins";
 import { subirLogoLocal } from "@/lib/storage/uploadLogo";
 
 const Campos = z.object({
+  activationToken: z
+    .string()
+    .min(1, "Falta el token de activación.")
+    .max(128, "Token inválido"),
   email: z
     .string()
     .min(3, "Email inválido")
@@ -70,6 +74,7 @@ export async function registrarPetShop(
   const data = parsed.data;
 
   const r = await crearLocalYOnboarding({
+    activationToken: data.activationToken.trim(),
     emailDueno: data.email,
     nombreLocal: data.nombreLocal,
     direccion: data.direccion,
