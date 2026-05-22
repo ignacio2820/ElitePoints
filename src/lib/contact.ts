@@ -1,4 +1,3 @@
-V6.7.2
 /** Email de contacto y soporte visible en toda la app. */
 export const CONTACT_EMAIL = 'contacto@webelitesolution.io';
 

@@ -7,8 +7,11 @@ import {
 import {
   clienteCoincideClaveBarras,
   esEntradaIdentificadorBarras,
-  normalizarClaveBarras
+  esSufijoIdFirebaseBarras,
+  normalizarClaveBarras,
+  pareceIdDocumentoFirestore
 } from "./identificadorBarras";
+import { extraerClienteIdDesdeQr } from "./parseClienteQr";
 import { buscarClientePorCodigoCorto } from "./codigosClientesService";
 import {
   leerHuellitasActuales,
@@ -129,10 +132,8 @@ export async function listarClientes(
     return [];
   }
 
-  if (esEntradaIdentificadorBarras(qRaw)) {
-    const hit = await lookupPorIdentificadorBarras(localId, qRaw);
-    return hit ? [hit] : [];
-  }
+  const porEscanner = await resolverClienteDesdeEscanner(localId, qRaw);
+  if (porEscanner) return [porEscanner];
 
   const q = qRaw.toLowerCase();
   let snap;
@@ -183,7 +184,72 @@ export async function lookupPorCodigoCorto(
 }
 
 /**
- * Resuelve DNI o teléfono leído por el escáner (CODE128 numérico en credencial).
+ * Resuelve el sufijo de 8 caracteres del doc-id (código de barras en credencial).
+ */
+export async function lookupPorSufijoIdBarras(
+  localId: string,
+  entrada: string
+): Promise<ClienteResumen | null> {
+  const sufijo = entrada.trim();
+  if (!esSufijoIdFirebaseBarras(sufijo)) return null;
+
+  const db = adminDb();
+  try {
+    const porIndice = await cols
+      .clientes(db, localId)
+      .where("sufijoIdBarras", "==", sufijo)
+      .limit(2)
+      .get();
+    if (!porIndice.empty) {
+      const d = porIndice.docs[0];
+      return aResumen(d.id, d.data() as Partial<Cliente>, localId);
+    }
+  } catch {
+    // Sin índice → fallback por sufijo en id del documento.
+  }
+
+  const snap = await cols.clientes(db, localId).limit(500).get();
+  const matches = snap.docs.filter((d) => d.id.endsWith(sufijo));
+  if (matches.length !== 1) return null;
+  const d = matches[0];
+  return aResumen(d.id, d.data() as Partial<Cliente>, localId);
+}
+
+/**
+ * QR (ID completo), barras (sufijo 8) o DNI/teléfono legacy desde el escáner de caja.
+ */
+export async function resolverClienteDesdeEscanner(
+  localId: string,
+  entrada: string
+): Promise<ClienteResumen | null> {
+  const q = entrada.trim();
+  if (!q) return null;
+
+  const idQr = extraerClienteIdDesdeQr(q);
+  if (idQr) {
+    const hit = await getCliente(localId, idQr);
+    if (hit) return hit;
+  }
+
+  if (pareceIdDocumentoFirestore(q)) {
+    const hit = await getCliente(localId, q);
+    if (hit) return hit;
+  }
+
+  if (esSufijoIdFirebaseBarras(q)) {
+    const hit = await lookupPorSufijoIdBarras(localId, q);
+    if (hit) return hit;
+  }
+
+  if (esEntradaIdentificadorBarras(q)) {
+    return lookupPorIdentificadorBarras(localId, q);
+  }
+
+  return null;
+}
+
+/**
+ * Resuelve DNI o teléfono leído por el escáner (CODE128 numérico en credencial legacy).
  */
 export async function lookupPorIdentificadorBarras(
   localId: string,

@@ -10,7 +10,7 @@ export type CredencialDisplayMode = "qr" | "barcode";
 export interface CredencialDigitalClientePanelProps {
   clienteId: string;
   qrSvgHtml: string;
-  /** DNI o teléfono normalizado para CODE128 (lector láser). */
+  /** Últimos 8 caracteres del ID Firestore para CODE128 (lector láser). */
   valorBarras: string | null;
   qrSize?: number;
   className?: string;
@@ -76,7 +76,7 @@ export function CredencialDigitalClientePanel({
         <p className="mt-3 text-center text-xs text-bark-500">
           {displayMode === "qr"
             ? "Para cámara o lector 2D en el mostrador"
-            : "Para lector láser Megawin — DNI o teléfono en barras"}
+            : "Para lector láser Megawin — código compacto de 8 caracteres"}
         </p>
       </div>
 
@@ -100,12 +100,7 @@ export function CredencialDigitalClientePanel({
           </div>
         ) : valorBarras ? (
           <CodigoBarrasLectorFisico value={valorBarras} fullscreen />
-        ) : (
-          <p className="max-w-xs text-center text-sm leading-relaxed text-bark-600">
-            Para usar el código de barras, registrá tu teléfono en tu perfil o
-            pedile al local que lo agregue a tu ficha.
-          </p>
-        )}
+        ) : null}
       </div>
     </article>
   );

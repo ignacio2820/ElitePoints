@@ -1,5 +1,28 @@
 /**
- * Identificador numérico corto para código de barras en credencial y lector láser.
+ * Identificadores para credencial y lector láser en caja.
+ * - Barras actuales: últimos 8 caracteres del ID Firestore (CODE128 compacto).
+ * - Legacy: DNI / teléfono (`claveBarras`) en credenciales antiguas.
+ */
+
+/** Sufijo impreso en CODE128 (Megawin) y consultado en caja. */
+export function sufijoBarrasDesdeClienteId(clienteId: string): string {
+  const id = clienteId.trim();
+  if (!id) return "";
+  return id.length >= 8 ? id.slice(-8) : id;
+}
+
+export function esSufijoIdFirebaseBarras(entrada: string): boolean {
+  const t = entrada.trim();
+  return /^[A-Za-z0-9_-]{8}$/.test(t);
+}
+
+export function pareceIdDocumentoFirestore(id: string): boolean {
+  const t = id.trim();
+  return t.length >= 15 && /^[A-Za-z0-9_-]{15,128}$/.test(t);
+}
+
+/**
+ * Identificador numérico corto (credenciales antiguas con DNI/teléfono).
  * Prioridad: DNI → teléfono (últimos 10 dígitos si es largo, p. ej. +54 9 …).
  */
 

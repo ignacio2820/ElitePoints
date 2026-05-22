@@ -3,7 +3,8 @@ import { PREFIJO_CLIENTE } from "@/lib/qr/scannerPayloads";
 /**
  * Extrae el ID de cliente Firestore desde el texto del QR.
  *
- * Formato preferido en pantalla: `MP-CLIENTE:{clienteId}` (baja densidad).
+ * Formato preferido en pantalla: ID Firestore plano (baja densidad).
+ * Compatibilidad: `MP-CLIENTE:{clienteId}` en credenciales antiguas.
  * Compatibilidad: `/admin/scan/{id}`, URLs y ID plano (QR impresos antiguos).
  */
 
@@ -39,9 +40,10 @@ export function extraerClienteIdDesdeQr(raw: string): string | null {
   }
 
   const simple = t.replace(/\s/g, "");
-  // DNI / teléfono del barcode (CODE128): lo resuelve lookup en caja, no es ID Firestore.
+  // DNI / teléfono (legacy) o sufijo de 8 chars del barcode: los resuelve lookup en caja.
   if (/^\d{7,15}$/.test(simple)) return null;
-  if (/^[A-Za-z0-9_-]{8,128}$/.test(simple)) return simple;
+  if (simple.length === 8) return null;
+  if (/^[A-Za-z0-9_-]{9,128}$/.test(simple)) return simple;
 
   return null;
 }

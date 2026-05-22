@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { ErrorAuth, requireAdmin } from "@/lib/auth/server";
 import {
   lookupPorCodigoCorto,
-  lookupPorIdentificadorBarras
+  resolverClienteDesdeEscanner
 } from "@/lib/huellitas/clientesService";
+import { esEntradaEscannerRapida } from "@/lib/huellitas/escannerCliente";
 import { esCodigoClienteValido } from "@/lib/huellitas/codigosClientes";
-import { esEntradaIdentificadorBarras } from "@/lib/huellitas/identificadorBarras";
 import { assertAccesoOperativo } from "@/lib/huellitas/requireMembresiaActiva";
 
 export const runtime = "nodejs";
@@ -34,13 +34,12 @@ export async function GET(req: Request) {
     let cliente = null;
     if (esCodigoClienteValido(q)) {
       cliente = await lookupPorCodigoCorto(sesion.claims.localId, q);
-    } else if (esEntradaIdentificadorBarras(q)) {
-      cliente = await lookupPorIdentificadorBarras(sesion.claims.localId, q);
+    } else if (esEntradaEscannerRapida(q)) {
+      cliente = await resolverClienteDesdeEscanner(sesion.claims.localId, q);
     }
     if (!cliente) {
       const invalido =
-        q.replace(/[^A-Za-z0-9-]/g, "").length === 0 &&
-        !esEntradaIdentificadorBarras(q);
+        q.replace(/[^A-Za-z0-9-]/g, "").length === 0 && !esEntradaEscannerRapida(q);
       return NextResponse.json({
         ok: false,
         reason: invalido ? "invalido" : "no-encontrado"

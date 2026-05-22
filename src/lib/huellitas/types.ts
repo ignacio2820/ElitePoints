@@ -289,6 +289,8 @@ export const ClienteSchema = z.object({
    * Se mantiene al crear/actualizar el cliente.
    */
   claveBarras: z.string().max(15).optional(),
+  /** Últimos 8 caracteres del doc-id; índice para lector láser en caja. */
+  sufijoIdBarras: z.string().length(8).optional(),
 
   /**
    * Saldo disponible para canjes (suma de lotes vigentes, cache).

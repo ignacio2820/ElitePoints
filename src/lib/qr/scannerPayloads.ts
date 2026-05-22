@@ -8,16 +8,16 @@ export const PREFIJO_CLIENTE = "MP-CLIENTE:";
 export const PREFIJO_CLIENTE_BARRAS = "MP-CLIENTE-";
 export const PREFIJO_CANJE = "MP-CANJE:";
 
-/** QR de identificación del cliente en caja (solo ID Firestore). */
+/** QR de identificación del cliente en caja (ID Firestore plano, baja densidad). */
 export function payloadQrCliente(clienteId: string): string {
   const id = clienteId.trim();
   if (!id) throw new Error("clienteId vacío");
-  return `${PREFIJO_CLIENTE}${id}`;
+  return id;
 }
 
 /**
- * @deprecated El barcode en credencial usa DNI/teléfono (`valorCodigoBarrasDesdeCliente`).
- * Se mantiene el prefijo solo para QR/barras impresos antiguos en `parseClienteQr`.
+ * @deprecated Barras impresas antiguas con prefijo. La credencial usa los últimos 8 del ID.
+ * Se mantiene el prefijo en `parseClienteQr` por compatibilidad.
  */
 export function payloadCodigoBarrasCliente(clienteId: string): string {
   const id = clienteId.trim();

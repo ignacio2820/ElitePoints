@@ -11,7 +11,10 @@ import {
   normalizarCodigo
 } from "./referidos";
 import { asegurarCodigoClienteUnico } from "./codigosClientesService";
-import { claveBarrasDesdeCliente } from "./identificadorBarras";
+import {
+  claveBarrasDesdeCliente,
+  sufijoBarrasDesdeClienteId
+} from "./identificadorBarras";
 import type { Cliente, ReferidoIndex } from "./types";
 
 /**
@@ -111,11 +114,13 @@ export async function crearClienteConReferido(input: {
     telefono: input.cliente.telefono,
     dni: input.cliente.dni
   });
+  const sufijoIdBarras = sufijoBarrasDesdeClienteId(clienteRef.id);
   const clienteData: Cliente = {
     localId: input.localId,
     nombre: input.cliente.nombre,
     email: emailNorm,
     telefono: input.cliente.telefono ?? "",
+    ...(sufijoIdBarras ? { sufijoIdBarras } : {}),
     ...(claveBarras ? { claveBarras } : {}),
     huellitasActuales: 0,
     saldoHuellitas: 0,

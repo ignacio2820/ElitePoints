@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Search, User, X } from "lucide-react";
 import { esCodigoClienteValido } from "@/lib/huellitas/codigosClientes";
-import { esEntradaIdentificadorBarras } from "@/lib/huellitas/identificadorBarras";
+import { esEntradaEscannerRapida } from "@/lib/huellitas/escannerCliente";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import { formatNumber } from "@/lib/utils";
 
@@ -149,7 +149,7 @@ export function SelectorCliente({
     debounceRef.current = setTimeout(async () => {
       try {
         // Si parece código corto, hacemos lookup directo (más rápido y exacto)
-        if (esCodigoClienteValido(q) || esEntradaIdentificadorBarras(q)) {
+        if (esCodigoClienteValido(q) || esEntradaEscannerRapida(q)) {
           const r = await fetch(
             `/api/admin/clientes/lookup?q=${encodeURIComponent(q)}`,
             { cache: "no-store" }
@@ -303,10 +303,10 @@ export function SelectorCliente({
       </div>
 
       <p className="mt-2 text-xs text-bark-400">
-        Escaneá el <span className="font-medium text-bark-600">código de barras</span> de la
-        credencial en este campo, usá el{" "}
-        <span className="font-medium text-bark-600">código corto</span> (Mi cuenta) o buscá por
-        nombre.
+        Escaneá el <span className="font-medium text-bark-600">QR</span> o el{" "}
+        <span className="font-medium text-bark-600">código de barras</span> de la credencial en
+        este campo, usá el <span className="font-medium text-bark-600">código corto</span> (Mi
+        cuenta) o buscá por nombre.
       </p>
 
       {open && q.trim() && (

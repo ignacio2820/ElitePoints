@@ -11,13 +11,13 @@ export interface CodigoBarrasLectorFisicoProps {
 }
 
 /**
- * CODE128 de alta densidad (barras finas, estilo impreso) para lector láser Megawin.
+ * CODE128 compacto (8 caracteres) para lector láser Megawin: barras gruesas y legibles.
  * `margin` = quiet zone (jsbarcode / react-barcode).
  */
-const BARRAS_ALTA_DENSIDAD = {
+const BARRAS_MEGAWIN = {
   format: "CODE128" as const,
-  width: 1.5,
-  height: 60,
+  width: 1.8,
+  height: 70,
   displayValue: true,
   background: "#FFFFFF",
   lineColor: "#000000",
@@ -38,7 +38,7 @@ function BarrasCredencial({ value }: { value: string }) {
       style={{ colorScheme: "light" }}
     >
       <div className="shrink-0 [&_svg]:block [&_svg]:h-auto [&_svg]:w-auto [&_svg]:max-w-none">
-        <Barcode value={value} {...BARRAS_ALTA_DENSIDAD} />
+        <Barcode value={value} {...BARRAS_MEGAWIN} />
       </div>
     </div>
   );
