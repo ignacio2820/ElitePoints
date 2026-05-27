@@ -8,10 +8,9 @@ import { cn } from "@/lib/utils";
 export type CredencialDisplayMode = "qr" | "barcode";
 
 export interface CredencialDigitalClientePanelProps {
-  clienteId: string;
+  /** Código corto (ej. "YMS-Q6Y") para QR y CODE128. */
+  codigoCredencial: string | null;
   qrSvgHtml: string;
-  /** Últimos 8 caracteres del ID Firestore para CODE128 (lector láser). */
-  valorBarras: string | null;
   qrSize?: number;
   className?: string;
 }
@@ -20,13 +19,11 @@ export interface CredencialDigitalClientePanelProps {
  * Credencial con pestañas: un solo código a la vez, tamaño generoso para escaneo.
  */
 export function CredencialDigitalClientePanel({
-  clienteId: _clienteId,
+  codigoCredencial,
   qrSvgHtml,
-  valorBarras,
   qrSize = 320,
   className
 }: CredencialDigitalClientePanelProps) {
-  void _clienteId;
   const [displayMode, setDisplayMode] = useState<CredencialDisplayMode>("qr");
 
   return (
@@ -76,7 +73,7 @@ export function CredencialDigitalClientePanel({
         <p className="mt-3 text-center text-xs text-bark-500">
           {displayMode === "qr"
             ? "Para cámara o lector 2D en el mostrador"
-            : "Para lector láser Megawin — código compacto de 8 caracteres"}
+            : "Para lector láser Megawin — tu código de cliente"}
         </p>
       </div>
 
@@ -87,7 +84,12 @@ export function CredencialDigitalClientePanel({
         )}
         role="tabpanel"
       >
-        {displayMode === "qr" ? (
+        {!codigoCredencial ? (
+          <p className="max-w-xs text-center text-sm leading-relaxed text-bark-600">
+            Tu código de cliente aún no está disponible. Pedile al local que
+            actualice tu ficha o volvé a intentar más tarde.
+          </p>
+        ) : displayMode === "qr" ? (
           <div
             className="flex w-full max-w-[min(100%,20rem)] justify-center rounded-2xl bg-white p-4"
             style={{ colorScheme: "light" }}
@@ -98,9 +100,9 @@ export function CredencialDigitalClientePanel({
               dangerouslySetInnerHTML={{ __html: qrSvgHtml }}
             />
           </div>
-        ) : valorBarras ? (
-          <CodigoBarrasLectorFisico value={valorBarras} fullscreen />
-        ) : null}
+        ) : (
+          <CodigoBarrasLectorFisico value={codigoCredencial} fullscreen />
+        )}
       </div>
     </article>
   );

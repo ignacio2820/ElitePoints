@@ -11,13 +11,13 @@ export interface CodigoBarrasLectorFisicoProps {
 }
 
 /**
- * CODE128 compacto (8 caracteres) para lector láser Megawin: barras gruesas y legibles.
+ * CODE128 compacto (`codigoCliente`, 7 caracteres) para lector láser Megawin.
  * `margin` = quiet zone (jsbarcode / react-barcode).
  */
 const BARRAS_MEGAWIN = {
   format: "CODE128" as const,
-  width: 1.8,
-  height: 70,
+  width: 2.0,
+  height: 75,
   displayValue: true,
   background: "#FFFFFF",
   lineColor: "#000000",

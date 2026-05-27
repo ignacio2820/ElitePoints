@@ -40,11 +40,11 @@ export function RestaurarSesionClient() {
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-terracotta-400 shadow-soft">
           <HuellitaIcon size={28} className="text-white" />
         </div>
-        <Loader2 className="mx-auto mt-6 h-8 w-8 animate-spin text-white" />
-        <h1 className="mt-4 font-display text-xl font-semibold text-white">
+        <Loader2 className="mx-auto mt-6 h-8 w-8 animate-spin text-bark-500" />
+        <h1 className="mt-4 font-display text-xl font-semibold text-bark-700">
           Restaurando tu sesión…
         </h1>
-        <p className="mt-2 text-sm text-white">
+        <p className="mt-2 text-sm text-bark-500">
           Un momento, estamos recuperando tu acceso sin pedirte un nuevo link.
         </p>
       </div>

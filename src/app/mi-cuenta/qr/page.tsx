@@ -82,9 +82,7 @@ export default async function MiQRPage({
 
           <div className="mt-8 w-full max-w-full">
             <CredencialDigitalCliente
-              clienteId={clienteId}
-              telefono={cliente?.telefono}
-              dni={cliente?.dni}
+              codigoCliente={cliente?.codigoCliente}
               qrSize={320}
             />
           </div>

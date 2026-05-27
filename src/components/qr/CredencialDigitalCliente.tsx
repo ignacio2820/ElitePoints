@@ -1,37 +1,47 @@
 import { generarQrSvg } from "@/lib/qr/generate";
+import { normalizarCodigoCliente } from "@/lib/huellitas/codigosClientes";
 import { payloadQrCliente } from "@/lib/qr/scannerPayloads";
-import { sufijoBarrasDesdeClienteId } from "@/lib/huellitas/identificadorBarras";
 import { CredencialDigitalClientePanel } from "@/components/qr/CredencialDigitalClientePanel";
 
 export interface CredencialDigitalClienteProps {
-  clienteId: string;
-  telefono?: string;
-  dni?: string;
+  /** Código corto del cliente en Firestore (ej. "YMS-Q6Y"). */
+  codigoCliente?: string;
   qrSize?: number;
   className?: string;
 }
 
 /**
  * Credencial con selector QR / barras (render en cliente).
+ * QR y barras emiten el mismo `codigoCliente`, sin prefijos.
  */
 export async function CredencialDigitalCliente({
-  clienteId,
-  telefono,
-  dni,
+  codigoCliente,
   qrSize = 320,
   className
 }: CredencialDigitalClienteProps) {
-  const payloadQr = payloadQrCliente(clienteId);
+  const codigo =
+    (codigoCliente && normalizarCodigoCliente(codigoCliente)) ||
+    codigoCliente?.trim().toUpperCase() ||
+    "";
+
+  if (!codigo) {
+    return (
+      <CredencialDigitalClientePanel
+        codigoCredencial={null}
+        qrSvgHtml=""
+        qrSize={qrSize}
+        className={className}
+      />
+    );
+  }
+
+  const payloadQr = payloadQrCliente(codigo);
   const qrSvgHtml = await generarQrSvg(payloadQr, { width: qrSize });
-  void telefono;
-  void dni;
-  const valorBarras = sufijoBarrasDesdeClienteId(clienteId) || null;
 
   return (
     <CredencialDigitalClientePanel
-      clienteId={clienteId}
+      codigoCredencial={codigo}
       qrSvgHtml={qrSvgHtml}
-      valorBarras={valorBarras}
       qrSize={qrSize}
       className={className}
     />

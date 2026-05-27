@@ -2,17 +2,17 @@ import { CredencialDigitalCliente } from "@/components/qr/CredencialDigitalClien
 import { HuellitaIcon } from "@/components/HuellitaIcon";
 
 export interface QRClienteProps {
-  /** ID Firestore del cliente (payload corto MP-CLIENTE:…). */
-  clienteId: string;
+  /** Código corto del cliente (ej. "YMS-Q6Y"). */
+  codigoCliente: string;
   size?: number;
   caption?: string;
 }
 
 /**
- * Server component: credencial digital (QR + Code 39) para lectores en pantalla.
+ * Server component: credencial digital (QR + barras) para lectores en pantalla.
  */
 export async function QRCliente({
-  clienteId,
+  codigoCliente,
   size = 280,
   caption
 }: QRClienteProps) {
@@ -21,7 +21,7 @@ export async function QRCliente({
       <div className="absolute -left-3 -top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-bark-700 text-cream-50 ring-4 ring-white">
         <HuellitaIcon size={16} className="text-cream-50" />
       </div>
-      <CredencialDigitalCliente clienteId={clienteId} qrSize={size} />
+      <CredencialDigitalCliente codigoCliente={codigoCliente} qrSize={size} />
       {caption ? (
         <p className="mt-3 text-xs uppercase tracking-widest text-bark-500">
           {caption}

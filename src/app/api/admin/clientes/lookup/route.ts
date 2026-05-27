@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/admin/clientes/lookup?q=ABC-123
  *
- * Resuelve un código corto al cliente. Pensado para que la caja resuelva
- * el cliente al toque sin recorrer toda la colección.
+ * Resuelve escáner/código: igualdad en `codigoCliente` (Clientes) o lookup legacy.
+ * Pensado para que la caja cargue al cliente sin listas ni confirmación.
  *
  * Respuestas:
  *   200 { ok: true, cliente: ClienteResumen } — match exacto

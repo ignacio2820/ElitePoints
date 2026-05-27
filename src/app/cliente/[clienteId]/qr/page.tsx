@@ -80,9 +80,7 @@ export default async function ClienteQrPage({
 
         <div className="mt-8 w-full">
           <CredencialDigitalCliente
-            clienteId={params.clienteId}
-            telefono={cliente.telefono}
-            dni={cliente.dni}
+            codigoCliente={cliente.codigoCliente}
             qrSize={320}
           />
         </div>

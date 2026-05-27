@@ -123,13 +123,8 @@ export async function listarClientes(
   // válido, devolvemos directamente ese cliente (1 doc) — no recorremos
   // toda la colección. Caja registradora es el caso de uso principal.
   if (esCodigoClienteValido(qRaw)) {
-    const hit = await buscarClientePorCodigoCorto(localId, qRaw);
-    if (hit) {
-      const cliente = await getCliente(localId, hit.clienteId);
-      if (cliente) return [cliente];
-    }
-    // Si parecía código pero no existe, devolvemos vacío inmediatamente.
-    return [];
+    const cliente = await lookupPorCodigoClienteCampo(localId, qRaw);
+    return cliente ? [cliente] : [];
   }
 
   const porEscanner = await resolverClienteDesdeEscanner(localId, qRaw);
@@ -167,6 +162,38 @@ export async function listarClientes(
 }
 
 /**
+ * Coincidencia exacta por campo `codigoCliente` en Clientes (caja / escáner).
+ * Fallback al índice CodigosClientes si el campo no está indexado o vacío.
+ */
+export async function lookupPorCodigoClienteCampo(
+  localId: string,
+  codigoInput: string
+): Promise<ClienteResumen | null> {
+  if (!esCodigoClienteValido(codigoInput)) return null;
+  const codigo = normalizarCodigoCliente(codigoInput);
+  const db = adminDb();
+
+  try {
+    const snap = await cols
+      .clientes(db, localId)
+      .where("codigoCliente", "==", codigo)
+      .limit(2)
+      .get();
+    if (snap.size === 1) {
+      const d = snap.docs[0];
+      return aResumen(d.id, d.data() as Partial<Cliente>, localId);
+    }
+    if (snap.size > 1) return null;
+  } catch {
+    // Sin índice compuesto → fallback al doc-id del índice CodigosClientes.
+  }
+
+  const hit = await buscarClientePorCodigoCorto(localId, codigoInput);
+  if (!hit) return null;
+  return getCliente(localId, hit.clienteId);
+}
+
+/**
  * Resuelve un código corto (ej "ABC-123") al cliente correspondiente.
  * Si la entrada NO es un código válido, devuelve null sin tocar Firestore.
  * Tolera mayúsculas/minúsculas, espacios y caracteres confusos (O→0, I→1...).
@@ -175,12 +202,7 @@ export async function lookupPorCodigoCorto(
   localId: string,
   codigoInput: string
 ): Promise<ClienteResumen | null> {
-  if (!esCodigoClienteValido(codigoInput)) return null;
-  const _normalizado = normalizarCodigoCliente(codigoInput);
-  void _normalizado; // sólo para validar formato; el helper hace su propia normalización
-  const hit = await buscarClientePorCodigoCorto(localId, codigoInput);
-  if (!hit) return null;
-  return getCliente(localId, hit.clienteId);
+  return lookupPorCodigoClienteCampo(localId, codigoInput);
 }
 
 /**

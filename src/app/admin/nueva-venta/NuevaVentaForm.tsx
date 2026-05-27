@@ -164,9 +164,8 @@ export function NuevaVentaForm({
     });
   }, []);
 
-  const onClienteDesdeEscaneo = useCallback((id: string) => {
-    setClienteId(id);
-    setEscaneoQr({ id, t: Date.now() });
+  const onClienteDesdeEscaneo = useCallback((ref: string) => {
+    setEscaneoQr({ id: ref, t: Date.now() });
   }, []);
   const nivelActualResult = niveles.find((n) => n.id === resultado?.nivelId);
   const nivelAnteriorResult = niveles.find((n) => n.id === resultado?.nivelAnterior);

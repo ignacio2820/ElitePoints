@@ -8,11 +8,11 @@ export const PREFIJO_CLIENTE = "MP-CLIENTE:";
 export const PREFIJO_CLIENTE_BARRAS = "MP-CLIENTE-";
 export const PREFIJO_CANJE = "MP-CANJE:";
 
-/** QR de identificación del cliente en caja (ID Firestore plano, baja densidad). */
-export function payloadQrCliente(clienteId: string): string {
-  const id = clienteId.trim();
-  if (!id) throw new Error("clienteId vacío");
-  return id;
+/** QR de identificación del cliente en caja (`codigoCliente`, ej. "YMS-Q6Y"). */
+export function payloadQrCliente(codigoCliente: string): string {
+  const codigo = codigoCliente.trim();
+  if (!codigo) throw new Error("codigoCliente vacío");
+  return codigo;
 }
 
 /**

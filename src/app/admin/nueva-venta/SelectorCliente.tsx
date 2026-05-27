@@ -1,36 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Search, User, X } from "lucide-react";
 import { esCodigoClienteValido } from "@/lib/huellitas/codigosClientes";
 import { esEntradaEscannerRapida } from "@/lib/huellitas/escannerCliente";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import { formatNumber } from "@/lib/utils";
 
-/**
- * Selector de cliente para la caja registradora.
- *
- * UX:
- *  - El cajero puede tipear el código corto del cliente ("ABC-123") y se
- *    resuelve instantáneamente sin scrollear.
- *  - Si tipea texto libre (nombre, email, teléfono), aparece una lista
- *    de sugerencias en tiempo real.
- *  - Una vez elegido, el cliente se muestra como un "chip" con su nombre,
- *    código corto y saldo actual; el cajero puede cambiarlo con un click.
- *
- * Se comunica con el padre mediante `onChange(clienteId)`. No expone el
- * ID interno de Firestore al cajero — sólo el código corto bonito.
- */
+/** Limpia saltos de línea que envía el lector láser al final del código. */
+function sanitizarEntradaEscanner(valor: string): string {
+  return valor.replace(/[\r\n\t]/g, "").trim();
+}
 
 interface Props {
-  /** ID inicial preseleccionado (viene del query param `?cliente=...`). */
   clienteIdInicial?: string;
-  /** Último escaneo QR (t único para reinyectar el mismo cliente). */
   escaneoQr?: { id: string; t: number } | null;
-  /** ID que mantiene el padre; si queda vacío, se limpia el chip (evita UI desincronizada). */
   clienteIdEnFormulario?: string;
   onChange: (clienteId: string) => void;
-  /** Tras cargar el cliente (escaneo o selección). */
+  /** Tras asociar cliente (escáner o selección); el padre enfoca el monto. */
   onClienteListo?: () => void;
 }
 
@@ -50,8 +37,40 @@ export function SelectorCliente({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const ultimaAplicacionRef = useRef<string>("");
 
-  // Resolver el inicial si vino vía URL (?cliente=...)
+  const aplicarClienteDirecto = useCallback(
+    (c: ClienteResumen) => {
+      const clave = `${c.id}:${c.codigoCliente ?? ""}`;
+      if (ultimaAplicacionRef.current === clave) return;
+      ultimaAplicacionRef.current = clave;
+
+      setSeleccionado(c);
+      setQ("");
+      setOpen(false);
+      setResultados([]);
+      setError(null);
+      onChange(c.id);
+      onClienteListo?.();
+    },
+    [onChange, onClienteListo]
+  );
+
+  const resolverPorLookup = useCallback(
+    async (entrada: string): Promise<ClienteResumen | null> => {
+      const r = await fetch(
+        `/api/admin/clientes/lookup?q=${encodeURIComponent(entrada)}`,
+        { cache: "no-store", credentials: "same-origin" }
+      );
+      const data = (await r.json()) as {
+        ok: boolean;
+        cliente?: ClienteResumen;
+      };
+      return data.ok && data.cliente ? data.cliente : null;
+    },
+    []
+  );
+
   useEffect(() => {
     if (!clienteIdInicial) return;
     let cancelado = false;
@@ -67,11 +86,7 @@ export function SelectorCliente({
         };
         if (cancelado) return;
         const hit = (data.clientes ?? []).find((c) => c.id === clienteIdInicial);
-        if (hit) {
-          setSeleccionado(hit);
-          onChange(hit.id);
-          onClienteListo?.();
-        }
+        if (hit) aplicarClienteDirecto(hit);
       } catch {
         // ignore
       }
@@ -79,27 +94,17 @@ export function SelectorCliente({
     return () => {
       cancelado = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clienteIdInicial]);
+  }, [clienteIdInicial, aplicarClienteDirecto]);
 
   useEffect(() => {
     if (!escaneoQr?.id?.trim()) return;
-    const id = escaneoQr.id.trim();
+    const ref = sanitizarEntradaEscanner(escaneoQr.id);
     let cancelado = false;
     (async () => {
       try {
-        const r = await fetch(`/api/admin/clientes/${encodeURIComponent(id)}`, {
-          cache: "no-store",
-          credentials: "same-origin"
-        });
-        const data = (await r.json()) as {
-          ok?: boolean;
-          cliente?: ClienteResumen;
-        };
-        if (cancelado || !data.ok || !data.cliente) return;
-        setSeleccionado(data.cliente);
-        onChange(data.cliente.id);
-        onClienteListo?.();
+        const cliente = await resolverPorLookup(ref);
+        if (cancelado || !cliente) return;
+        aplicarClienteDirecto(cliente);
       } catch {
         // ignore
       }
@@ -107,8 +112,7 @@ export function SelectorCliente({
     return () => {
       cancelado = true;
     };
-    // escaneoQr.t dispara cada nuevo escaneo
-  }, [escaneoQr?.t, escaneoQr?.id, onChange, onClienteListo]);
+  }, [escaneoQr?.t, escaneoQr?.id, aplicarClienteDirecto, resolverPorLookup]);
 
   useEffect(() => {
     if (clienteIdEnFormulario === undefined) return;
@@ -118,9 +122,9 @@ export function SelectorCliente({
     setResultados([]);
     setOpen(false);
     setError(null);
+    ultimaAplicacionRef.current = "";
   }, [clienteIdEnFormulario]);
 
-  // Cerrar el dropdown al click fuera
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (
@@ -134,68 +138,85 @@ export function SelectorCliente({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Detección rápida: ¿la query parece un código corto?
-  const pareceCodigo = useMemo(() => esCodigoClienteValido(q), [q]);
+  const qSanitizada = sanitizarEntradaEscanner(q);
+  const pareceCodigo = useMemo(() => esCodigoClienteValido(qSanitizada), [qSanitizada]);
+  const esEscanner = useMemo(
+    () => pareceCodigo || esEntradaEscannerRapida(qSanitizada),
+    [pareceCodigo, qSanitizada]
+  );
 
-  // Búsqueda en vivo
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setError(null);
-    if (!q.trim()) {
-      setResultados([]);
-      return;
-    }
-    setBuscando(true);
-    debounceRef.current = setTimeout(async () => {
+  const ejecutarBusqueda = useCallback(
+    async (entrada: string) => {
+      const texto = sanitizarEntradaEscanner(entrada);
+      if (!texto) return;
+
+      setBuscando(true);
+      setError(null);
+
       try {
-        // Si parece código corto, hacemos lookup directo (más rápido y exacto)
-        if (esCodigoClienteValido(q) || esEntradaEscannerRapida(q)) {
-          const r = await fetch(
-            `/api/admin/clientes/lookup?q=${encodeURIComponent(q)}`,
-            { cache: "no-store" }
-          );
-          const data = (await r.json()) as {
-            ok: boolean;
-            cliente?: ClienteResumen;
-            reason?: string;
-          };
-          if (data.ok && data.cliente) {
-            setResultados([data.cliente]);
-          } else {
-            setResultados([]);
-            setError("No encontramos un cliente con ese código.");
+        if (esEntradaEscannerRapida(texto)) {
+          const cliente = await resolverPorLookup(texto);
+          if (cliente) {
+            aplicarClienteDirecto(cliente);
+            return;
           }
-        } else {
-          const r = await fetch(
-            `/api/admin/clientes/buscar?q=${encodeURIComponent(q)}`,
-            { cache: "no-store" }
-          );
-          const data = (await r.json()) as {
-            ok: boolean;
-            clientes?: ClienteResumen[];
-          };
-          setResultados(data.clientes ?? []);
+          setResultados([]);
+          setOpen(false);
+          setError("No encontramos un cliente con ese código.");
+          return;
+        }
+
+        const r = await fetch(
+          `/api/admin/clientes/buscar?q=${encodeURIComponent(texto)}`,
+          { cache: "no-store" }
+        );
+        const data = (await r.json()) as {
+          ok: boolean;
+          clientes?: ClienteResumen[];
+        };
+        const lista = data.clientes ?? [];
+        setResultados(lista);
+        setOpen(true);
+        if (lista.length === 0) {
+          setError("Sin resultados");
         }
       } catch {
         setResultados([]);
+        setOpen(false);
         setError("Error de red al buscar.");
       } finally {
         setBuscando(false);
       }
-    }, 200);
+    },
+    [aplicarClienteDirecto, resolverPorLookup]
+  );
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setError(null);
+
+    if (!qSanitizada) {
+      setResultados([]);
+      setBuscando(false);
+      return;
+    }
+
+    if (seleccionado) return;
+
+    const delay = esEscanner ? 0 : 200;
+    setBuscando(delay > 0);
+
+    debounceRef.current = setTimeout(() => {
+      void ejecutarBusqueda(qSanitizada);
+    }, delay);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [q]);
+  }, [qSanitizada, esEscanner, ejecutarBusqueda, seleccionado]);
 
   function elegir(c: ClienteResumen) {
-    setSeleccionado(c);
-    setQ("");
-    setOpen(false);
-    setResultados([]);
-    onChange(c.id);
-    onClienteListo?.();
+    aplicarClienteDirecto(c);
   }
 
   function limpiar() {
@@ -203,10 +224,22 @@ export function SelectorCliente({
     setQ("");
     setResultados([]);
     onChange("");
+    ultimaAplicacionRef.current = "";
     setTimeout(() => inputRef.current?.focus(), 0);
   }
 
-  // Si está seleccionado, mostramos el chip
+  function onInputChange(valor: string) {
+    setQ(sanitizarEntradaEscanner(valor));
+    if (!seleccionado) setOpen(!esCodigoClienteValido(sanitizarEntradaEscanner(valor)));
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    void ejecutarBusqueda(qSanitizada);
+  }
+
   if (seleccionado) {
     return (
       <div className="rounded-2xl border border-bark-100 bg-cream-50/80 p-4 shadow-soft">
@@ -233,9 +266,7 @@ export function SelectorCliente({
                 {seleccionado.email && (
                   <>
                     {" · "}
-                    <span className="text-bark-400">
-                      {seleccionado.email}
-                    </span>
+                    <span className="text-bark-400">{seleccionado.email}</span>
                   </>
                 )}
               </p>
@@ -271,12 +302,12 @@ export function SelectorCliente({
           ref={inputRef}
           type="text"
           value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setOpen(true);
+          onChange={(e) => onInputChange(e.target.value)}
+          onKeyDown={onKeyDown}
+          onFocus={() => {
+            if (!esEscanner) setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
-          placeholder="Código del cliente (ABC-123) o nombre / email / teléfono…"
+          placeholder="Escaneá credencial o código (ej. YMS-Q6Y)…"
           autoComplete="off"
           className={`w-full rounded-xl border bg-cream-50 py-3 pl-11 pr-10 text-sm text-bark-700 placeholder-bark-400 outline-none transition focus:ring-2 ${
             pareceCodigo
@@ -303,13 +334,11 @@ export function SelectorCliente({
       </div>
 
       <p className="mt-2 text-xs text-bark-400">
-        Escaneá el <span className="font-medium text-bark-600">QR</span> o el{" "}
-        <span className="font-medium text-bark-600">código de barras</span> de la credencial en
-        este campo, usá el <span className="font-medium text-bark-600">código corto</span> (Mi
-        cuenta) o buscá por nombre.
+        Pasá el lector en este campo: al reconocer el código, el cursor salta solo
+        al monto de la venta.
       </p>
 
-      {open && q.trim() && (
+      {open && q.trim() && !esEscanner && (
         <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-bark-100 bg-white shadow-2xl shadow-bark-900/10">
           {resultados.length === 0 && !buscando && (
             <div className="p-4 text-center text-sm text-bark-400">
@@ -352,6 +381,12 @@ export function SelectorCliente({
             </ul>
           )}
         </div>
+      )}
+
+      {error && esEscanner && !buscando && qSanitizada && (
+        <p className="mt-2 text-sm text-amber-800" role="alert">
+          {error}
+        </p>
       )}
     </div>
   );

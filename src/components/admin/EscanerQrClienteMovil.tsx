@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { QrCode, X } from "lucide-react";
+import {
+  esCodigoClienteValido,
+  normalizarCodigoCliente
+} from "@/lib/huellitas/codigosClientes";
 import { extraerClienteIdDesdeQr } from "@/lib/huellitas/parseClienteQr";
 
 interface Props {
@@ -44,9 +48,14 @@ export function EscanerQrClienteMovil({ onClienteId }: Props) {
             aspectRatio: 1
           },
           (decoded) => {
-            const id = extraerClienteIdDesdeQr(decoded);
-            if (!id) {
-              setMensaje("No pudimos leer un ID de cliente. Probá de nuevo.");
+            const idFirestore = extraerClienteIdDesdeQr(decoded);
+            const codigo =
+              !idFirestore && esCodigoClienteValido(decoded)
+                ? normalizarCodigoCliente(decoded)
+                : null;
+            const ref = idFirestore ?? codigo;
+            if (!ref) {
+              setMensaje("No pudimos leer el código del cliente. Probá de nuevo.");
               return;
             }
             void instancia
@@ -55,7 +64,7 @@ export function EscanerQrClienteMovil({ onClienteId }: Props) {
               .finally(() => {
                 setAbierto(false);
                 setMensaje(null);
-                onClienteId(id);
+                onClienteId(ref);
               });
           },
           () => {}
