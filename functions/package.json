@@ -4,7 +4,7 @@
   "description": "Cloud Functions HTTP premium — tokens de onboarding y renovación de membresía",
   "main": "lib/index.js",
   "engines": {
-    "node": "20 || 22"
+    "node": "20"
   },
   "scripts": {
     "build": "tsc",
