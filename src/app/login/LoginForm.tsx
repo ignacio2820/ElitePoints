@@ -402,20 +402,6 @@ function FormIngresar({
 
       {flujoCliente ? (
         <>
-          <PasskeyLoginButton
-            email={email}
-            redirect={redirect}
-            variant="primary"
-            autoIntentar={emailRecordado}
-            disabled={enviando || !emailValido}
-            onSuccess={() => undefined}
-            onError={onError}
-          />
-          <div className="relative flex items-center gap-3 py-1">
-            <div className="h-px flex-1 bg-bark-100" />
-            <span className="text-xs text-bark-400">o</span>
-            <div className="h-px flex-1 bg-bark-100" />
-          </div>
           {!mostrarMagicLink ? (
             <button
               type="button"
@@ -424,7 +410,7 @@ function FormIngresar({
                 onError("");
                 setMostrarMagicLink(true);
               }}
-              className="btn-ghost w-full justify-center gap-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-primary w-full justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Sparkles size={16} />
               Prefiero recibir link por email
@@ -457,6 +443,20 @@ function FormIngresar({
               </button>
             </>
           )}
+          <div className="relative flex items-center gap-3 py-1">
+            <div className="h-px flex-1 bg-bark-100" />
+            <span className="text-xs text-bark-400">o</span>
+            <div className="h-px flex-1 bg-bark-100" />
+          </div>
+          <PasskeyLoginButton
+            email={email}
+            redirect={redirect}
+            variant="ghost"
+            autoIntentar={emailRecordado}
+            disabled={enviando || !emailValido}
+            onSuccess={() => undefined}
+            onError={onError}
+          />
         </>
       ) : (
         <>
@@ -521,7 +521,7 @@ function FormIngresar({
         {esDueno
           ? "El link mágico expira en 1 hora. La contraseña la configurás en tu panel."
           : flujoCliente
-            ? "El link mágico expira en 1 hora. Con la app instalada, la huella es lo más rápido."
+            ? "El link mágico expira en 1 hora. En accesos posteriores podés activar la huella dactilar y entrar al toque."
             : "El link expira en 1 hora y solo se usa una vez."}
       </p>
     </form>
