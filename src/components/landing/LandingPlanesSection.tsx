@@ -20,7 +20,7 @@ const BENEFICIOS_PLAN = [
   },
   {
     icon: Sparkles,
-    text: "Fidelización por Huellitas sin límite de clientes"
+    text: "Fidelización por Puntos sin límite de clientes"
   },
   {
     icon: BarChart3,
@@ -38,36 +38,36 @@ const PLANES = [
     titulo: "Plan Mensual",
     etiquetaValor: "Suscripción Premium",
     subtitulo:
-      "Empezá digital sin atarte a largo plazo. Ideal para probar MascotPoints en tu mostrador.",
+      "Empezá digital sin atarte a largo plazo. Ideal para probar ElitePoints en tu mostrador.",
     destacado: false,
     badge: null as string | null,
     cta: "Solicitar Asesoramiento Personalizado",
     mensajeWhatsApp:
-      "Hola Ignacio! Me interesa la plataforma MascotPoints. Quisiera recibir asesoramiento sobre el Plan Mensual para mi comercio."
+      "Hola Ignacio! Me interesa la plataforma ElitePoints. Quisiera recibir asesoramiento sobre el Plan Mensual para mi comercio."
   },
   {
     id: "semestral",
     titulo: "Plan Semestral",
     etiquetaValor: "Bonificación por Lanzamiento",
     subtitulo:
-      "Compromiso medio plazo con condiciones preferenciales para locales que ya decidieron crecer.",
+      "Compromiso medio plazo con condiciones preferenciales para comercios que ya decidieron crecer.",
     destacado: true,
     badge: "10% OFF",
-    cta: "Activar Plan en mi Local",
+    cta: "Activar Plan en mi comercio",
     mensajeWhatsApp:
-      "Hola Ignacio! Vi la plataforma MascotPoints y quiero consultar las condiciones del Plan Semestral con el 10% de descuento."
+      "Hola Ignacio! Vi la plataforma ElitePoints y quiero consultar las condiciones del Plan Semestral con el 10% de descuento."
   },
   {
     id: "anual",
     titulo: "Plan Anual",
     etiquetaValor: "Pago Flexible con Descuento",
     subtitulo:
-      "Máximo ahorro y prioridad en onboarding. Pensado para veterinarias que quieren escalar su comunidad.",
+      "Máximo ahorro y prioridad en onboarding. Pensado para comercios que quieren escalar su comunidad.",
     destacado: false,
     badge: "30% OFF",
     cta: "Solicitar Asesoramiento Personalizado",
     mensajeWhatsApp:
-      "Hola Ignacio! Quiero digitalizar mi veterinaria con el Plan Anual de MascotPoints. ¿Me brindarías asesoramiento sobre las formas de pago con el 30% OFF?"
+      "Hola Ignacio! Quiero digitalizar mi comercio con el Plan Anual de ElitePoints. ¿Me brindarías asesoramiento sobre las formas de pago con el 30% OFF?"
   }
 ] as const;
 

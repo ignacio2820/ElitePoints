@@ -25,7 +25,7 @@ export function EnlaceTerminos({ variant = "light", className = "" }: Props) {
       >
         Términos y Condiciones
       </Link>{" "}
-      del programa MascotPoints.
+      del programa ElitePoints.
     </p>
   );
 }

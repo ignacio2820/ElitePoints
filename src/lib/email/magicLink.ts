@@ -23,7 +23,7 @@ export function renderEmailMagicLink(p: PayloadMagicLink): {
   html: string;
   text: string;
 } {
-  const marca = "MascotPoints";
+  const marca = "ElitePoints";
   const titulo =
     p.rol === "admin"
       ? `Acceso al panel — ${marca}`
@@ -31,12 +31,12 @@ export function renderEmailMagicLink(p: PayloadMagicLink): {
   const intro =
     p.rol === "admin"
       ? `Tocá el botón para entrar al panel de ${p.nombreLocal ?? "tu local"}.`
-      : `Tocá el botón para ver tus Huellitas en ${p.nombreLocal ?? "el local"}.`;
+      : `Tocá el botón para ver tus Puntos en ${p.nombreLocal ?? "el local"}.`;
 
   const subject =
     p.rol === "admin"
       ? `${marca}: acceso al panel de ${p.nombreLocal ?? "tu local"}`
-      : `${marca}: tu acceso a ${p.nombreLocal ?? "Huellitas"}`;
+      : `${marca}: tu acceso a ${p.nombreLocal ?? "Puntos"}`;
 
   const html = `<!doctype html>
 <html lang="es">
@@ -45,7 +45,7 @@ export function renderEmailMagicLink(p: PayloadMagicLink): {
       <tr><td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:24px;box-shadow:0 8px 24px -8px rgba(60,40,20,0.10);overflow:hidden;">
           <tr><td style="padding:32px 40px;background:linear-gradient(135deg,#1B4332 0%,#FB8500 100%);color:#FBF8F3;">
-            <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;opacity:.85;">MascotPoints</div>
+            <div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;opacity:.85;">ElitePoints</div>
             <h1 style="margin:8px 0 0;font-size:28px;font-weight:600;">${titulo}</h1>
           </td></tr>
           <tr><td style="padding:32px 40px;">

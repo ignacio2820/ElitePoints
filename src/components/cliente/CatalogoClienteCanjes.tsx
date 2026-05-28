@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { formatHuellitas, formatNumber } from "@/lib/utils";
@@ -14,7 +14,6 @@ interface Props {
   valorMonetarioHuellita: number;
   nivelCliente: NivelLealtad;
   niveles: NivelLealtad[];
-  especiesCliente?: string[];
 }
 
 export function CatalogoClienteCanjes({
@@ -23,8 +22,7 @@ export function CatalogoClienteCanjes({
   premios,
   valorMonetarioHuellita,
   nivelCliente,
-  niveles,
-  especiesCliente
+  niveles
 }: Props) {
   const router = useRouter();
   const [saldoDisponible, setSaldoDisponible] = useState(saldoDisponibleInicial);
@@ -49,7 +47,7 @@ export function CatalogoClienteCanjes({
           <span className="font-display text-4xl font-extrabold tabular-nums text-terracotta-300">
             {formatHuellitas(saldoDisponible)}
           </span>
-          <span className="pb-1 text-sm font-semibold text-white/85">Huellitas</span>
+          <span className="pb-1 text-sm font-semibold text-white/85">Puntos</span>
         </div>
         {reservadas > 0 ? (
           <p className="mt-2 text-xs text-white/75">
@@ -57,7 +55,7 @@ export function CatalogoClienteCanjes({
           </p>
         ) : null}
         <p className="mt-3 flex items-center gap-1.5 text-sm text-white/80">
-          <HuellitaIcon size={14} className="text-terracotta-300" />
+          <PuntoIcon size={14} className="text-terracotta-300" />
           Elegí un premio y generá tu cupón para mostrar en caja.
         </p>
       </div>
@@ -69,7 +67,6 @@ export function CatalogoClienteCanjes({
         valorMonetarioHuellita={valorMonetarioHuellita}
         nivelCliente={nivelCliente}
         niveles={niveles}
-        especiesCliente={especiesCliente}
         onCanjeExitoso={onCanjeExitoso}
       />
     </>

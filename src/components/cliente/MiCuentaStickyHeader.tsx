@@ -1,6 +1,6 @@
 import { LogOut } from "lucide-react";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { ProgressBar } from "@/components/ProgressBar";
 import { NivelBadge } from "@/components/NivelBadge";
 import { CodigoClienteChip } from "@/components/cliente/CodigoClienteChip";
@@ -93,7 +93,7 @@ export function MiCuentaStickyHeader({
               Tu saldo
             </p>
             <div className="mt-0.5 flex items-center gap-1.5 sm:gap-2">
-              <HuellitaIcon
+              <PuntoIcon
                 size={22}
                 className="shrink-0 text-bark-500 max-sm:h-5 max-sm:w-5 sm:h-6 sm:w-6"
               />
@@ -109,7 +109,7 @@ export function MiCuentaStickyHeader({
               </span>
             </div>
             <p className="mt-1 text-[11px] font-semibold leading-tight text-bark-600 sm:text-xs">
-              Huellitas acumuladas
+              Puntos acumulados
             </p>
             <p className="mt-0.5 text-[11px] leading-tight text-bark-500 sm:text-xs">
               Equivale a{" "}

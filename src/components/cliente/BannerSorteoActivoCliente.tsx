@@ -28,7 +28,7 @@ export function BannerSorteoActivoCliente() {
               ¡Hay un sorteo vigente para ti! 🐾
             </p>
             <p className="mt-1 text-sm text-bark-600">
-              Entrá y multiplicá tus chances con tus Huellitas antes del cierre.
+              Entrá y multiplicá tus chances con tus Puntos antes del cierre.
             </p>
           </div>
         </div>

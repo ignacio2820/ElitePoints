@@ -6,7 +6,7 @@ import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { aumentarCatalogo, type PremioAumentado } from "@/lib/huellitas/engine";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { NivelBadge } from "@/components/NivelBadge";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { cn, formatNumber } from "@/lib/utils";
 
 const categorias = [
@@ -24,7 +24,6 @@ export interface CatalogoPremiosProps {
   saldoCliente: number;
   nivelCliente: NivelLealtad;
   niveles: NivelLealtad[];
-  especiesCliente?: string[];
   onCanjear?: (premio: Premio) => void;
 }
 
@@ -33,7 +32,6 @@ export function CatalogoPremios({
   saldoCliente,
   nivelCliente,
   niveles,
-  especiesCliente,
   onCanjear
 }: CatalogoPremiosProps) {
   const [filtro, setFiltro] = useState<Filtro>("todos");
@@ -42,8 +40,7 @@ export function CatalogoPremios({
   const aumentado = aumentarCatalogo(premios, {
     saldoCliente,
     nivelCliente,
-    niveles,
-    especiesCliente
+    niveles
   });
 
   const visibles = aumentado.filter((p) => {
@@ -61,7 +58,7 @@ export function CatalogoPremios({
               <Sparkles size={16} />
               <span className="label-elegant">Catálogo de premios</span>
             </div>
-            <CardTitle className="mt-2 text-xl">Canjeá tus huellitas</CardTitle>
+            <CardTitle className="mt-2 text-xl">Canjeá tus puntos</CardTitle>
             <CardDescription>
               Seleccioná un premio. Algunos están reservados para rangos
               superiores: subí de nivel para desbloquearlos.
@@ -163,7 +160,7 @@ function PremioTile({
           <div>
             <div className="inline-flex items-center gap-1.5 font-display text-2xl font-semibold text-bark-700">
               {formatNumber(premio.costoHuellitas)}
-              <HuellitaIcon size={16} className="text-bark-400" />
+              <PuntoIcon size={16} className="text-bark-400" />
             </div>
             {nivelMinimo && nivelMinimo.id !== "cachorro" ? (
               <div className="mt-2">
@@ -211,7 +208,7 @@ function BloqueoLabel({
   if (motivo === "saldo") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-lg bg-cream-100 px-3 py-1.5 text-xs font-medium text-bark-500">
-        Te faltan {formatNumber(faltanHuellitas)} 🐾
+        Te faltan {formatNumber(faltanHuellitas)} puntos
       </span>
     );
   }
@@ -236,54 +233,49 @@ export const PREMIOS_DEMO: Premio[] = [
     nombre: "Pelota interactiva",
     descripcion: "Goma natural resistente. Ideal para juegos de inteligencia.",
     costoHuellitas: 80,
-    nivelMinimoId: "cachorro",
+    nivelMinimoId: "bronce",
     categoria: "juguete",
     stock: null,
-    activo: true,
-    especiesObjetivo: ["perro"]
+    activo: true
   },
   {
     localId: "demo",
     nombre: "Bolsa de premios gourmet",
-    descripcion: "Snacks horneados con receta veterinaria, sin conservantes.",
+    descripcion: "Selección premium de productos del comercio.",
     costoHuellitas: 200,
-    nivelMinimoId: "explorador",
+    nivelMinimoId: "plata",
     categoria: "alimento",
     stock: 12,
-    activo: true,
-    especiesObjetivo: []
+    activo: true
   },
   {
     localId: "demo",
     nombre: "Collar premium grabado",
-    descripcion: "Cuero vegetal con chapa grabada con el nombre de tu mascota.",
+    descripcion: "Personalizado con el nombre del cliente.",
     costoHuellitas: 320,
-    nivelMinimoId: "explorador",
+    nivelMinimoId: "plata",
     categoria: "accesorio",
     stock: null,
-    activo: true,
-    especiesObjetivo: []
+    activo: true
   },
   {
     localId: "demo",
-    nombre: "Sesión de spa canino",
-    descripcion: "Baño, cepillado y corte por nuestro equipo de groomers.",
+    nombre: "Experiencia VIP",
+    descripcion: "Atención preferencial en tu próxima visita.",
     costoHuellitas: 500,
-    nivelMinimoId: "gran-guardian",
+    nivelMinimoId: "elite",
     categoria: "servicio",
     stock: null,
-    activo: true,
-    especiesObjetivo: ["perro"]
+    activo: true
   },
   {
     localId: "demo",
-    nombre: "Consulta veterinaria",
-    descripcion: "Chequeo general con uno de nuestros veterinarios asociados.",
+    nombre: "Gift card",
+    descripcion: "Crédito para usar en el comercio.",
     costoHuellitas: 700,
-    nivelMinimoId: "gran-guardian",
+    nivelMinimoId: "elite",
     categoria: "servicio",
     stock: 4,
-    activo: true,
-    especiesObjetivo: []
+    activo: true
   }
 ];

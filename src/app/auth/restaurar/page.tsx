@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { RestaurarSesionClient } from "./RestaurarSesionClient";
 
 export const metadata = {
-  title: "Restaurando sesión — Huellitas"
+  title: "Restaurando sesión — Puntos"
 };
 
 export default function RestaurarSesionPage() {

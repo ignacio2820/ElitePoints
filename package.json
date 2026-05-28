@@ -1,8 +1,8 @@
 {
-  "name": "mascotpoints-huellitas",
+  "name": "elite-points",
   "version": "0.1.0",
   "private": true,
-  "description": "Motor de fidelización 'Huellitas' multi-tenant para Pet Shops",
+  "description": "ElitePoints — motor de fidelización por puntos multi-tenant para comercios",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "MascotPoints",
-  "short_name": "MascotPoints",
-  "description": "Tu programa de huellitas y premios en el Pet Shop",
+  "name": "ElitePoints",
+  "short_name": "ElitePoints",
+  "description": "Tu programa de puntos y premios en tu comercio",
   "start_url": "/portal",
   "scope": "/",
   "display": "standalone",

@@ -4,20 +4,14 @@ import { ArrowLeft, ScanLine } from "lucide-react";
 import { getSesion } from "@/lib/auth/server";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { NivelBadge } from "@/components/NivelBadge";
-import { GestionMascotasAdmin } from "@/components/admin/GestionMascotasAdmin";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import {
   calcularNivelCliente,
   leerHuellitasActuales,
   leerHuellitasHistoricas,
   progresoNivelCliente
 } from "@/lib/huellitas/saldosCliente";
-import {
-  CONFIGURACION_DEFAULT,
-  type ConfiguracionLocal,
-  type Mascota
-} from "@/lib/huellitas/types";
-import { fusionarMascotasCliente } from "@/lib/huellitas/fusionarMascotasCliente";
+import { CONFIGURACION_DEFAULT, type ConfiguracionLocal } from "@/lib/huellitas/types";
 import { formatARS, formatNumber } from "@/lib/utils";
 
 interface DatosScan {
@@ -29,7 +23,6 @@ interface DatosScan {
     saldoHuellitas: number;
     acumuladoHistorico: number;
     nivelId: string;
-    mascotas: Mascota[];
   };
   cfg: ConfiguracionLocal;
 }
@@ -42,43 +35,7 @@ const DEMO_DATA: DatosScan = {
     telefono: "+54 9 341 555-0123",
     saldoHuellitas: 142,
     acumuladoHistorico: 1340,
-    nivelId: "explorador",
-    mascotas: [
-      {
-        id: "m1",
-        nombre: "Coco",
-        especie: "perro",
-        raza: "Caniche toy",
-        fechaNacimiento: new Date(Date.now() - 4 * 365 * 86_400_000)
-          .toISOString()
-          .slice(0, 10),
-        sexo: "macho",
-        color: "Blanco",
-        pesoKg: 4.2,
-        esterilizado: true,
-        alergias: "Pollo",
-        medicacionActual: "Antiparasitario mensual",
-        veterinario: "Dra. Sosa — Clínica Patitas",
-        planAlimenticio: "balanceado-premium",
-        marcaAlimentoFavorita: "Royal Canin Mini",
-        notas:
-          "Le tiene miedo a los petardos. Le encantan los peluches con sonido."
-      },
-      {
-        id: "m2",
-        nombre: "Luna",
-        especie: "gato",
-        raza: "Siamés",
-        fechaNacimiento: new Date().toISOString().slice(0, 10),
-        sexo: "hembra",
-        color: "Crema con orejas chocolate",
-        pesoKg: 3.1,
-        esterilizado: true,
-        alergias: "",
-        planAlimenticio: "balanceado-premium",
-        marcaAlimentoFavorita: "Hill's Adult Indoor"
-      }
-    ]
+    nivelId: "plata"
   },
   cfg: { ...CONFIGURACION_DEFAULT, localId: "demo" }
 };
@@ -100,15 +57,7 @@ async function loadScan(
     const db = adminDb();
     const cliSnap = await cols.cliente(db, localId, clienteId).get();
     if (!cliSnap.exists) return null;
-    const cli = cliSnap.data() as DatosScan["cliente"] & {
-      mascotas?: Mascota[];
-    };
-    const mascotasSnap = await cols.mascotas(db, localId, clienteId).get();
-    const subcoleccion = mascotasSnap.docs.map((d) => ({
-      id: d.id,
-      ...(d.data() as Mascota)
-    }));
-    const mascotas = fusionarMascotasCliente(cli.mascotas, subcoleccion);
+    const cli = cliSnap.data() as DatosScan["cliente"];
     const cfg = await getConfiguracion(localId);
     return {
       cliente: {
@@ -118,8 +67,7 @@ async function loadScan(
         telefono: cli.telefono,
         saldoHuellitas: leerHuellitasActuales(cli),
         acumuladoHistorico: leerHuellitasHistoricas(cli),
-        nivelId: cli.nivelId ?? "cachorro",
-        mascotas
+        nivelId: cli.nivelId ?? "bronce"
       },
       cfg
     };
@@ -187,7 +135,7 @@ export default async function ScanClientePage({
             <span className="font-display text-4xl font-black tabular-nums text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255),0_0_20px_rgba(255_255_255,0.9)]">
               {formatNumber(cliente.saldoHuellitas)}
             </span>
-            <HuellitaIcon
+            <PuntoIcon
               size={20}
               className="text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
             />
@@ -231,29 +179,9 @@ export default async function ScanClientePage({
                 {Math.round(nivel.descuentoFijoPct * 100)}%
               </strong>
             </li>
-            <li>
-              Mascotas en ficha:{" "}
-              <strong className="text-bark-700">{cliente.mascotas.length}</strong>
-            </li>
           </ul>
         </Card>
       </div>
-
-      <div className="mt-10 mb-4 flex items-baseline justify-between">
-        <h2 className="font-display text-2xl font-semibold text-bark-700">
-          Mascotas
-        </h2>
-        <span className="text-sm text-[color:var(--muted)]">
-          {cliente.mascotas.length}{" "}
-          {cliente.mascotas.length === 1 ? "registrada" : "registradas"}
-        </span>
-      </div>
-
-      <GestionMascotasAdmin
-        clienteId={cliente.id}
-        mascotasIniciales={cliente.mascotas}
-        soloLectura={cliente.id === "demo"}
-      />
     </div>
   );
 }

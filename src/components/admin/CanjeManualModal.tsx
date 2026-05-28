@@ -77,7 +77,7 @@ export function CanjeManualModal({
               <span className="font-bold text-[#FB8500]">
                 {formatNumber(cliente.saldoHuellitas)}
               </span>{" "}
-              Huellitas
+              Puntos
             </p>
           </div>
           <button
@@ -102,7 +102,7 @@ export function CanjeManualModal({
               <option value="">Seleccionar…</option>
               {activos.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nombre} ({formatNumber(p.costoHuellitas)} Huellitas
+                  {p.nombre} ({formatNumber(p.costoHuellitas)} Puntos
                   {typeof p.stock === "number" ? ` · stock ${p.stock}` : ""})
                 </option>
               ))}
@@ -112,7 +112,7 @@ export function CanjeManualModal({
           {seleccionado ? (
             <p className="flex items-center gap-2 rounded-xl bg-cream-50 px-3 py-2 text-xs text-bark-600">
               <Gift size={14} className="text-[#FB8500]" />
-              Se descontarán {formatNumber(seleccionado.costoHuellitas)} Huellitas
+              Se descontarán {formatNumber(seleccionado.costoHuellitas)} Puntos
               y el stock del premio (si aplica), en una sola transacción.
             </p>
           ) : null}

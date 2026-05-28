@@ -41,11 +41,11 @@ export async function enviarEmailAlertaEncuestaBaja(
           <tr><td style="padding:28px;">
             <p style="font-size:15px;line-height:1.5;">
               El cliente <strong>${p.nombreCliente}</strong> dejó
-              <strong>${p.puntuacion} / 5</strong> huellitas en la encuesta post-compra.
+              <strong>${p.puntuacion} / 5</strong> puntos en la encuesta post-compra.
             </p>
             ${comentarioHtml}
             <p style="font-size:13px;color:#52796F;margin-top:20px;">
-              Revisá el panel de Clientes → Alertas para enviar una disculpa con Huellitas compensatorias.
+              Revisá el panel de Clientes → Alertas para enviar una disculpa con Puntos compensatorias.
             </p>
           </td></tr>
         </table>

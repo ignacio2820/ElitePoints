@@ -7,7 +7,7 @@ const WHATSAPP_SOPORTE = "543446536509";
 
 function urlWhatsAppSoporte(): string {
   const texto = encodeURIComponent(
-    "Hola, quiero registrar mi Pet Shop o Veterinaria en MascotPoints. Necesito mi enlace de activación."
+    "Hola, quiero registrar mi Pet Shop o Veterinaria en ElitePoints. Necesito mi enlace de activación."
   );
   return `https://wa.me/${WHATSAPP_SOPORTE}?text=${texto}`;
 }
@@ -41,7 +41,7 @@ export function OnboardingAccesoRestringido({
         </h1>
         {esSinToken ? (
           <p className="mt-4 text-sm leading-relaxed text-bark-600">
-            Para registrar tu Pet Shop o Veterinaria en MascotPoints es necesario
+            Para registrar tu Pet Shop o Veterinaria en ElitePoints es necesario
             adquirir una membresía. Contactá a soporte para recibir tu enlace de
             activación personalizado.
           </p>

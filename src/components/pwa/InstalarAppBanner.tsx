@@ -92,7 +92,7 @@ export function InstalarAppBanner() {
         <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl shadow-soft ring-1 ring-bark-100">
           <Image
             src="/icons/icon-192.png"
-            alt="MascotPoints"
+            alt="ElitePoints"
             width={56}
             height={56}
             className="h-full w-full object-cover"
@@ -101,13 +101,13 @@ export function InstalarAppBanner() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-bark-700">
-            Instalar App de MascotPoints
+            Instalar App de ElitePoints
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-bark-500">
             {ios
               ? "Tocá Compartir en Safari y elegí «Agregar a pantalla de inicio» para ver el logo en tu inicio."
               : puedeInstalarDirecto
-                ? "Guardá el acceso en tu pantalla de inicio con el logo de MascotPoints."
+                ? "Guardá el acceso en tu pantalla de inicio con el logo de ElitePoints."
                 : "Preparando la instalación… Si no aparece el diálogo, recargá la página."}
           </p>
 

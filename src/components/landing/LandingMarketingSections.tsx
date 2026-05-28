@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { LandingContactForm } from "@/components/landing/LandingContactForm";
 import { LandingPlanesSection } from "@/components/landing/LandingPlanesSection";
-import { MascotPointsFooter } from "@/components/MascotPointsFooter";
+import { ElitePointsFooter } from "@/components/ElitePointsFooter";
 
 const FEATURES = [
   {
@@ -22,7 +22,7 @@ const FEATURES = [
     emoji: "🎂",
     title: "Celebración de cumpleaños",
     description:
-      "Sistema inteligente que felicita a las mascotas en su día y activa bonos multiplicadores configurables (2x o 3x) para incentivar la compra."
+      "Sistema inteligente que felicita a tus clientes en su cumpleaños y activa bonos multiplicadores configurables (2x o 3x) para incentivar la compra."
   },
   {
     icon: BarChart3,
@@ -43,7 +43,7 @@ const FEATURES = [
 const BENEFITS = [
   {
     title: "Aumento del ticket promedio",
-    text: "Los clientes compran más para acumular huellitas y alcanzar el próximo nivel de lealtad."
+    text: "Los clientes compran más para acumular puntos y alcanzar el próximo nivel de lealtad."
   },
   {
     title: "Automatización total",
@@ -69,11 +69,11 @@ export function LandingMarketingSections() {
               Plataforma todo-en-uno
             </span>
             <h2 className="mt-4 font-display text-3xl font-extrabold text-bark-700 sm:text-4xl">
-              ¿Qué es MascotPoints y qué podés hacer?
+              ¿Qué es ElitePoints y qué podés hacer?
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-bark-600">
-              El motor de fidelización diseñado para Pet Shops y veterinarias que
-              quieren crecer con datos, no con suposiciones.
+              El motor de fidelización diseñado para comercios que quieren crecer
+              con datos, no con suposiciones.
             </p>
           </div>
 
@@ -118,13 +118,13 @@ export function LandingMarketingSections() {
         <div className="mx-auto max-w-6xl px-6 lg:grid lg:grid-cols-12 lg:items-center lg:gap-16">
           <div className="lg:col-span-5 animate-fade-in-up">
             <span className="inline-block rounded-full bg-terracotta-50 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-terracotta-500">
-              Para dueños de locales
+              Para dueños de comercios
             </span>
             <h2 className="mt-4 font-display text-3xl font-extrabold text-bark-700 sm:text-4xl">
-              Cómo se beneficia tu Pet Shop o Veterinaria
+              Cómo se beneficia tu comercio
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-bark-600">
-              MascotPoints no es solo un programa de puntos: es tu equipo de
+              ElitePoints no es solo un programa de puntos: es tu equipo de
               retención, marketing y reputación trabajando en segundo plano.
             </p>
           </div>
@@ -161,7 +161,7 @@ export function LandingMarketingSections() {
 
       <LandingContactForm />
 
-      <MascotPointsFooter
+      <ElitePointsFooter
         variant="onDark"
         className="border-white/10 bg-bark-900 text-left sm:text-center"
       />

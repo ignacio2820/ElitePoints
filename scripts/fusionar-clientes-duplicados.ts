@@ -26,7 +26,7 @@ import { upsertCustomerIndex } from "../src/lib/auth/identityIndex";
 import { aDocId } from "../src/lib/huellitas/codigosClientes";
 import { calcularNivel } from "../src/lib/huellitas/engine";
 import { getConfiguracion } from "../src/lib/huellitas/service";
-import type { Cliente, Mascota } from "../src/lib/huellitas/types";
+import type { Cliente } from "../src/lib/huellitas/types";
 
 type ClienteSnap = {
   id: string;
@@ -90,7 +90,6 @@ function puntajeCanonico(c: ClienteSnap): number {
   if (d.uid) score += 10_000;
   if (d.primerCompraRegistrada) score += 500;
   if (nombrePareceReal(String(d.nombre ?? ""))) score += 300;
-  if ((d.mascotas?.length ?? 0) > 0) score += 200;
   if (d.codigoCliente) score += 100;
   if (d.codigoReferido) score += 50;
 
@@ -104,19 +103,6 @@ function puntajeCanonico(c: ClienteSnap): number {
   }
 
   return score;
-}
-
-function claveMascota(m: Mascota): string {
-  return `${m.nombre.trim().toLowerCase()}|${m.especie}`;
-}
-
-function fusionarMascotas(base: Mascota[], extras: Mascota[]): Mascota[] {
-  const map = new Map<string, Mascota>();
-  for (const m of base) map.set(claveMascota(m), m);
-  for (const m of extras) {
-    if (!map.has(claveMascota(m))) map.set(claveMascota(m), m);
-  }
-  return [...map.values()];
 }
 
 async function agruparDuplicadosPorEmail(
@@ -235,7 +221,6 @@ async function fusionarGrupo(
   let referidosActivadosExtra = 0;
   let uid = canonico.data.uid;
   let telefono = String(canonico.data.telefono ?? "").trim();
-  let mascotas = [...(canonico.data.mascotas ?? [])];
   let lotesMovidos = 0;
 
   const eliminados: string[] = [];
@@ -253,7 +238,6 @@ async function fusionarGrupo(
 
     if (!uid && dup.data.uid) uid = dup.data.uid;
     if (!telefono && dup.data.telefono) telefono = String(dup.data.telefono).trim();
-    mascotas = fusionarMascotas(mascotas, dup.data.mascotas ?? []);
 
     if (confirm) {
       lotesMovidos += await moverSubcoleccionHuellitas(
@@ -291,7 +275,6 @@ async function fusionarGrupo(
       referidosActivados:
         (canonico.data.referidosActivados ?? 0) + referidosActivadosExtra,
       nivelId: nivel.id,
-      mascotas,
       ...(uid ? { uid } : {}),
       ...(telefono ? { telefono } : {}),
       email: grupo.email

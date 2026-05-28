@@ -8,14 +8,12 @@ import { isMembresiaExpirada } from "@/lib/huellitas/membresia";
 import {
   CONFIGURACION_DEFAULT,
   type ConfiguracionLocal,
-  type Cliente,
-  type Mascota,
   type Premio
 } from "@/lib/huellitas/types";
 import { PREMIOS_DEMO } from "@/components/CatalogoPremios";
 import { calcularNivelCliente } from "@/lib/huellitas/saldosCliente";
 
-const NOMBRE_LOCAL_DEMO = "Pet Shop Patitas";
+const NOMBRE_LOCAL_DEMO = "Comercio Demo ElitePoints";
 
 const CLIENTE_DEMO = {
   id: "demo",
@@ -26,32 +24,7 @@ const CLIENTE_DEMO = {
   codigoReferido: "LUC-K3MP",
   referidosTotales: 4,
   referidosActivados: 2,
-  huellitasGanadasReferidos: 60,
-  mascotas: [
-    {
-      id: "m1",
-      nombre: "Coco",
-      especie: "perro",
-      raza: "Caniche toy",
-      fechaNacimiento: new Date(Date.now() - 4 * 365 * 86_400_000)
-        .toISOString()
-        .slice(0, 10),
-      sexo: "macho",
-      color: "Blanco",
-      pesoKg: 4.2,
-      esterilizado: true,
-      planAlimenticio: "balanceado-premium",
-      marcaAlimentoFavorita: "Royal Canin Mini"
-    },
-    {
-      id: "m2",
-      nombre: "Luna",
-      especie: "gato",
-      raza: "Siamés",
-      fechaNacimiento: new Date().toISOString().slice(0, 10),
-      sexo: "hembra"
-    }
-  ] satisfies Mascota[]
+  huellitasGanadasReferidos: 60
 };
 
 function fechaVentaIso(val: unknown): string {
@@ -119,16 +92,13 @@ async function premiosActivosCliente(
         typeof data.valorDescuento === "number" && data.valorDescuento >= 0
           ? data.valorDescuento
           : undefined,
-      nivelMinimoId: String(data.nivelMinimoId ?? "cachorro"),
+      nivelMinimoId: String(data.nivelMinimoId ?? "bronce"),
       categoria: data.categoria,
       stock:
         typeof data.stock === "number"
           ? data.stock
           : null,
-      activo: data.activo !== false,
-      especiesObjetivo: Array.isArray(data.especiesObjetivo)
-        ? data.especiesObjetivo
-        : []
+      activo: data.activo !== false
     };
   });
 }
@@ -161,7 +131,15 @@ async function loadCliente(localId: string, clienteId: string) {
     const db = adminDb();
     const cliSnap = await cols.cliente(db, localId, clienteId).get();
     if (!cliSnap.exists) return null;
-    const cliente = cliSnap.data() as Cliente;
+    const cliente = cliSnap.data() as {
+      nombre: string;
+      saldoHuellitas?: number;
+      huellitasReservadas?: number;
+      acumuladoHistorico?: number;
+      codigoReferido?: string;
+      referidosTotales?: number;
+      referidosActivados?: number;
+    };
     const cfg = await getConfiguracion(localId);
     const localSnap = await cols.local(db, localId).get();
     const nombreLocal =
@@ -182,8 +160,7 @@ async function loadCliente(localId: string, clienteId: string) {
         referidosTotales: cliente.referidosTotales ?? 0,
         referidosActivados: cliente.referidosActivados ?? 0,
         huellitasGanadasReferidos:
-          (cliente.referidosActivados ?? 0) * cfg.referidos.bonusReferente,
-        mascotas: [] as Mascota[]
+          (cliente.referidosActivados ?? 0) * cfg.referidos.bonusReferente
       },
       cfg,
       nombreLocal,

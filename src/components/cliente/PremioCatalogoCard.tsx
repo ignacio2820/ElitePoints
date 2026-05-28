@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Bone, Gift, Loader2, Lock, Package, Stethoscope } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import type { PremioAumentado } from "@/lib/huellitas/engine";
 import { formatNumber } from "@/lib/utils";
 
@@ -67,7 +67,7 @@ export function PremioCatalogoCard({ item, pidiendo, onCanjear }: Props) {
   } else if (motivo === "saldo") {
     accion = (
       <p className="mt-3 text-center text-[11px] font-semibold text-bark-500">
-        Te faltan {formatNumber(faltanHuellitas)} huellitas
+        Te faltan {formatNumber(faltanHuellitas)} puntos
       </p>
     );
   } else if (motivo === "nivel" && nivelMinimo) {
@@ -98,7 +98,7 @@ export function PremioCatalogoCard({ item, pidiendo, onCanjear }: Props) {
       }`}
     >
       <div className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
-        <HuellitaIcon size={12} className="text-white" />
+        <PuntoIcon size={12} className="text-white" />
         {formatNumber(premio.costoHuellitas)}
       </div>
 

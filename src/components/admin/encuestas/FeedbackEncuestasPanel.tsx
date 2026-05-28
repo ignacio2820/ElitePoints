@@ -10,7 +10,7 @@ import {
   Trash2,
   Users
 } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import type {
   EncuestaFeedbackAdmin,
   ResumenFeedbackEncuestas
@@ -167,7 +167,7 @@ export function FeedbackEncuestasPanel({
             valor={resumen.total}
           />
           <TarjetaResumen
-            icono={<HuellitaIcon size={18} />}
+            icono={<PuntoIcon size={18} />}
             titulo="Atención regular/mala"
             valor={resumen.atencionRegularOMala}
             destacado={resumen.atencionRegularOMala > 0}
@@ -225,7 +225,7 @@ export function FeedbackEncuestasPanel({
       {filtradas.length === 0 && !error ? (
         <div className="surface-card rounded-2xl p-10 text-center text-bark-600">
           {items.length === 0
-            ? "Todavía no hay encuestas completadas. Aparecerán cuando los clientes respondan después de una compra con huellitas."
+            ? "Todavía no hay encuestas completadas. Aparecerán cuando los clientes respondan después de una compra con puntos."
             : "Ninguna opinión coincide con este filtro."}
         </div>
       ) : (
@@ -262,7 +262,7 @@ export function FeedbackEncuestasPanel({
                       {e.nombreCliente}
                       <span className="mt-0.5 flex items-center gap-0.5 text-xs font-normal text-bark-500">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <HuellitaIcon
+                          <PuntoIcon
                             key={i}
                             size={14}
                             filled={i < e.puntuacion}
@@ -332,7 +332,7 @@ export function FeedbackEncuestasPanel({
       <p className="flex items-start gap-2 text-xs text-bark-500">
         <MessageSquare size={14} className="mt-0.5 shrink-0" />
         Las filas en rojo suave son casos que requieren atención (también en la
-        pestaña Alertas, con opción de enviar disculpa con huellitas).
+        pestaña Alertas, con opción de enviar disculpa con puntos).
       </p>
     </section>
   );

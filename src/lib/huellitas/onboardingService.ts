@@ -39,39 +39,36 @@ function premiosInicialesGenericos(localId: string): Premio[] {
   return [
     {
       localId,
-      nombre: "Snack para tu mascota",
+      nombre: "Beneficio de bienvenida",
       descripcion:
-        "Una bolsita de snacks naturales para premiar a tu compañero. Editá este premio o sumá los tuyos desde Configuración → Premios.",
+        "Premio de entrada para nuevos clientes. Editá este premio desde Configuración → Premios.",
       costoHuellitas: 50,
-      nivelMinimoId: "cachorro",
-      categoria: "alimento",
+      nivelMinimoId: "bronce",
+      categoria: "otro",
       stock: null,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     },
     {
       localId,
-      nombre: "Juguete sorpresa",
+      nombre: "Descuento intermedio",
       descripcion:
-        "Un juguete a elección del local. Premio pensado para clientes que ya volvieron a comprar varias veces.",
+        "Beneficio para clientes nivel Plata que ya volvieron a comprar.",
       costoHuellitas: 200,
-      nivelMinimoId: "explorador",
-      categoria: "juguete",
+      nivelMinimoId: "plata",
+      categoria: "otro",
       stock: null,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     },
     {
       localId,
-      nombre: "Servicio destacado",
+      nombre: "Experiencia premium",
       descripcion:
-        "Beneficio premium reservado a tus clientes más fieles (corte, baño, consulta o lo que mejor calce con tu negocio).",
+        "Beneficio reservado a clientes Elite (el más alto de tu programa).",
       costoHuellitas: 800,
-      nivelMinimoId: "gran-guardian",
+      nivelMinimoId: "elite",
       categoria: "servicio",
       stock: null,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     }
   ];
 }

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { LoginForm } from "./LoginForm";
 
 export const metadata = {
-  title: "Ingresar — Huellitas"
+  title: "Ingresar — Puntos"
 };
 
 export default function LoginPage() {

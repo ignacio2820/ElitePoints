@@ -3,7 +3,7 @@ import { EncuestaSatisfaccionForm } from "@/components/encuesta/EncuestaSatisfac
 import { obtenerVistaEncuesta } from "@/lib/huellitas/encuestasService";
 
 export const metadata = {
-  title: "Encuesta de satisfacción — Huellitas"
+  title: "Encuesta de satisfacción — Puntos"
 };
 
 type Props = {
@@ -23,7 +23,7 @@ export default async function EncuestaPage({ params }: Props) {
           vistaInicial={vista}
         />
         <p className="mt-8 text-center text-xs text-bark-500">
-          MascotPoints · Programa de lealtad con Huellitas
+          ElitePoints · Programa de lealtad con Puntos
         </p>
       </div>
     </main>

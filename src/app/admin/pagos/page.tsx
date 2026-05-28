@@ -22,7 +22,7 @@ export default async function PagosAdminPage() {
       <div>
         <span className="label-elegant">Suscripción</span>
         <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
-          Activá tu local
+          Activá tu comercio
         </h1>
         <p className="mt-2 max-w-2xl text-[color:var(--muted)]">
           Elegí un plan para habilitar la caja registradora. Si te

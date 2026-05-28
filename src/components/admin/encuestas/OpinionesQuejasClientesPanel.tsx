@@ -83,7 +83,7 @@ export function OpinionesQuejasClientesPanel() {
 
       {subVista === "opiniones" ? (
         <FeedbackEncuestasPanel
-          descripcion="Encuestas completadas tras compras con huellitas. Las valoraciones muy bajas generan una alerta en la pestaña Alertas, donde podés enviar una disculpa."
+          descripcion="Encuestas completadas tras compras con puntos. Las valoraciones muy bajas generan una alerta en la pestaña Alertas, donde podés enviar una disculpa."
         />
       ) : (
         <ReportesQuejasPanel rango={rango} cargandoRango={false} />

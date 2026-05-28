@@ -33,7 +33,7 @@ export function AdminHeader({
 
   return (
     <header className="sticky top-0 z-50 w-full shadow-soft print:hidden">
-      {/* Renglón 1: identidad del local + sesión */}
+      {/* Renglón 1: identidad del comercio + sesión */}
       <div className="flex w-full items-center justify-between bg-emerald-900 px-6 py-3 text-white">
         <Link
           href="/admin"

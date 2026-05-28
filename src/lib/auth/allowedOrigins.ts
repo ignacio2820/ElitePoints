@@ -65,7 +65,7 @@ export function assertAllowedAuthRequest(req: Request): void {
   }
 
   throw new Error(
-    "Falta el encabezado Origin. Abrí el login desde el dominio oficial de MascotPoints."
+    "Falta el encabezado Origin. Abrí el login desde el dominio oficial de ElitePoints."
   );
 }
 

@@ -261,7 +261,7 @@ export function SelectorCliente({
               <p className="mt-1 text-xs text-bark-500">
                 Saldo:{" "}
                 <span className="font-black text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255)]">
-                  {formatNumber(seleccionado.saldoHuellitas)} Huellitas
+                  {formatNumber(seleccionado.saldoHuellitas)} Puntos
                 </span>
                 {seleccionado.email && (
                   <>
@@ -373,7 +373,7 @@ export function SelectorCliente({
                     </div>
                     <span className="shrink-0 text-xs font-black tabular-nums text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255)]">
                       {formatNumber(c.saldoHuellitas)}{" "}
-                      <span className="font-semibold text-bark-500">Huellitas</span>
+                      <span className="font-semibold text-bark-500">Puntos</span>
                     </span>
                   </button>
                 </li>

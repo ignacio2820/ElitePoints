@@ -77,11 +77,11 @@ export default async function RegistroPage({
         <div className="text-center">
           <span className="label-elegant">Bienvenida</span>
           <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
-            Sumate a Huellitas
+            Sumate a Puntos
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-[color:var(--muted)]">
             Cargá tus datos y los de tu mascota. En tu primera compra empezás a
-            sumar huellitas que después podés canjear por premios.
+            sumar puntos que después podés canjear por premios.
           </p>
         </div>
 
@@ -105,11 +105,11 @@ export default async function RegistroPage({
                   <p className="mt-1 text-sm text-bark-500">
                     Cuando hagas tu primera compra, vas a recibir{" "}
                     <strong className="text-bark-700">
-                      {cfg.referidos.bonusBienvenida} huellitas de bienvenida
+                      {cfg.referidos.bonusBienvenida} puntos de bienvenida
                     </strong>
                     , y tu amigo va a sumar{" "}
                     <strong className="text-bark-700">
-                      {cfg.referidos.bonusReferente} huellitas
+                      {cfg.referidos.bonusReferente} puntos
                     </strong>{" "}
                     de regalo.
                   </p>
@@ -131,7 +131,7 @@ export default async function RegistroPage({
               <CardTitle className="text-xl">Tus datos</CardTitle>
               <CardDescription>
                 Sólo necesitamos lo básico. Después podrás completar la ficha
-                de tu mascota y empezar a sumar huellitas.
+                de tu mascota y empezar a sumar puntos.
               </CardDescription>
             </CardHeader>
             <RegistroForm

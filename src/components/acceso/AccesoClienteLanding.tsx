@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowRight, LogIn, PawPrint, UserPlus } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { RUTA_PORTAL } from "@/lib/auth/redirect";
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
 }
 
 /**
- * Landing del QR del local: solo flujo cliente (registro o ingreso).
+ * Landing del QR del comercio: solo flujo cliente (registro o ingreso).
  * Nunca redirige automáticamente a dueños al dashboard.
  */
 export function AccesoClienteLanding({
@@ -46,16 +46,16 @@ export function AccesoClienteLanding({
             </span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-terracotta-400/90">
-            <HuellitaIcon size={20} className="text-white" />
+            <PuntoIcon size={20} className="text-white" />
           </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-lg px-6 py-10">
         <div className="text-center">
-          <span className="label-elegant text-terracotta-300">Programa Huellitas</span>
+          <span className="label-elegant text-terracotta-300">Programa Puntos</span>
           <h1 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
-            Accedé a tus huellitas
+            Accedé a tus puntos
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-bark-100">
             Sumá puntos en cada compra en{" "}
@@ -78,7 +78,7 @@ export function AccesoClienteLanding({
                 className="btn-primary mt-5 inline-flex w-full items-center justify-center gap-2"
               >
                 <PawPrint size={18} />
-                Ver mis Huellitas
+                Ver mis Puntos
                 <ArrowRight size={16} />
               </Link>
             </div>

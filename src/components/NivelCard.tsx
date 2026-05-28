@@ -31,7 +31,7 @@ export function NivelCard({ acumuladoHistorico, niveles }: NivelCardProps) {
               <strong className="text-bark-700">
                 {formatNumber(acumuladoHistorico)}
               </strong>{" "}
-              huellitas en total. Cuanto más comprás, mejores beneficios desbloqueás.
+              puntos en total. Cuanto más comprás, mejores beneficios desbloqueás.
             </CardDescription>
           </div>
           <NivelBadge nivel={p.nivelActual} size="lg" showMultiplier />
@@ -47,7 +47,7 @@ export function NivelCard({ acumuladoHistorico, niveles }: NivelCardProps) {
           </span>
           <span className="font-semibold text-bark-700">
             {p.nivelSiguiente
-              ? `Te faltan ${formatNumber(p.huellitasFaltantes)} 🐾`
+              ? `Te faltan ${formatNumber(p.huellitasFaltantes)} puntos`
               : "¡Sos leyenda!"}
           </span>
         </div>

@@ -76,7 +76,7 @@ export function renderEmailLanzamientoSorteo(p: PayloadLanzamientoSorteo): {
               <p style="font-size:13px;color:#6B5848;margin:6px 0 0;">${escHtml(p.nivelLabel)}</p>
             </div>
             <p style="font-size:15px;line-height:1.6;color:#54331A;margin:20px 0 0;">
-              Entrá a la app y <strong>multiplicá tus chances</strong> con tus Huellitas: podés duplicar o triplicar tu peso en el sorteo antes del cierre.
+              Entrá a la app y <strong>multiplicá tus chances</strong> con tus Puntos: podés duplicar o triplicar tu peso en el sorteo antes del cierre.
             </p>
             <p style="margin:28px 0 0;text-align:center;">
               <a href="${escHtml(appUrl)}" style="display:inline-block;padding:14px 28px;background:#16a34a;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:600;font-size:15px;">
@@ -96,7 +96,7 @@ export function renderEmailLanzamientoSorteo(p: PayloadLanzamientoSorteo): {
     `¡Nuevo sorteo en ${p.nombreLocal}! Premio: ${p.premio}.\n` +
     `Cierre: ${cierre}.\n` +
     `${p.nivelLabel}.\n\n` +
-    `Entrá a la app para multiplicar tus chances con tus Huellitas: ${appUrl}\n`;
+    `Entrá a la app para multiplicar tus chances con tus Puntos: ${appUrl}\n`;
 
   return { subject, html, text };
 }
@@ -133,7 +133,7 @@ export function renderEmailGanadorSorteo(p: PayloadGanadorSorteo): {
               El equipo te va a entregar el premio y validar tu identidad en el mostrador.
             </p>
             <p style="font-size:14px;line-height:1.6;color:#6B5848;margin:16px 0 0;">
-              Si tenés dudas, respondé este correo o consultá directamente en el local. ¡Gracias por ser parte de MascotPoints!
+              Si tenés dudas, respondé este correo o consultá directamente en el local. ¡Gracias por ser parte de ElitePoints!
             </p>
             <p style="font-size:13px;color:#6B5848;margin:24px 0 0;">Con cariño, el equipo de ${escHtml(p.nombreLocal)}.</p>
           </td></tr>

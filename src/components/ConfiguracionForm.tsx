@@ -6,7 +6,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Ca
 import { Field, NumberInput } from "@/components/ui/Field";
 import { Slider } from "@/components/ui/Slider";
 import { MargenWarning } from "@/components/MargenWarning";
-import { HuellitaIcon, HuellitasStack } from "@/components/HuellitaIcon";
+import { PuntoIcon, PuntosStack } from "@/components/PuntoIcon";
 import type { ConfiguracionLocal } from "@/lib/huellitas/types";
 import { calcularEmision } from "@/lib/huellitas/engine";
 import { formatARS, formatNumber } from "@/lib/utils";
@@ -61,7 +61,7 @@ export function ConfiguracionForm({
               </span>
             </div>
             <CardTitle className="mt-2 text-2xl font-bold text-bark-700">
-              Configurá tu programa Huellitas
+              Configurá tu programa de puntos
             </CardTitle>
             <CardDescription className="text-bark-600">
               Ajustá cuánto cuesta acumular, cuánto vale cada canje y el plazo
@@ -76,7 +76,7 @@ export function ConfiguracionForm({
                 label="Costo de Acumulación"
                 hint={
                   <>
-                    Cantidad de pesos para generar <strong>1 huellita</strong>.
+                    Cantidad de pesos para generar <strong>1 punto</strong>.
                     Cuanto más alto, más conservador es tu programa.
                   </>
                 }
@@ -107,7 +107,7 @@ export function ConfiguracionForm({
                   {formatARS(cfg.montoParaUnaHuellita)}
                 </strong>{" "}
                 = 1{" "}
-                <HuellitaIcon
+                <PuntoIcon
                   size={14}
                   className="-mt-0.5 inline-block text-terracotta-400"
                 />
@@ -120,7 +120,7 @@ export function ConfiguracionForm({
                 label="Valor de Canje"
                 hint={
                   <>
-                    Cuánto descuenta <strong>1 huellita</strong> al canjearse. Te
+                    Cuánto descuenta <strong>1 punto</strong> al canjearse. Te
                     recomendamos mantenerlo bien por debajo del costo de
                     acumulación para proteger tu margen.
                   </>
@@ -155,7 +155,7 @@ export function ConfiguracionForm({
             <div>
               <Field
                 label="Días de Vencimiento"
-                hint="Plazo en días desde la emisión para que las huellitas expiren."
+                hint="Plazo en días desde la emisión para que los puntos expiren."
               >
                 <div className="flex items-center gap-4">
                   <NumberInput
@@ -185,8 +185,8 @@ export function ConfiguracionForm({
             {/* Mínimo y tope */}
             <div className="grid gap-5 sm:grid-cols-2">
               <Field
-                label="Mínimo de Huellitas para canje"
-                hint="Evita micro-canjes incómodos para el local."
+                label="Mínimo de Puntos para canje"
+                hint="Evita micro-canjes incómodos para el comercio."
               >
                 <NumberInput
                   min={0}
@@ -202,7 +202,7 @@ export function ConfiguracionForm({
                 label="Tope de descuento por venta"
                 hint={
                   <>
-                    Máximo del ticket que puede pagarse con huellitas (
+                    Máximo del ticket que puede pagarse con puntos (
                     {Math.round(cfg.topeDescuentoPorcentual * 100)}%).
                   </>
                 }
@@ -230,11 +230,11 @@ export function ConfiguracionForm({
                 />
                 <div>
                   <div className="font-semibold text-bark-700">
-                    Felicitar el cumpleaños de cada mascota
+                    Felicitar el cumpleaños de cada cliente
                   </div>
                   <p className="text-sm text-bark-500 mt-1">
-                    Enviamos un email automático al cliente el día del cumpleaños
-                    de su mascota, con un saludo y un regalo configurable.
+                    Enviamos un email automático al cliente el día de su cumpleaños,
+                    con un saludo y un regalo configurable.
                   </p>
                 </div>
               </label>
@@ -257,8 +257,8 @@ export function ConfiguracionForm({
                     Encuesta de satisfacción post-compra
                   </div>
                   <p className="text-sm text-bark-500 mt-1">
-                    24 h después de una compra con Huellitas, enviamos un email
-                    con el enlace para calificar y ganar 5 Huellitas de regalo.
+                    24 h después de una compra con Puntos, enviamos un email
+                    con el enlace para calificar y ganar 5 Puntos de regalo.
                   </p>
                 </div>
               </label>
@@ -306,7 +306,7 @@ export function ConfiguracionForm({
                     </div>
                     <p className="text-sm text-bark-500 mt-1">
                       Si HOY es cumpleaños de alguna mascota del cliente, las
-                      huellitas emitidas en la venta se multiplican.
+                      puntos emitidas en la venta se multiplican.
                     </p>
                   </div>
                 </label>
@@ -335,8 +335,8 @@ export function ConfiguracionForm({
                         }}
                         className="w-full rounded-xl border border-bark-200 bg-white px-3 py-2.5 text-sm text-bark-800 outline-none ring-terracotta-400/30 transition focus:border-terracotta-400 focus:ring-2"
                       >
-                        <option value={2}>Duplica Huellitas (2x)</option>
-                        <option value={3}>Triplica Huellitas (3x)</option>
+                        <option value={2}>Duplica Puntos (2x)</option>
+                        <option value={3}>Triplica Puntos (3x)</option>
                       </select>
                     </Field>
                   </div>
@@ -366,7 +366,7 @@ export function ConfiguracionForm({
                       Bono Primera Compra
                     </div>
                     <p className="text-sm text-bark-500 mt-1">
-                      Lote fijo de huellitas extra de bienvenida en la primera
+                      Lote fijo de puntos extra de bienvenida en la primera
                       venta del cliente. Se acreditan como un lote propio con
                       el mismo vencimiento que el resto.
                     </p>
@@ -376,8 +376,8 @@ export function ConfiguracionForm({
                 {cfg.bonificaciones.primeraCompra.activo ? (
                   <div className="mt-4 pl-8 max-w-[260px]">
                     <Field
-                      label="Huellitas extra de bienvenida"
-                      hint="Recomendado: 100 huellitas."
+                      label="Puntos extra de bienvenida"
+                      hint="Recomendado: 100 puntos."
                     >
                       <NumberInput
                         min={0}
@@ -426,7 +426,7 @@ export function ConfiguracionForm({
                       <p className="text-sm text-bark-500 mt-1">
                         Cada cliente recibe un código único. Cuando un nuevo
                         cliente se registra con un código y hace su primera
-                        compra, ambos reciben huellitas de regalo.
+                        compra, ambos reciben puntos de regalo.
                       </p>
                     </div>
                   </label>
@@ -435,7 +435,7 @@ export function ConfiguracionForm({
                     <div className="mt-5 grid gap-4 sm:grid-cols-2">
                       <Field
                         label="Bonus de bienvenida"
-                        hint="Huellitas que recibe el NUEVO cliente al hacer su primera compra."
+                        hint="Puntos que recibe el NUEVO cliente al hacer su primera compra."
                       >
                         <NumberInput
                           min={0}
@@ -452,7 +452,7 @@ export function ConfiguracionForm({
                       </Field>
                       <Field
                         label="Bonus al referente"
-                        hint="Huellitas que recibe quien hizo la recomendación."
+                        hint="Puntos que recibe quien hizo la recomendación."
                       >
                         <NumberInput
                           min={0}
@@ -536,11 +536,11 @@ export function ConfiguracionForm({
             </div>
             <div className="mt-4 flex items-center justify-between">
               <span className="text-sm font-medium text-bark-600">
-                Huellitas que suma
+                Puntos que suma
               </span>
               <span className="inline-flex items-center gap-2 font-display text-2xl font-extrabold text-bark-700">
                 +{formatNumber(preview.huellitasGeneradas)}
-                <HuellitaIcon size={18} className="text-terracotta-400" />
+                <PuntoIcon size={18} className="text-terracotta-400" />
               </span>
             </div>
             <div className="mt-2 flex items-baseline justify-between">
@@ -559,7 +559,7 @@ export function ConfiguracionForm({
                 {preview.fechaVencimiento}
               </span>
             </div>
-            <HuellitasStack
+            <PuntosStack
               count={Math.min(preview.huellitasGeneradas, 6)}
               className="mt-5"
             />

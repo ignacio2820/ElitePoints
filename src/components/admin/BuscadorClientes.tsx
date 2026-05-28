@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 import { calcularNivelCliente, progresoNivelCliente } from "@/lib/huellitas/saldosCliente";
 import { NivelBadge } from "@/components/NivelBadge";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import type { ClienteResumen } from "@/lib/huellitas/clientesService";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
 import { formatARS, formatNumber } from "@/lib/utils";
 import { AltaClienteModal } from "./AltaClienteModal";
-import { AsignarHuellitasModal } from "./AsignarHuellitasModal";
+import { AsignarPuntosModal } from "./AsignarPuntosModal";
 import { CanjeManualModal } from "./CanjeManualModal";
 
 interface Props {
@@ -105,7 +105,7 @@ export function BuscadorClientes({
           <span>
             {mostrandoFiltro
               ? `${resultados.length} resultados${q ? ` para "${q}"` : ""}`
-              : `${total} cliente${total === 1 ? "" : "s"} en tu local`}
+              : `${total} cliente${total === 1 ? "" : "s"} en tu comercio`}
           </span>
           <div className="flex items-center gap-3">
             <button
@@ -115,7 +115,7 @@ export function BuscadorClientes({
             >
               <Plus size={12} /> Nuevo cliente
             </button>
-            <span>1 Huellita = {formatARS(valorMonetarioHuellita)}</span>
+            <span>1 Punto = {formatARS(valorMonetarioHuellita)}</span>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@ export function BuscadorClientes({
                   </div>
 
                   <div className="mt-3 flex items-center gap-3 rounded-xl border border-bark-100 bg-white px-3 py-2 shadow-sm">
-                    <HuellitaIcon
+                    <PuntoIcon
                       size={18}
                       className="shrink-0 text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
                     />
@@ -196,7 +196,7 @@ export function BuscadorClientes({
                       onClick={() => setSeleccionado(c)}
                       className="btn-primary inline-flex items-center gap-1.5 text-xs"
                     >
-                      <Plus size={13} /> Sumar Huellitas
+                      <Plus size={13} /> Sumar Puntos
                     </button>
                     <button
                       type="button"
@@ -225,9 +225,9 @@ export function BuscadorClientes({
         })}
       </div>
 
-      {/* Modal de asignar huellitas */}
+      {/* Modal de asignar puntos */}
       {seleccionado && (
-        <AsignarHuellitasModal
+        <AsignarPuntosModal
           cliente={seleccionado}
           montoParaUnaHuellita={montoParaUnaHuellita}
           valorMonetarioHuellita={valorMonetarioHuellita}

@@ -1,4 +1,4 @@
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { cn } from "@/lib/utils";
 
 export interface LocalBrandMarkProps {
@@ -72,7 +72,7 @@ export function LocalBrandMark({
   }
 
   return (
-    <HuellitaIcon
+    <PuntoIcon
       size={size}
       className={cn("shrink-0 text-bark-400", iconClassName, className)}
     />

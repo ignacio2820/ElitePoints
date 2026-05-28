@@ -10,7 +10,7 @@ import { getInfoLocal } from "@/lib/huellitas/localService";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Póster A4 — Huellitas"
+  title: "Póster A4 — Puntos"
 };
 
 export default async function AdminPosterPage() {

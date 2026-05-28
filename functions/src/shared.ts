@@ -1,7 +1,20 @@
 import { randomUUID } from "node:crypto";
+import * as admin from "firebase-admin";
 import type { Firestore, DocumentReference } from "firebase-admin/firestore";
-import { Timestamp, getFirestore } from "firebase-admin/firestore";
-import { initializeApp, getApps } from "firebase-admin/app";
+import { Timestamp } from "firebase-admin/firestore";
+
+if (!admin.apps.length) {
+  admin.initializeApp();
+} else {
+  admin.app();
+}
+
+const firestoreDb = admin.firestore();
+try {
+  firestoreDb.settings({ ignoreUndefinedProperties: true });
+} catch {
+  // Firestore ya inicializado (warm start / runtime de Functions)
+}
 
 export const COLECCION_ACTIVATION_TOKENS = "activation_tokens";
 export const COLECCION_LOCALES = "Locales";
@@ -22,16 +35,9 @@ export const ONBOARDING_BASE_URL =
 
 const ADMIN_SECRET_ENV = "MASCOTPOINTS_ADMIN_HTTP_SECRET";
 
-export function initAdminApp(): void {
-  if (getApps().length > 0) return;
-  initializeApp();
-}
-
+/** Instancia única de Firestore (evita doble init en producción). */
 export function db(): Firestore {
-  initAdminApp();
-  const firestore = getFirestore();
-  firestore.settings({ ignoreUndefinedProperties: true });
-  return firestore;
+  return firestoreDb;
 }
 
 export function leerAdminSecret(): string {

@@ -112,7 +112,7 @@ export async function passkeyRegistrationOptions(
   const userIdEstable = perfil?.clienteId ?? uid;
 
   const options = await generateRegistrationOptions({
-    rpName: process.env.WEBAUTHN_RP_NAME?.trim() || "MascotPoints",
+    rpName: process.env.WEBAUTHN_RP_NAME?.trim() || "ElitePoints",
     rpID: rpId(),
     userName: email,
     userID: new TextEncoder().encode(userIdEstable),

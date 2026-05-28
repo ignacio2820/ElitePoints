@@ -54,7 +54,7 @@ export function ReportesQuejasPanel({ rango, cargandoRango }: Props) {
 
   function exportarReporte() {
     const prev = document.title;
-    document.title = `Reporte de quejas — ${data?.ventana.etiqueta ?? "MascotPoints"}`;
+    document.title = `Reporte de quejas — ${data?.ventana.etiqueta ?? "ElitePoints"}`;
     window.print();
     document.title = prev;
   }
@@ -127,7 +127,7 @@ export function ReportesQuejasPanel({ rango, cargandoRango }: Props) {
               categorias={data.categorias}
             />
             <footer className="hidden border-t border-bark-200 pt-4 text-center text-xs text-bark-600 print:block">
-              MascotPoints · Reporte de resolución de quejas · Uso interno del local
+              ElitePoints · Reporte de resolución de quejas · Uso interno del comercio
             </footer>
           </>
         ) : null}

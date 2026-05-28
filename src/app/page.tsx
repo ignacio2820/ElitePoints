@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HuellitaIcon, HuellitasStack } from "@/components/HuellitaIcon";
+import { PuntoIcon, PuntosStack } from "@/components/PuntoIcon";
 import { LandingMarketingSections } from "@/components/landing/LandingMarketingSections";
 
 export default function Home() {
@@ -7,14 +7,14 @@ export default function Home() {
     <main className="paw-bg min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <HuellitaIcon size={28} className="text-terracotta-400" />
+          <PuntoIcon size={28} className="text-terracotta-400" />
           <span className="font-display text-xl font-semibold text-white">
-            Huellitas
+            Elite<span className="text-terracotta-400">Points</span>
           </span>
         </div>
         <nav className="flex items-center gap-3">
           <Link href="/admin/configuracion" className="btn-ghost text-sm">
-            Panel del local
+            Panel del comercio
           </Link>
           <Link href="/cliente/demo?localId=demo" className="btn-primary text-sm">
             Vista del cliente
@@ -29,20 +29,20 @@ export default function Home() {
               Programa de fidelidad multi-tenant
             </span>
             <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.05] text-white md:text-6xl">
-              Cada huellita,
+              Cada punto,
               <br />
               una vuelta más
               <br />
-              a tu local.
+              a tu comercio.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bark-100">
               Configurá cuánto vale acumular y cuánto vale canjear. Cuidá tu margen
-              con advertencias inteligentes. Festejá el cumpleaños de cada mascota.
-              Todo en una sola plataforma elegante y transparente.
+              con advertencias inteligentes. Premios, sorteos y referidos en un solo
+              panel elegante y transparente.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link href="/onboarding" className="btn-primary">
-                Registrar mi Pet Shop o Veterinaria
+                Registrar mi comercio
               </Link>
               <Link href="/login" className="btn-ghost">
                 Ingresar al panel
@@ -50,8 +50,8 @@ export default function Home() {
             </div>
 
             <div className="mt-14 grid max-w-md grid-cols-3 gap-4">
-              <Stat label="Costo de Acumulación" value="$1.000" hint="por huellita" />
-              <Stat label="Valor de Canje" value="$10" hint="por huellita" />
+              <Stat label="Costo de Acumulación" value="$1.000" hint="por punto" />
+              <Stat label="Valor de Canje" value="$10" hint="por punto" />
               <Stat label="Vencimiento" value="365 d" hint="default" />
             </div>
           </div>
@@ -67,15 +67,15 @@ export default function Home() {
                   <span className="font-display text-6xl font-semibold text-bark-700">
                     100
                   </span>
-                  <span className="text-lg text-bark-500">Huellitas</span>
+                  <span className="text-lg text-bark-500">Puntos</span>
                 </div>
                 <div className="mt-2 text-base text-bark-500">
                   Equivalen a <strong>$1.000</strong> de descuento
                 </div>
-                <HuellitasStack count={6} className="mt-6" />
+                <PuntosStack count={6} className="mt-6" />
                 <div className="mt-8 rounded-2xl bg-cream-100 p-4 text-sm text-bark-500">
                   Esta es la vista que ve el cliente. Saldo, equivalente en pesos
-                  y huellitas estilizadas.
+                  y puntos estilizados.
                 </div>
               </div>
             </div>

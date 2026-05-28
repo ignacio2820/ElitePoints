@@ -8,11 +8,10 @@ import {
   Calendar,
   CheckCircle2,
   Mail,
-  PawPrint,
   Sparkles,
   User
 } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { LoginPasswordDueno } from "@/components/auth/LoginPasswordDueno";
 import { PasskeyLoginButton } from "@/components/auth/PasskeyLoginButton";
 import { EnlaceTerminos } from "@/components/legal/EnlaceTerminos";
@@ -32,16 +31,6 @@ import {
 } from "@/lib/huellitas/emailCliente.constants";
 
 type Modo = "ingresar" | "registrar";
-type Especie = RegistrarInput["mascota"]["especie"];
-
-const ESPECIES: { id: Especie; label: string }[] = [
-  { id: "perro", label: "Perro" },
-  { id: "gato", label: "Gato" },
-  { id: "ave", label: "Ave" },
-  { id: "roedor", label: "Roedor" },
-  { id: "reptil", label: "Reptil" },
-  { id: "otro", label: "Otro" }
-];
 
 export function LoginForm() {
   const router = useRouter();
@@ -94,9 +83,7 @@ export function LoginForm() {
     setEmailInicializado(true);
   }, []);
   const [nombre, setNombre] = useState("");
-  const [mascotaNombre, setMascotaNombre] = useState("");
-  const [mascotaEspecie, setMascotaEspecie] = useState<Especie>("perro");
-  const [mascotaFecha, setMascotaFecha] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
 
   const [enviando, setEnviando] = useState(false);
   const [exito, setExito] = useState<{
@@ -159,11 +146,7 @@ export function LoginForm() {
       localId,
       email: emailNorm,
       nombre: nombre.trim(),
-      mascota: {
-        nombre: mascotaNombre.trim(),
-        especie: mascotaEspecie,
-        fechaNacimiento: mascotaFecha || undefined
-      },
+      fechaNacimiento: fechaNacimiento || undefined,
       codigoReferido: refCode
     });
     setEnviando(false);
@@ -191,10 +174,10 @@ export function LoginForm() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-terracotta-400 shadow-soft">
-            <HuellitaIcon size={32} className="text-white" />
+            <PuntoIcon size={32} className="text-white" />
           </div>
           <h1 className="mt-4 font-display text-3xl font-bold text-white">
-            Huellitas
+            Puntos
           </h1>
           <p className="mt-1 text-sm text-bark-100">
             Tu programa de fidelidad para Pet Shops
@@ -210,8 +193,7 @@ export function LoginForm() {
                 onVolver={() => {
                   reset();
                   setNombre("");
-                  setMascotaNombre("");
-                  setMascotaFecha("");
+                  setFechaNacimiento("");
                   setModo("ingresar");
                 }}
               />
@@ -229,7 +211,7 @@ export function LoginForm() {
                   reset();
                   if (!localId) {
                     setError(
-                      "Para registrarte necesitás el enlace que te comparte tu Pet Shop (incluye el identificador del local)."
+                      "Para registrarte necesitás el enlace que te comparte tu Pet Shop (incluye el identificador del comercio)."
                     );
                     return;
                   }
@@ -242,13 +224,9 @@ export function LoginForm() {
                 localId={localId}
                 email={email}
                 nombre={nombre}
-                mascotaNombre={mascotaNombre}
-                mascotaEspecie={mascotaEspecie}
-                mascotaFecha={mascotaFecha}
+                fechaNacimiento={fechaNacimiento}
                 onNombreChange={setNombre}
-                onMascotaNombreChange={setMascotaNombre}
-                onMascotaEspecieChange={setMascotaEspecie}
-                onMascotaFechaChange={setMascotaFecha}
+                onFechaNacimientoChange={setFechaNacimiento}
                 onSubmit={onRegistro}
                 enviando={enviando}
                 error={error}
@@ -532,14 +510,10 @@ function FormRegistro({
   localId,
   email,
   nombre,
-  mascotaNombre,
-  mascotaEspecie,
-  mascotaFecha,
+  fechaNacimiento,
   onEmailChange,
   onNombreChange,
-  onMascotaNombreChange,
-  onMascotaEspecieChange,
-  onMascotaFechaChange,
+  onFechaNacimientoChange,
   onSubmit,
   enviando,
   error,
@@ -550,14 +524,10 @@ function FormRegistro({
   localId: string;
   email: string;
   nombre: string;
-  mascotaNombre: string;
-  mascotaEspecie: Especie;
-  mascotaFecha: string;
+  fechaNacimiento: string;
   onEmailChange: (v: string) => void;
   onNombreChange: (v: string) => void;
-  onMascotaNombreChange: (v: string) => void;
-  onMascotaEspecieChange: (v: Especie) => void;
-  onMascotaFechaChange: (v: string) => void;
+  onFechaNacimientoChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   enviando: boolean;
   error: string | null;
@@ -568,8 +538,7 @@ function FormRegistro({
   const valido =
     localId.length > 0 &&
     email.trim().length > 3 &&
-    nombre.trim().length >= 2 &&
-    mascotaNombre.trim().length >= 1;
+    nombre.trim().length >= 2;
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
@@ -583,7 +552,7 @@ function FormRegistro({
 
       <div>
         <h2 className="font-display text-2xl font-semibold text-bark-700">
-          Creá tu cuenta de Huellitas
+          Creá tu cuenta de Puntos
         </h2>
         <p className="mt-1 text-sm text-bark-500">
           Te lleva 30 segundos. Después te llega un link mágico para entrar.
@@ -591,7 +560,7 @@ function FormRegistro({
         {refCode && (
           <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-sage-100 px-3 py-1 text-xs font-medium text-sage-700">
             <Sparkles size={12} />
-            Te invitaron con el código <span className="font-mono">{refCode}</span> · sumás Huellitas de bienvenida
+            Te invitaron con el código <span className="font-mono">{refCode}</span> · sumás Puntos de bienvenida
           </div>
         )}
       </div>
@@ -620,65 +589,25 @@ function FormRegistro({
         error={errorEmail}
       />
 
-      <div className="rounded-2xl border border-dashed border-bark-200 bg-cream-50/60 p-4 space-y-4">
-        <div className="flex items-center gap-2">
-          <PawPrint size={14} className="text-terracotta-500" />
-          <span className="text-xs font-semibold uppercase tracking-widest text-terracotta-700">
-            Tu mascota
-          </span>
-        </div>
-
-        <label className="block">
-          <span className="text-xs font-medium text-bark-500">
-            ¿Cómo se llama?
-          </span>
+      <label className="block">
+        <span className="text-xs font-medium text-bark-500">
+          Fecha de nacimiento{" "}
+          <span className="text-bark-300">(opcional)</span>
+        </span>
+        <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-bark-100 bg-white px-3 py-2.5 transition focus-within:border-bark-400 focus-within:ring-2 focus-within:ring-bark-300/30">
+          <Calendar size={14} className="text-bark-400" />
           <input
-            type="text"
-            required
-            placeholder="Luna"
-            value={mascotaNombre}
-            onChange={(e) => onMascotaNombreChange(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-bark-100 bg-white px-3 py-2.5 text-base text-bark-700 outline-none transition placeholder:text-bark-300 focus:border-bark-400 focus:ring-2 focus:ring-bark-300/30"
+            type="date"
+            max={new Date().toISOString().slice(0, 10)}
+            value={fechaNacimiento}
+            onChange={(e) => onFechaNacimientoChange(e.target.value)}
+            className="w-full bg-transparent text-base text-bark-700 outline-none"
           />
-        </label>
-
-        <label className="block">
-          <span className="text-xs font-medium text-bark-500">Tipo de mascota</span>
-          <select
-            required
-            value={mascotaEspecie}
-            onChange={(e) => onMascotaEspecieChange(e.target.value as Especie)}
-            className="mt-1.5 w-full rounded-xl border border-bark-100 bg-white px-3 py-2.5 text-base text-bark-700 outline-none transition focus:border-bark-400 focus:ring-2 focus:ring-bark-300/30"
-          >
-            {ESPECIES.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="text-xs font-medium text-bark-500">
-            Fecha de nacimiento{" "}
-            <span className="text-bark-300">(opcional)</span>
-          </span>
-          <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-bark-100 bg-white px-3 py-2.5 transition focus-within:border-bark-400 focus-within:ring-2 focus-within:ring-bark-300/30">
-            <Calendar size={14} className="text-bark-400" />
-            <input
-              type="date"
-              max={new Date().toISOString().slice(0, 10)}
-              value={mascotaFecha}
-              onChange={(e) => onMascotaFechaChange(e.target.value)}
-              className="w-full bg-transparent text-base text-bark-700 outline-none"
-            />
-          </div>
-          <p className="mt-1 text-xs text-bark-400">
-            La podés completar después en tu perfil para recibir el saludo de
-            cumpleaños.
-          </p>
-        </label>
-      </div>
+        </div>
+        <p className="mt-1 text-xs text-bark-400">
+          Si la cargás, podés recibir bonificaciones en tu cumpleaños.
+        </p>
+      </label>
 
       {error && <ErrorBox>{error}</ErrorBox>}
 

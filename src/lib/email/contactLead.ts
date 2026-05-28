@@ -31,7 +31,7 @@ function escHtml(s: string): string {
 export async function enviarEmailContactoLead(
   p: ContactLeadPayload
 ): Promise<void> {
-  const subject = `MascotPoints — Demo: ${p.nombreComercio}`;
+  const subject = `ElitePoints — Demo: ${p.nombreComercio}`;
   const html = `<!doctype html>
 <html lang="es">
   <body style="margin:0;font-family:Arial,sans-serif;color:#1B4332;">
@@ -48,7 +48,7 @@ export async function enviarEmailContactoLead(
 </html>`;
 
   const text =
-    `Nueva solicitud MascotPoints\n\n` +
+    `Nueva solicitud ElitePoints\n\n` +
     `Nombre: ${p.nombreCompleto}\n` +
     `Comercio: ${p.nombreComercio}\n` +
     `Email: ${p.email}\n` +

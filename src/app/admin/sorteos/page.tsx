@@ -31,7 +31,7 @@ export default async function AdminSorteosPage() {
         </h1>
         <p className="mt-2 max-w-2xl text-[color:var(--muted)]">
           Creá sorteos automáticos por nivel de lealtad. Los clientes pueden
-          potenciar sus chances gastando huellitas de su saldo actual.
+          potenciar sus chances gastando puntos de su saldo actual.
         </p>
       </div>
 

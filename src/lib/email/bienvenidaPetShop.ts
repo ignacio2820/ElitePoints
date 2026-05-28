@@ -28,7 +28,7 @@ export interface PayloadBienvenida {
   nombreLocal: string;
   /** Slug del local (para mostrar la URL futura del cliente) */
   slugLocal: string;
-  /** Base URL pública (ej: https://huellitas.app) */
+  /** Base URL pública (ej: https://puntos.app) */
   baseUrl: string;
 }
 
@@ -37,10 +37,10 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
   html: string;
   text: string;
 } {
-  const subject = `¡Bienvenido a Huellitas! ${p.nombreLocal} ya está activo`;
+  const subject = `¡Bienvenido a ElitePoints! ${p.nombreLocal} ya está activo`;
 
   const tipsTexto = [
-    "1. Configurá el costo de tu programa: andá a Configuración y ajustá cuánto vale 1 Huellita.",
+    "1. Configurá el costo de tu programa: andá a Configuración y ajustá cuánto vale 1 Punto.",
     "2. Cargá tus primeros premios: ya te dejamos 3 de muestra (los podés editar o reemplazar).",
     "3. Personalizá tus niveles de fidelidad: definí beneficios y multiplicadores.",
     "4. Registrá tu primera venta desde el panel para ver el flujo completo."
@@ -48,10 +48,10 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
 
   const tipsHtml = `
     <ol style="margin:0;padding-left:20px;color:#54331A;font-size:14px;line-height:1.8;">
-      <li style="margin-bottom:6px;"><strong>Configurá el costo de tu programa.</strong> Andá a Configuración y ajustá cuánto vale 1 Huellita. Por defecto dejamos 1% de costo (saludable).</li>
+      <li style="margin-bottom:6px;"><strong>Configurá el costo de tu programa.</strong> Andá a Configuración y ajustá cuánto vale 1 Punto. Por defecto dejamos 1% de costo (saludable).</li>
       <li style="margin-bottom:6px;"><strong>Revisá tus 3 premios de muestra.</strong> Los podés editar, agregar fotos o reemplazar por los tuyos en Configuración → Premios.</li>
       <li style="margin-bottom:6px;"><strong>Personalizá tus niveles.</strong> Cachorro / Explorador / Gran Guardián vienen prearmados; ajustá multiplicadores y beneficios.</li>
-      <li style="margin-bottom:6px;"><strong>Registrá tu primera venta.</strong> Andá a Caja, ingresá el código del cliente y mirá cómo se acreditan las Huellitas.</li>
+      <li style="margin-bottom:6px;"><strong>Registrá tu primera venta.</strong> Andá a Caja, ingresá el código del cliente y mirá cómo se acreditan las Puntos.</li>
     </ol>
   `;
 
@@ -64,15 +64,15 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
 
           <!-- Header dorado premium -->
           <tr><td style="padding:36px 40px;background:linear-gradient(135deg,#0F0F0F 0%,#2A1F0F 50%,#3D2C13 100%);color:#FBF8F3;">
-            <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#F0C674;font-weight:600;">Onboarding · Huellitas</div>
+            <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#F0C674;font-weight:600;">Onboarding · ElitePoints</div>
             <h1 style="margin:10px 0 0;font-size:30px;font-weight:600;line-height:1.2;color:#FCD181;">¡Bienvenido!</h1>
-            <p style="margin:8px 0 0;font-size:16px;color:#FBF8F3;opacity:0.9;">${p.nombreLocal} ya está activo en Huellitas.</p>
+            <p style="margin:8px 0 0;font-size:16px;color:#FBF8F3;opacity:0.9;">${p.nombreLocal} ya está activo en ElitePoints.</p>
           </td></tr>
 
           <!-- Cuerpo -->
           <tr><td style="padding:36px 40px;">
             <p style="font-size:16px;line-height:1.6;margin:0 0 20px;color:#221308;">
-              Tu Pet Shop ya tiene su programa de fidelidad listo. Configuramos
+              Tu comercio ya tiene su programa de fidelidad listo. Configuramos
               todo con valores saludables (1% de costo, niveles default y 3 premios
               de muestra) para que arranques sin fricciones.
             </p>
@@ -115,7 +115,7 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
           <!-- Footer -->
           <tr><td style="padding:20px 40px;background:#FBF6EE;text-align:center;">
             <p style="font-size:11px;color:#9F8B7A;margin:0;line-height:1.6;">
-              Recibiste este email porque registraste un Pet Shop en Huellitas.<br>
+              Recibiste este email porque registraste un comercio en ElitePoints.<br>
               Si no fuiste vos, podés ignorarlo: la cuenta no se activa hasta que entres al panel.
             </p>
           </td></tr>
@@ -126,7 +126,7 @@ export function renderEmailBienvenidaPetShop(p: PayloadBienvenida): {
   </body>
 </html>`;
 
-  const text = `¡Bienvenido a Huellitas!\n\n${p.nombreLocal} ya está activo.\n\nEntrá al panel:\n${p.magicLink}\n\nPrimeros 5 minutos:\n${tipsTexto.join("\n")}\n\nIdentificador de tu local: ${p.slugLocal}\nTus clientes acceden desde: ${p.baseUrl}/login\n\nSoporte: ${CONTACT_EMAIL}\n\nSin contraseñas. El link expira en 1 hora y solo puede usarse una vez.\n`;
+  const text = `¡Bienvenido a ElitePoints!\n\n${p.nombreLocal} ya está activo.\n\nEntrá al panel:\n${p.magicLink}\n\nPrimeros 5 minutos:\n${tipsTexto.join("\n")}\n\nIdentificador de tu comercio: ${p.slugLocal}\nTus clientes acceden desde: ${p.baseUrl}/login\n\nSoporte: ${CONTACT_EMAIL}\n\nSin contraseñas. El link expira en 1 hora y solo puede usarse una vez.\n`;
 
   return { subject, html, text };
 }

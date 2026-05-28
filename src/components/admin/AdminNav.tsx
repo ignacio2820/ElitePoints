@@ -9,7 +9,6 @@ const LINKS = [
   { href: "/admin/nueva-venta", label: "Caja" },
   { href: "/admin/canjes", label: "Canjes" },
   { href: "/admin/clientes", label: "Clientes" },
-  { href: "/admin/cumpleanos", label: "Cumpleaños" },
   { href: "/admin/reportes", label: "Reportes" },
   { href: "/admin/premios", label: "Premios" },
   { href: "/admin/sorteos", label: "Sorteos" },

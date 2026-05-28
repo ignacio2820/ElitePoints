@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { MascotPointsFooter } from "@/components/MascotPointsFooter";
+import { ElitePointsFooter } from "@/components/ElitePointsFooter";
 import { EncuestaInAppHost } from "@/components/cliente/encuesta/EncuestaInAppHost";
 import { InstalarAppBanner } from "@/components/pwa/InstalarAppBanner";
 import { getSesion } from "@/lib/auth/server";
@@ -27,7 +27,7 @@ export default async function MiCuentaLayout({
       </div>
       <div className="flex-1">{children}</div>
       <EncuestaInAppHost />
-      <MascotPointsFooter variant="onDark" className="bg-bark-800 print:hidden" />
+      <ElitePointsFooter variant="onDark" className="bg-bark-800 print:hidden" />
     </div>
   );
 }

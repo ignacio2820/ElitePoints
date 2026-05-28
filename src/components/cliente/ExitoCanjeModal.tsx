@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { formatNumber } from "@/lib/utils";
 
 export interface ExitoCanjeModalProps {
@@ -63,18 +63,18 @@ export function ExitoCanjeModal({
         <div className="space-y-4 px-6 py-6">
           {typeof saldoDisponible === "number" ? (
             <div className="flex items-center justify-center gap-2 rounded-2xl border border-bark-100 bg-white px-4 py-3">
-              <HuellitaIcon size={22} className="text-terracotta-500" />
+              <PuntoIcon size={22} className="text-terracotta-500" />
               <p className="text-sm text-bark-600">
                 Saldo disponible:{" "}
                 <strong className="text-lg font-bold tabular-nums text-bark-800">
                   {formatNumber(saldoDisponible)}
                 </strong>{" "}
-                huellitas
+                puntos
               </p>
             </div>
           ) : null}
           <p className="text-center text-xs leading-relaxed text-bark-500">
-            Mostrá el cupón con código en el local. Cuando te entreguen el premio,
+            Mostrá el cupón con código en el comercio. Cuando te entreguen el premio,
             el equipo lo confirmará desde caja.
           </p>
           <button

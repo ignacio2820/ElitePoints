@@ -1,85 +1,128 @@
 import { z } from "zod";
 
 /**
- * Esquema de Firestore — Motor "Huellitas" (multi-tenant Pet Shops)
+ * Esquema Firestore — ElitePoints (multi-comercio B2B)
  *
- * Jerarquía:
- *   /Locales/{localId}                          -> datos del comercio
- *   /Locales/{localId}/ConfiguracionLocal/main  -> reglas del programa de fidelidad
- *   /Locales/{localId}/Clientes/{clienteId}    -> clientes del local
- *   /Locales/{localId}/Clientes/{clienteId}/Mascotas/{mascotaId}
- *   /Locales/{localId}/Clientes/{clienteId}/Huellitas/{huellitaId} -> lotes (con vencimiento)
- *   /Locales/{localId}/Ventas/{ventaId}         -> registro de ventas y emisión
- *   /Locales/{localId}/Canjes/{canjeId}         -> registro de redenciones
- *   /Locales/{localId}/Premios/{premioId}       -> catálogo de premios
- *   /Locales/{localId}/Referidos/{codigo}       -> índice código → clienteId
+ * Jerarquía (Enfoque A — rutas legacy en Firestore):
+ *   /Locales/{localId}                          → comercio
+ *   /Locales/{localId}/ConfiguracionLocal/main  → reglas del programa
+ *   /Locales/{localId}/Clientes/{clienteId}     → cliente
+ *   /Locales/{localId}/Clientes/{clienteId}/Huellitas/{loteId} → lotes de puntos
+ *   /Locales/{localId}/Ventas/{ventaId}         → acumulación
+ *   /Locales/{localId}/Canjes/{canjeId}         → canje en caja
+ *   /Locales/{localId}/Premios/{premioId}       → catálogo
  *
- * Decisiones clave:
- *  - Huellitas modeladas en LOTES (vencimiento FIFO real).
- *  - "Costo de Acumulación" y "Valor de Canje" separados explícitamente.
- *  - Niveles de lealtad CONFIGURABLES por local (nada hardcodeado en código).
- *  - `huellitasHistoricas` / `acumuladoHistorico` nunca decrecen: definen el rango/nivel.
- *  - `huellitasActuales` / `saldoHuellitas` bajan al canjear premios.
+ * En código usamos el concepto **Puntos** y **Transacción**; en Firestore muchos
+ * campos siguen el prefijo `huellitas*` / `saldoHuellitas` por compatibilidad.
  */
 
 // ──────────────────────────────────────────────────────────────────────────────
-// NIVELES DE LEALTAD (gamificación)
+// COMERCIO (vista de /Locales/{localId})
 // ──────────────────────────────────────────────────────────────────────────────
+
+export const ComercioSchema = z.object({
+  id: z.string().min(1),
+  nombre: z.string().min(1).max(120),
+  rubro: z.string().max(80).optional(),
+  logo: z.string().url().optional(),
+  logoUrl: z.string().url().optional(),
+  /** Total de puntos emitidos (métrica denormalizada opcional). */
+  puntosOtorgados: z.number().int().nonnegative().optional()
+});
+
+export type Comercio = z.infer<typeof ComercioSchema>;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// NIVELES DE LEALTAD
+// ──────────────────────────────────────────────────────────────────────────────
+
+export const TemaNivelSchema = z.enum(["bronce", "plata", "oro", "elite"]);
+export type TemaNivel = z.infer<typeof TemaNivelSchema>;
 
 export const NivelLealtadSchema = z.object({
   id: z.string().min(1),
   nombre: z.string().min(1).max(40),
-  /** Acumulado histórico mínimo para alcanzar el nivel. Cachorro = 0. */
   umbralHistorico: z.number().int().nonnegative(),
-  /** Multiplicador sobre las huellitas EMITIDAS (Cachorro 1.0, Explorador 1.1, Gran Guardián 1.5). */
   multiplicador: z.number().positive().max(10).default(1),
-  /** Descuento fijo % aplicado siempre al ticket (0..1). Gran Guardián = 0.05. */
   descuentoFijoPct: z.number().min(0).max(1).default(0),
-  /** Color para badge/UI (clase Tailwind o token semántico). */
-  tema: z.enum(["cachorro", "explorador", "guardian"]).default("cachorro"),
-  /** Beneficios listados al cliente (texto libre, 1 línea por item). */
+  tema: TemaNivelSchema.default("bronce"),
   beneficios: z.array(z.string().max(120)).default([])
 });
 
 export type NivelLealtad = z.infer<typeof NivelLealtadSchema>;
 
-/** Tres niveles default pedidos. Editables por el dueño. */
 export const NIVELES_DEFAULT: NivelLealtad[] = [
   {
-    id: "cachorro",
-    nombre: "Cachorro",
+    id: "bronce",
+    nombre: "Bronce",
     umbralHistorico: 0,
     multiplicador: 1.0,
     descuentoFijoPct: 0,
-    tema: "cachorro",
-    beneficios: ["Acumulás huellitas con cada compra", "Saludo de cumpleaños para tu mascota"]
+    tema: "bronce",
+    beneficios: ["Acumulás puntos con cada compra", "Acceso al catálogo de premios"]
   },
   {
-    id: "explorador",
-    nombre: "Explorador",
+    id: "plata",
+    nombre: "Plata",
     umbralHistorico: 500,
     multiplicador: 1.1,
     descuentoFijoPct: 0,
-    tema: "explorador",
-    beneficios: ["Sumás 1.1× huellitas en cada compra", "Acceso a premios exclusivos"]
+    tema: "plata",
+    beneficios: ["Sumás 1.1× puntos en cada compra", "Premios exclusivos del nivel"]
   },
   {
-    id: "gran-guardian",
-    nombre: "Gran Guardián",
+    id: "oro",
+    nombre: "Oro",
     umbralHistorico: 2000,
+    multiplicador: 1.25,
+    descuentoFijoPct: 0.02,
+    tema: "oro",
+    beneficios: ["Sumás 1.25× puntos", "2% de descuento fijo en compras"]
+  },
+  {
+    id: "elite",
+    nombre: "Elite",
+    umbralHistorico: 5000,
     multiplicador: 1.5,
     descuentoFijoPct: 0.05,
-    tema: "guardian",
+    tema: "elite",
     beneficios: [
-      "Sumás 1.5× huellitas en cada compra",
-      "5% de descuento fijo en todo el local",
-      "Premios premium reservados para tu rango"
+      "Sumás 1.5× puntos en cada compra",
+      "5% de descuento fijo",
+      "Premios premium del nivel Elite"
     ]
   }
 ];
 
+/** IDs de nivel legacy (MascotPoints) → nivel ElitePoints. */
+export const MAPEO_NIVEL_LEGACY: Record<string, string> = {
+  cachorro: "bronce",
+  explorador: "plata",
+  "gran-guardian": "elite",
+  guardian: "elite"
+};
+
+export function normalizarNivelId(nivelId: string | undefined): string {
+  if (!nivelId) return "bronce";
+  return MAPEO_NIVEL_LEGACY[nivelId] ?? nivelId;
+}
+
+/** Resuelve tema visual (incluye legacy cachorro/explorador/guardian). */
+export function resolverTemaNivel(
+  nivel: Pick<NivelLealtad, "tema" | "id">
+): TemaNivel {
+  const t = nivel.tema;
+  if (t === "bronce" || t === "plata" || t === "oro" || t === "elite") return t;
+  const legacyTema: Record<string, TemaNivel> = {
+    cachorro: "bronce",
+    explorador: "plata",
+    guardian: "elite"
+  };
+  return legacyTema[String(t)] ?? legacyTema[normalizarNivelId(nivel.id)] ?? "bronce";
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
-// CONFIGURACIÓN DEL LOCAL
+// CONFIGURACIÓN DEL COMERCIO
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const ConfiguracionLocalSchema = z.object({
@@ -102,26 +145,10 @@ export const ConfiguracionLocalSchema = z.object({
   emailsCumpleanosActivos: z.boolean().default(true),
   emailsEncuestaActivos: z.boolean().default(true),
 
-  /**
-   * Multiplicador del bono de cumpleaños en compras del día (2 = duplica, 3 = triplica).
-   * Se persiste en Firestore como `bonoCumpleanos` y se sincroniza con
-   * `bonificaciones.cumpleanos.multiplicador` para compatibilidad.
-   */
   bonoCumpleanos: z.union([z.literal(2), z.literal(3)]).default(2),
 
-  /** Niveles de lealtad. Deben venir ordenados por umbralHistorico ASC. */
   niveles: z.array(NivelLealtadSchema).min(1).default(NIVELES_DEFAULT),
 
-  /**
-   * Bonificaciones especiales activables por el dueño desde Configuración.
-   *  - cumpleanos: si HOY es cumpleaños de alguna mascota del cliente,
-   *    multiplica por `multiplicador` las huellitas emitidas en la venta.
-   *  - primeraCompra: si es la primera venta del cliente, suma un lote
-   *    fijo de `huellitasExtra` huellitas (vencimiento estándar).
-   *
-   * Ambas son independientes y pueden combinarse con el multiplicador del
-   * nivel del cliente sin pisarlo.
-   */
   bonificaciones: z
     .object({
       cumpleanos: z
@@ -142,22 +169,17 @@ export const ConfiguracionLocalSchema = z.object({
       primeraCompra: { activo: true, huellitasExtra: 100 }
     }),
 
-  /** Programa "Boca en Boca". */
   referidos: z
     .object({
       activo: z.boolean().default(true),
-      /** Huellitas de regalo que recibe el NUEVO cliente al hacer su primera compra. */
       bonusBienvenida: z.number().int().nonnegative().default(20),
-      /** Huellitas que recibe el REFERENTE cuando su invitado hace la primera compra. */
       bonusReferente: z.number().int().nonnegative().default(30),
-      /** Vencimiento puntual de los bonus de referido (default: igual al global). */
       diasVencimientoBonus: z.number().int().positive().max(3650).default(365),
-      /** Mensaje base de WhatsApp con placeholders {local}, {codigo}, {url}. */
       mensajeWhatsApp: z
         .string()
         .max(500)
         .default(
-          "¡Hola! Te recomiendo {local}. Registrate con mi código y ganá tus primeras Huellitas gratis: {url}"
+          "¡Hola! Te recomiendo {local}. Registrate con mi código y ganá tus primeros Puntos gratis: {url}"
         )
     })
     .default({
@@ -166,7 +188,7 @@ export const ConfiguracionLocalSchema = z.object({
       bonusReferente: 30,
       diasVencimientoBonus: 365,
       mensajeWhatsApp:
-        "¡Hola! Te recomiendo {local}. Registrate con mi código y ganá tus primeras Huellitas gratis: {url}"
+        "¡Hola! Te recomiendo {local}. Registrate con mi código y ganá tus primeros Puntos gratis: {url}"
     }),
 
   actualizadoEn: z.date().or(z.string()).optional(),
@@ -175,9 +197,21 @@ export const ConfiguracionLocalSchema = z.object({
 
 export type ConfiguracionLocal = z.infer<typeof ConfiguracionLocalSchema>;
 
+/** Alias conceptual: monto de ticket por 1 punto emitido. */
+export type MontoParaUnPunto = ConfiguracionLocal["montoParaUnaHuellita"];
+
+export function montoParaUnPunto(cfg: Pick<ConfiguracionLocal, "montoParaUnaHuellita">): number {
+  return cfg.montoParaUnaHuellita;
+}
+
+export function valorMonetarioPunto(
+  cfg: Pick<ConfiguracionLocal, "valorMonetarioHuellita">
+): number {
+  return cfg.valorMonetarioHuellita;
+}
+
 export type BonoCumpleanos = 2 | 3;
 
-/** Resuelve 2x o 3x desde `bonoCumpleanos` o el multiplicador legacy. */
 export function resolverBonoCumpleanos(
   cfg: Pick<ConfiguracionLocal, "bonoCumpleanos" | "bonificaciones">
 ): BonoCumpleanos {
@@ -186,12 +220,10 @@ export function resolverBonoCumpleanos(
   return m === 3 ? 3 : 2;
 }
 
-/** Verbo en mayúsculas para emails (DUPLICAR / TRIPLICAR). */
 export function accionBonoCumpleanos(bono: BonoCumpleanos): "DUPLICAR" | "TRIPLICAR" {
   return bono === 3 ? "TRIPLICAR" : "DUPLICAR";
 }
 
-/** Verbo en minúsculas para frases (duplicar / triplicar). */
 export function textoBonoCumpleanos(bono: BonoCumpleanos): string {
   return bono === 3 ? "triplicar" : "duplicar";
 }
@@ -217,63 +249,12 @@ export const CONFIGURACION_DEFAULT: ConfiguracionLocal = {
     bonusReferente: 30,
     diasVencimientoBonus: 365,
     mensajeWhatsApp:
-      "¡Hola! Te recomiendo {local}. Registrate con mi código y ganá tus primeras Huellitas gratis: {url}"
+      "¡Hola! Te recomiendo {local}. Registrate con mi código y ganá tus primeros Puntos gratis: {url}"
   }
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
-// MASCOTA (ficha sofisticada)
-// ──────────────────────────────────────────────────────────────────────────────
-
-export const EspecieSchema = z.enum([
-  "perro",
-  "gato",
-  "ave",
-  "roedor",
-  "reptil",
-  "otro"
-]);
-export type Especie = z.infer<typeof EspecieSchema>;
-
-export const SexoSchema = z.enum(["macho", "hembra", "desconocido"]);
-export type Sexo = z.infer<typeof SexoSchema>;
-
-export const MascotaSchema = z.object({
-  id: z.string().optional(),
-  nombre: z.string().min(1, "El nombre es obligatorio").max(60),
-  /** Tipo visible (Perro, Gato, …). Se guarda junto con `especie` para compatibilidad. */
-  tipo: z.string().min(1).max(20).optional(),
-  especie: EspecieSchema,
-  raza: z.string().max(80).optional(),
-  fechaNacimiento: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
-
-  // Identidad ampliada
-  sexo: SexoSchema.optional(),
-  color: z.string().max(40).optional(),
-  pesoKg: z.number().positive().max(300).optional(),
-
-  // Salud
-  esterilizado: z.boolean().optional(),
-  alergias: z.string().max(300).optional(),
-  medicacionActual: z.string().max(300).optional(),
-  veterinario: z.string().max(120).optional(),
-
-  // Alimentación
-  planAlimenticio: z.string().max(200).optional(),
-  marcaAlimentoFavorita: z.string().max(80).optional(),
-
-  notas: z.string().max(500).optional(),
-  ultimoCumpleanosNotificado: z.string().optional(),
-  /** true tras el primer guardado por el cliente: la fecha no se puede editar. */
-  fechaNacimientoBloqueada: z.boolean().optional()
-});
-
-export type Mascota = z.infer<typeof MascotaSchema>;
-
-// ──────────────────────────────────────────────────────────────────────────────
-// CLIENTE (con gamificación)
+// CLIENTE
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const ClienteSchema = z.object({
@@ -282,77 +263,38 @@ export const ClienteSchema = z.object({
   nombre: z.string().min(1).max(120),
   email: z.string().email().optional().or(z.literal("")),
   telefono: z.string().max(30).optional().default(""),
-  /** Documento nacional (solo dígitos en barcode). Opcional. */
   dni: z.string().max(15).optional(),
-  /**
-   * Clave numérica indexada para lector láser (DNI o teléfono normalizado).
-   * Se mantiene al crear/actualizar el cliente.
-   */
   claveBarras: z.string().max(15).optional(),
-  /** Últimos 8 caracteres del doc-id; índice para lector láser en caja. */
   sufijoIdBarras: z.string().length(8).optional(),
+  /** Cumpleaños del cliente (YYYY-MM-DD) para bono de cumpleaños en compras. */
+  fechaNacimiento: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD")
+    .optional(),
 
-  /**
-   * Saldo disponible para canjes (suma de lotes vigentes, cache).
-   * Alias legacy en código: `saldoHuellitas`.
-   */
   huellitasActuales: z.number().int().nonnegative().optional(),
   saldoHuellitas: z.number().int().nonnegative().default(0),
-
-  /**
-   * Huellitas RESERVADAS por tickets pendientes (canjes que el cliente
-   * solicitó pero el local todavía no confirmó). Se restan visualmente del
-   * saldo para evitar que el cliente intente canjear dos premios que en
-   * conjunto exceden lo que realmente tiene.
-   *
-   * Invariante: huellitasReservadas <= saldoHuellitas en todo momento
-   * (la transacción de crearTicketCanje lo asegura).
-   */
   huellitasReservadas: z.number().int().nonnegative().default(0),
-
-  /**
-   * Total histórico de huellitas emitidas (incluye multiplicador de nivel).
-   * Nunca decrece al canjear: es la métrica que define el rango.
-   * Alias legacy: `acumuladoHistorico`.
-   */
   huellitasHistoricas: z.number().int().nonnegative().optional(),
   acumuladoHistorico: z.number().int().nonnegative().default(0),
 
-  /** Nivel actual denormalizado para queries rápidas. */
-  nivelId: z.string().default("cachorro"),
-
-  /**
-   * Código corto humano-amigable (ej "ABC-123") que identifica al cliente
-   * en caja. Único por local. Lo dicta el cliente al cajero y reemplaza
-   * el ID largo de Firestore.
-   */
+  nivelId: z.string().default("bronce"),
   codigoCliente: z.string().max(10).optional(),
 
-  // ─── Programa de referidos ──────────────────────────────────────────
-  /** Código único que comparte este cliente para invitar amigos. */
   codigoReferido: z.string().min(4).max(20).optional(),
-  /** ID del cliente que invitó a éste (si vino por referido). */
   referidoPor: z.string().optional(),
-  /**
-   * Marca idempotente: una vez que se acreditó la recompensa por referido
-   * en la primera compra, queda en true para evitar dobles acreditaciones.
-   */
   referidoActivado: z.boolean().default(false),
-  /** Cantidad de invitados que YA hicieron su primera compra. */
   referidosActivados: z.number().int().nonnegative().default(0),
-  /** Cantidad de invitados acumulados (con o sin compra). */
   referidosTotales: z.number().int().nonnegative().default(0),
-  /** Marca de "ya hizo su primera compra" — gatilla la activación. */
   primerCompraRegistrada: z.boolean().default(false),
 
-  mascotas: z.array(MascotaSchema).default([]),
   creadoEn: z.union([z.date(), z.string()]).optional()
 });
 
 export type Cliente = z.infer<typeof ClienteSchema>;
 
 // ──────────────────────────────────────────────────────────────────────────────
-// LOTE DE HUELLITAS
+// LOTE DE PUNTOS (Firestore: Huellitas)
 // ──────────────────────────────────────────────────────────────────────────────
 
 export interface LoteHuellitas {
@@ -365,8 +307,32 @@ export interface LoteHuellitas {
   fechaVencimiento: string;
 }
 
+/** Alias conceptual del lote FIFO de puntos. */
+export type LotePuntos = LoteHuellitas;
+
 // ──────────────────────────────────────────────────────────────────────────────
-// VENTA
+// TRANSACCIÓN (vista unificada)
+// ──────────────────────────────────────────────────────────────────────────────
+
+export const TipoTransaccionSchema = z.enum(["acumula", "canjea"]);
+export type TipoTransaccion = z.infer<typeof TipoTransaccionSchema>;
+
+export const TransaccionSchema = z.object({
+  id: z.string().optional(),
+  comercioId: z.string().min(1),
+  clienteId: z.string().min(1),
+  puntos: z.number().int().nonnegative(),
+  tipo: TipoTransaccionSchema,
+  fecha: z.union([z.date(), z.string()]),
+  ventaId: z.string().optional(),
+  canjeId: z.string().optional(),
+  notas: z.string().max(200).optional()
+});
+
+export type Transaccion = z.infer<typeof TransaccionSchema>;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// VENTA (acumulación)
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const VentaSchema = z.object({
@@ -374,26 +340,54 @@ export const VentaSchema = z.object({
   localId: z.string(),
   clienteId: z.string(),
   totalVenta: z.number().nonnegative(),
-  /** Huellitas BASE antes del multiplicador (= floor(total/monto)). */
   huellitasBase: z.number().int().nonnegative().default(0),
-  /** Multiplicador aplicado por nivel (1.0 / 1.1 / 1.5). */
   multiplicadorAplicado: z.number().positive().default(1),
-  /** Huellitas finales emitidas (BASE * multiplicador, redondeado). */
   huellitasGeneradas: z.number().int().nonnegative(),
   huellitasCanjeadas: z.number().int().nonnegative().default(0),
   descuentoAplicado: z.number().nonnegative().default(0),
-  /** Descuento fijo del nivel en pesos. */
   descuentoNivel: z.number().nonnegative().default(0),
   totalCobrado: z.number().nonnegative(),
-  /** Nivel del cliente al MOMENTO de la venta (auditoría). */
   nivelEnVenta: z.string().optional(),
   fecha: z.union([z.date(), z.string()]).optional()
 });
 
 export type Venta = z.infer<typeof VentaSchema>;
 
+export function ventaATransaccion(venta: Venta): Transaccion {
+  return {
+    id: venta.id,
+    comercioId: venta.localId,
+    clienteId: venta.clienteId,
+    puntos: venta.huellitasGeneradas,
+    tipo: "acumula",
+    fecha: venta.fecha ?? new Date().toISOString(),
+    ventaId: venta.id
+  };
+}
+
+export function canjeATransaccion(args: {
+  id?: string;
+  localId: string;
+  clienteId: string;
+  huellitasCanjeadas: number;
+  fecha?: Date | string;
+  canjeId?: string;
+  ventaId?: string;
+}): Transaccion {
+  return {
+    id: args.id ?? args.canjeId,
+    comercioId: args.localId,
+    clienteId: args.clienteId,
+    puntos: args.huellitasCanjeadas,
+    tipo: "canjea",
+    fecha: args.fecha ?? new Date().toISOString(),
+    canjeId: args.canjeId ?? args.id,
+    ventaId: args.ventaId
+  };
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
-// PREMIO (catálogo)
+// PREMIO
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const PremioSchema = z.object({
@@ -401,49 +395,26 @@ export const PremioSchema = z.object({
   localId: z.string(),
   nombre: z.string().min(1).max(80),
   descripcion: z.string().max(280).default(""),
-  /** Huellitas requeridas para canjear este premio. */
   costoHuellitas: z.number().int().positive(),
-  /**
-   * Valor del descuento en pesos al canjear este premio (snapshot informativo).
-   * Si no se setea, la UI lo calcula como
-   * `costoHuellitas * valorMonetarioHuellita` usando la configuración vigente.
-   * Útil cuando el premio es un "5% off", "shampoo de regalo", "2x1", etc.
-   * donde el costo en pesos no es la simple multiplicación.
-   */
   valorDescuento: z.number().nonnegative().optional(),
-  /** ID del nivel mínimo requerido para canjear (referencia a NivelLealtad.id). */
-  nivelMinimoId: z.string().default("cachorro"),
-  /** Categoría libre para filtrar (alimento, juguete, accesorio, servicio). */
+  nivelMinimoId: z.string().default("bronce"),
   categoria: z.enum(["alimento", "juguete", "accesorio", "servicio", "otro"]).default("otro"),
-  /** Stock disponible (null = ilimitado). */
   stock: z.number().int().nonnegative().nullable().default(null),
-  /** null = sin imagen en Firestore; omitir en creación hasta subir archivo. */
   imagen: z.string().url().nullish(),
-  activo: z.boolean().default(true),
-  /** Solo para mascotas de cierta especie (opcional). */
-  especiesObjetivo: z.array(EspecieSchema).default([])
+  activo: z.boolean().default(true)
 });
 
 export type Premio = z.infer<typeof PremioSchema>;
 
+/** Costo del premio en puntos (mismo campo Firestore `costoHuellitas`). */
+export function costoPremioEnPuntos(premio: Pick<Premio, "costoHuellitas">): number {
+  return premio.costoHuellitas;
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
-// CANJE PENDIENTE (ticket)
+// CANJE PENDIENTE
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Documento en /Locales/{localId}/CanjesPendientes/{canjeId}.
- *
- * Flujo:
- *   1. El cliente toca "Canjear en local" → se crea con status="pendiente".
- *      NO se descuentan huellitas todavía.
- *   2. Cliente muestra el `codigo` al admin.
- *   3. Admin lo confirma desde /admin/canjes → status pasa a "completado",
- *      se descuentan los lotes FIFO transaccionalmente.
- *   4. Si pasa `expiraEn` sin confirmarse, queda como histórico expirado.
- *
- * El `codigo` es corto (6 chars sin ambigüedades) para que el cliente lo
- * pueda dictar fácilmente al admin si la pantalla no se ve bien.
- */
 export const EstadoCanjeSchema = z.enum([
   "pendiente",
   "completado",
@@ -460,24 +431,14 @@ export const CanjePendienteSchema = z.object({
   premioId: z.string(),
   premioNombre: z.string(),
   costoHuellitas: z.number().int().positive(),
-  /**
-   * Valor en pesos del descuento que representa este canje (snapshot al
-   * momento de generar el ticket, usando `Premio.valorDescuento` si está,
-   * o `costoHuellitas * valorMonetarioHuellita` como fallback).
-   * El admin lo ve para saber qué descuento aplicar / qué producto entregar.
-   */
   valorDescuento: z.number().nonnegative().optional(),
   codigo: z.string().min(4).max(20),
   estado: EstadoCanjeSchema.default("pendiente"),
   creadoEn: z.union([z.date(), z.string()]).optional(),
-  expiraEn: z.string(), // ISO yyyy-mm-ddTHH:mm:ss
+  expiraEn: z.string(),
   confirmadoEn: z.union([z.date(), z.string()]).optional(),
-  confirmadoPor: z.string().optional(), // uid del admin
-  ventaId: z.string().optional(), // si se ata a una venta concreta
-  /**
-   * Plan FIFO de consumo de lotes (solo canjes nuevos en /Canjes).
-   * Sirve para revertir si el cliente cancela o el ticket expira.
-   */
+  confirmadoPor: z.string().optional(),
+  ventaId: z.string().optional(),
   plan: z
     .array(
       z.object({
@@ -490,14 +451,9 @@ export const CanjePendienteSchema = z.object({
 export type CanjePendiente = z.infer<typeof CanjePendienteSchema>;
 
 // ──────────────────────────────────────────────────────────────────────────────
-// REFERIDOS (índice + auditoría)
+// REFERIDOS
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Documento en /Locales/{localId}/Referidos/{codigo}
- * El ID del documento ES el código (uppercase). Garantiza unicidad por su
- * propio path: dos clientes con el mismo código no pueden coexistir.
- */
 export const ReferidoIndexSchema = z.object({
   codigo: z.string().min(4).max(20),
   clienteId: z.string().min(1),
@@ -505,7 +461,6 @@ export const ReferidoIndexSchema = z.object({
 });
 export type ReferidoIndex = z.infer<typeof ReferidoIndexSchema>;
 
-/** Auditoría de la activación de la recompensa (idempotencia + email enviado). */
 export const EventoReferidoSchema = z.object({
   id: z.string().optional(),
   localId: z.string(),
@@ -530,3 +485,6 @@ export function costoEfectivoPorcentual(
   if (cfg.montoParaUnaHuellita <= 0) return 0;
   return cfg.valorMonetarioHuellita / cfg.montoParaUnaHuellita;
 }
+
+/** Alias de `costoEfectivoPorcentual` con nomenclatura de puntos. */
+export const costoEfectivoPorcentualPuntos = costoEfectivoPorcentual;

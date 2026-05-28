@@ -20,10 +20,11 @@ import {
 import {
   CONFIGURACION_DEFAULT,
   ConfiguracionLocalSchema,
+  normalizarNivelId,
   resolverBonoCumpleanos,
   type ConfiguracionLocal,
   type LoteHuellitas,
-  type Mascota
+  type LotePuntos
 } from "./types";
 import { enviarEmailReferidoActivado } from "@/lib/email/referido";
 import { programarInvitacionEncuesta } from "@/lib/huellitas/encuestasService";
@@ -31,12 +32,10 @@ import { programarInvitacionEncuesta } from "@/lib/huellitas/encuestasService";
 /**
  * Servicios server-side: orquestan motor de reglas + Firestore en transacciones.
  *
- * Diferencias clave en este flujo:
- *  - Aplica el `descuentoFijoPct` del NIVEL antes del canje (Gran Guardián 5%).
- *  - Aplica el `multiplicador` del NIVEL al emitir huellitas.
- *  - Suma a `acumuladoHistorico` y RECALCULA el `nivelId` automáticamente.
- *  - Si es la PRIMERA compra y vino por referido, acredita bonus a ambos lados
- *    (idempotente vía `referidoActivado`) y dispara email al referente.
+ *  - Descuento fijo por nivel antes del canje.
+ *  - Emisión de puntos con multiplicador de nivel y bonos (cumpleaños cliente, primera compra).
+ *  - Actualiza acumulado histórico y `nivelId`.
+ *  - Referidos idempotentes en la primera compra.
  */
 
 /**
@@ -142,13 +141,12 @@ export interface RegistrarVentaOutput {
   /** True si el cliente subió de nivel en esta venta. */
   subioNivel: boolean;
   nivelAnterior: string;
-  /** Detalle de bonificaciones especiales aplicadas (cumpleaños, primera compra). */
+  /** Detalle de bonificaciones especiales aplicadas (cumpleaños cliente, primera compra). */
   bonificaciones: {
     cumpleanos: {
       aplicado: boolean;
       multiplicador: number;
-      mascotaId?: string;
-      huellitasExtra: number;
+      puntosExtra: number;
     };
     primeraCompra: {
       aplicado: boolean;
@@ -191,9 +189,10 @@ export async function registrarVenta(
       referidoActivado?: boolean;
       primerCompraRegistrada?: boolean;
       nombre?: string;
+      fechaNacimiento?: string;
     };
     const acumuladoActual = leerHuellitasHistoricas(cliente);
-    const nivelAnteriorId = cliente.nivelId ?? "cachorro";
+    const nivelAnteriorId = normalizarNivelId(cliente.nivelId);
 
     // ¿Es la PRIMERA compra Y vino por referido Y todavía no se activó?
     const debeActivarReferido =
@@ -218,29 +217,17 @@ export async function registrarVenta(
     const nivelEnVenta = calcularNivel(acumuladoActual, cfg.niveles);
 
     const lotesSnap = await tx.get(
-      cols.huellitas(db, input.localId, input.clienteId)
+      cols.puntos(db, input.localId, input.clienteId)
     );
-    const lotes: LoteHuellitas[] = lotesSnap.docs.map((d) => ({
+    const lotes: LotePuntos[] = lotesSnap.docs.map((d) => ({
       id: d.id,
       ...(d.data() as Omit<LoteHuellitas, "id">)
     }));
 
-    // Mascotas del cliente — necesarias para evaluar el bono de cumpleaños.
-    const mascotasSnap = await tx.get(
-      cols.mascotas(db, input.localId, input.clienteId)
-    );
-    const mascotas: Array<Pick<Mascota, "id" | "fechaNacimiento">> =
-      mascotasSnap.docs.map((d) => ({
-        id: d.id,
-        fechaNacimiento:
-          (d.data() as { fechaNacimiento?: string }).fechaNacimiento ?? ""
-      }));
-
-    // Bonificaciones (cumpleaños + primera compra), respetando los toggles.
     const bonus = calcularBonificaciones({
       bonificaciones: cfg.bonificaciones,
       bonoCumpleanos: resolverBonoCumpleanos(cfg),
-      mascotas,
+      fechaNacimientoCliente: cliente.fechaNacimiento,
       esPrimeraCompra: !cliente.primerCompraRegistrada
     });
 
@@ -267,8 +254,7 @@ export async function registrarVenta(
 
     const totalCobrado = Math.max(0, totalTrasNivel - descuentoCanje);
 
-    // 3. EMISIÓN: combina multiplicador del NIVEL × multiplicador de CUMPLEAÑOS
-    //    (si hoy cumple alguna mascota del cliente y el toggle está activo).
+    // 3. EMISIÓN: multiplicador de nivel × bono de cumpleaños del cliente (si aplica).
     const multiplicadorTotal =
       nivelEnVenta.multiplicador * bonus.multiplicadorCumple;
     const emision = calcularEmision(
@@ -317,8 +303,7 @@ export async function registrarVenta(
       bonificaciones: {
         cumpleanos: {
           aplicado: bonus.esCumpleanos,
-          multiplicador: bonus.multiplicadorCumple,
-          mascotaId: bonus.mascotaCumpleId ?? null
+          multiplicador: bonus.multiplicadorCumple
         },
         primeraCompra: {
           aplicado:
@@ -330,7 +315,7 @@ export async function registrarVenta(
 
     for (const c of planConsumo) {
       const loteRef = cols
-        .huellitas(db, input.localId, input.clienteId)
+        .puntos(db, input.localId, input.clienteId)
         .doc(c.loteId);
       tx.update(loteRef, {
         huellitasRestantes: FieldValue.increment(-c.consumidas)
@@ -356,7 +341,7 @@ export async function registrarVenta(
     // Se crea como lote independiente para mantener trazabilidad y FIFO sano.
     if (bonus.huellitasExtraPrimeraCompra > 0) {
       const loteBienvenidaRef = cols
-        .huellitas(db, input.localId, input.clienteId)
+        .puntos(db, input.localId, input.clienteId)
         .doc();
       tx.set(loteBienvenidaRef, {
         clienteId: input.clienteId,
@@ -411,7 +396,7 @@ export async function registrarVenta(
       // 6a. Lote bonus para el cliente NUEVO
       if (bonusBienvenida > 0) {
         const loteRef = cols
-          .huellitas(db, input.localId, input.clienteId)
+          .puntos(db, input.localId, input.clienteId)
           .doc();
         tx.set(loteRef, {
           clienteId: input.clienteId,
@@ -427,7 +412,7 @@ export async function registrarVenta(
       // 6b. Lote bonus para el REFERENTE
       if (bonusReferente > 0 && cliente.referidoPor) {
         const loteRef = cols
-          .huellitas(db, input.localId, cliente.referidoPor)
+          .puntos(db, input.localId, cliente.referidoPor)
           .doc();
         tx.set(loteRef, {
           clienteId: cliente.referidoPor,
@@ -520,8 +505,7 @@ export async function registrarVenta(
           cumpleanos: {
             aplicado: bonus.esCumpleanos,
             multiplicador: bonus.multiplicadorCumple,
-            mascotaId: bonus.mascotaCumpleId,
-            huellitasExtra: huellitasExtraCumple
+            puntosExtra: huellitasExtraCumple
           },
           primeraCompra: {
             aplicado:
@@ -562,8 +546,7 @@ export async function registrarVenta(
         cumpleanos: {
           aplicado: bonus.esCumpleanos,
           multiplicador: bonus.multiplicadorCumple,
-          mascotaId: bonus.mascotaCumpleId,
-          huellitasExtra: huellitasExtraCumple
+          puntosExtra: huellitasExtraCumple
         },
         primeraCompra: {
           aplicado:

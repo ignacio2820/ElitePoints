@@ -42,12 +42,11 @@ function mapDoc(id: string, data: Record<string, unknown>, localId: string): Pre
     descripcion: data.descripcion ?? "",
     costoHuellitas: data.costoHuellitas,
     valorDescuento,
-    nivelMinimoId: data.nivelMinimoId ?? "cachorro",
+    nivelMinimoId: data.nivelMinimoId ?? "bronce",
     categoria: data.categoria ?? "otro",
     stock: data.stock ?? null,
     imagen: normalizarImagenPremio(data.imagen),
-    activo: data.activo !== false,
-    especiesObjetivo: Array.isArray(data.especiesObjetivo) ? data.especiesObjetivo : []
+    activo: data.activo !== false
   });
 }
 
@@ -75,11 +74,10 @@ export async function crearPremio(localId: string, input: PremioInput): Promise<
     nombre: input.nombre.trim(),
     descripcion: (input.descripcion ?? "").trim(),
     costoHuellitas: input.costoHuellitas,
-    nivelMinimoId: input.nivelMinimoId?.trim() || "cachorro",
+    nivelMinimoId: input.nivelMinimoId?.trim() || "bronce",
     categoria: input.categoria ?? "otro",
     stock: input.stock ?? null,
     activo: input.activo ?? true,
-    especiesObjetivo: [],
     creadoEn: ahora,
     actualizadoEn: ahora
   };

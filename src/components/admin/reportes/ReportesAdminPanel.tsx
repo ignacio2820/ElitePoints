@@ -66,7 +66,7 @@ export function ReportesAdminPanel() {
             Reportes y métricas
           </h1>
           <p className="mt-1 max-w-xl text-sm text-bark-600">
-            Ventas, comunidad y rendimiento del programa de huellitas.
+            Ventas, comunidad y rendimiento del programa de puntos.
           </p>
         </div>
 

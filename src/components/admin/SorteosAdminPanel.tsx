@@ -279,7 +279,7 @@ export function SorteosAdminPanel({ niveles, sorteosIniciales }: Props) {
             min={ahoraDatetimeLocal()}
           />
           <label className="block sm:col-span-2">
-            <span className="label-elegant">Nivel mínimo (huellitas históricas)</span>
+            <span className="label-elegant">Nivel mínimo (puntos históricas)</span>
             <select
               value={nivelMinimo}
               onChange={(e) => setNivelMinimo(e.target.value)}
@@ -313,7 +313,7 @@ export function SorteosAdminPanel({ niveles, sorteosIniciales }: Props) {
 
       <section>
         <h2 className="font-display text-2xl font-semibold text-bark-700">
-          Sorteos del local
+          Sorteos del comercio
         </h2>
         {sorteos.length === 0 ? (
           <p className="mt-4 text-sm text-bark-500">Todavía no hay sorteos creados.</p>

@@ -11,7 +11,7 @@ import {
   progresoNivelCliente
 } from "@/lib/huellitas/saldosCliente";
 import { mapPremiosFromDocs } from "@/lib/huellitas/mapPremiosFirestore";
-import type { Cliente, Mascota } from "@/lib/huellitas/types";
+import type { Cliente } from "@/lib/huellitas/types";
 
 export const dynamic = "force-dynamic";
 
@@ -35,8 +35,6 @@ export default async function MiCuentaCatalogoPage() {
   const reservadas = Number(clienteRaw.huellitasReservadas ?? 0);
   const saldoDisponible = Math.max(0, saldoBruto - reservadas);
   const progreso = progresoNivelCliente(clienteRaw, cfg.niveles);
-  const mascotasRaw = (clienteRaw.mascotas as Mascota[] | undefined) ?? [];
-  const especiesCliente = mascotasRaw.map((m) => m.especie ?? "perro");
   const premios = mapPremiosFromDocs(premiosSnap.docs);
 
   return (
@@ -56,7 +54,7 @@ export default async function MiCuentaCatalogoPage() {
             Catálogo de recompensas
           </h1>
           <p className="mt-1 text-sm text-bark-500">
-            Canjeá tus Huellitas por premios del local.
+            Canjeá tus Puntos por premios del comercio.
           </p>
         </div>
       </header>
@@ -69,7 +67,6 @@ export default async function MiCuentaCatalogoPage() {
           valorMonetarioHuellita={cfg.valorMonetarioHuellita}
           nivelCliente={progreso.nivelActual}
           niveles={cfg.niveles}
-          especiesCliente={especiesCliente}
         />
       </main>
     </div>

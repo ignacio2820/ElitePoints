@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2, Mail, Sparkles } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { completarLogin } from "@/lib/auth/client";
 
 type Estado = "verificando" | "ok" | "error" | "needs-email";
@@ -47,7 +47,7 @@ export function VerifyClient() {
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-terracotta-400 shadow-soft">
-            <HuellitaIcon size={32} className="text-white" />
+            <PuntoIcon size={32} className="text-white" />
           </div>
         </div>
 

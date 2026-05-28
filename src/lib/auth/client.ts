@@ -232,12 +232,7 @@ export interface RegistrarInput {
   nombre: string;
   telefono?: string;
   codigoReferido?: string;
-  mascota: {
-    nombre: string;
-    especie: "perro" | "gato" | "ave" | "roedor" | "reptil" | "otro";
-    raza?: string;
-    fechaNacimiento?: string;
-  };
+  fechaNacimiento?: string;
 }
 
 export interface RegistrarResponse {

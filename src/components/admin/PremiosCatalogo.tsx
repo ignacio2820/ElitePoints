@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Gift, Pencil, Plus, Trash2 } from "lucide-react";
 import type { NivelLealtad, Premio } from "@/lib/huellitas/types";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { formatNumber } from "@/lib/utils";
 import { PremioFormModal } from "./PremioFormModal";
 
@@ -69,7 +69,7 @@ export function PremiosCatalogo({ initialPremios, niveles }: Props) {
           <Gift className="mx-auto text-bark-300" size={28} />
           <p className="mt-3 font-medium text-bark-700">Todavía no cargaste premios</p>
           <p className="mt-1 text-sm text-[color:var(--muted)]">
-            Creá el primero para que tus clientes puedan canjear Huellitas.
+            Creá el primero para que tus clientes puedan canjear Puntos.
           </p>
         </div>
       ) : (
@@ -101,7 +101,7 @@ export function PremiosCatalogo({ initialPremios, niveles }: Props) {
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-bark-600">
                     <span className="inline-flex items-center gap-1 rounded-full bg-cream-100 px-2.5 py-1">
-                      <HuellitaIcon size={14} />
+                      <PuntoIcon size={14} />
                       {formatNumber(premio.costoHuellitas)}
                     </span>
                     <span className="rounded-full bg-cream-100 px-2.5 py-1">

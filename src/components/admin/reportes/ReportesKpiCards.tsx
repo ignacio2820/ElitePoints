@@ -18,7 +18,7 @@ export function ReportesKpiCards({ kpis }: Props) {
     {
       label: "Ventas fidelizadas",
       value: formatARS(kpis.ventasTotalesFidelizadas),
-      hint: "Monto $ con huellitas emitidas",
+      hint: "Monto $ con puntos emitidas",
       icon: DollarSign,
       accent: "from-amber-500/20 to-terracotta-500/10 text-amber-200"
     },

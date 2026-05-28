@@ -17,17 +17,14 @@ export function mapPremiosFromDocs(
         typeof data.valorDescuento === "number" && data.valorDescuento >= 0
           ? data.valorDescuento
           : undefined,
-      nivelMinimoId: String(data.nivelMinimoId ?? "cachorro"),
+      nivelMinimoId: String(data.nivelMinimoId ?? "bronce"),
       categoria: data.categoria,
       stock: typeof data.stock === "number" ? data.stock : null,
       imagen:
         typeof data.imagen === "string" && data.imagen.trim()
           ? data.imagen.trim()
           : undefined,
-      activo: data.activo !== false,
-      especiesObjetivo: Array.isArray(data.especiesObjetivo)
-        ? data.especiesObjetivo
-        : []
+      activo: data.activo !== false
     };
   });
 }

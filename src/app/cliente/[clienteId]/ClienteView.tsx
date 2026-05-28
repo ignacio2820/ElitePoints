@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { QrCode } from "lucide-react";
-import { HuellitasBalance } from "@/components/HuellitasBalance";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntosBalance } from "@/components/PuntosBalance";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { CanjesDisponibles } from "@/components/cliente/CanjesDisponibles";
 import { AvisoMembresiaExpiradaCliente } from "@/components/cliente/AvisoMembresiaExpiradaCliente";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -98,7 +98,7 @@ export function ClienteView({
           <AvisoMembresiaExpiradaCliente nombreLocal={nombreLocal} />
         ) : null}
 
-        <HuellitasBalance
+        <PuntosBalance
           saldo={saldoDisponible}
           valorMonetarioHuellita={cfg.valorMonetarioHuellita}
           nombreCliente={cliente.nombre}
@@ -107,17 +107,17 @@ export function ClienteView({
           <p className="-mt-4 text-center text-sm text-bark-500">
             Tenés{" "}
             <strong className="text-bark-700">
-              {formatNumber(huellitasReservadas)} huellitas
+              {formatNumber(huellitasReservadas)} puntos
             </strong>{" "}
-            reservadas en cupones pendientes de entrega en el local.
+            reservadas en cupones pendientes de entrega en el comercio.
           </p>
         ) : null}
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Últimas huellitas sumadas</CardTitle>
+            <CardTitle className="text-xl">Últimas puntos sumadas</CardTitle>
             <CardDescription>
-              Compras registradas en {nombreLocal} donde ganaste huellitas.
+              Compras registradas en {nombreLocal} donde ganaste puntos.
             </CardDescription>
           </CardHeader>
           {historialPuntos.length === 0 ? (
@@ -136,7 +136,7 @@ export function ClienteView({
                     {formatearFechaCorta(row.fecha)}
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-bark-800">
-                    <HuellitaIcon size={16} className="text-terracotta-500" />+
+                    <PuntoIcon size={16} className="text-terracotta-500" />+
                     {formatNumber(row.huellitasGeneradas)}
                   </span>
                 </li>

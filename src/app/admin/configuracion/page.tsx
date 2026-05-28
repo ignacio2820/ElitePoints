@@ -48,13 +48,13 @@ export default async function ConfiguracionPage() {
     <div className="space-y-10">
       <header>
         <span className="inline-block rounded-full bg-terracotta-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
-          Reglas del local
+          Reglas del comercio
         </span>
         <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight text-bark-700 sm:text-5xl">
           Configuración del programa
         </h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-bark-600">
-          Definí cómo funciona Huellitas en tu local. Los cambios afectan solo a
+          Definí cómo funciona Puntos en tu comercio. Los cambios afectan solo a
           las próximas ventas y se versionan automáticamente.
         </p>
       </header>
@@ -82,14 +82,14 @@ export default async function ConfiguracionPage() {
       <Card>
         <CardHeader>
           <span className="inline-block text-[11px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
-            Marketing del local
+            Marketing del comercio
           </span>
           <CardTitle className="mt-2 text-2xl font-bold text-bark-700">
             Póster con QR de registro
           </CardTitle>
           <CardDescription className="text-bark-600">
             Generá un póster A4 con el logo de tu comercio y un QR único para
-            que tus clientes se registren en Huellitas.
+            que tus clientes se registren en Puntos.
           </CardDescription>
         </CardHeader>
         <GenerarQrPosterButton />

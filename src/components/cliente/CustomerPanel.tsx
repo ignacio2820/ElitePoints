@@ -7,7 +7,7 @@ import {
   ShoppingBag,
   Stethoscope
 } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
 import type { NivelLealtad } from "@/lib/huellitas/types";
 import { formatARS, formatHuellitas, formatNumber } from "@/lib/utils";
@@ -20,11 +20,11 @@ export interface CustomerPanelProps {
   nombreCliente: string;
   /**
    * Saldo DISPONIBLE (saldoHuellitas - huellitasReservadas). Es lo que el
-   * cliente puede gastar ahora. Si tiene tickets pendientes, esas huellitas
+   * cliente puede gastar ahora. Si tiene tickets pendientes, esas puntos
    * NO están aquí; aparecen como "reservadas".
    */
   saldoHuellitas: number;
-  /** Huellitas en tickets pendientes (canjes solicitados sin confirmar). */
+  /** Puntos en tickets pendientes (canjes solicitados sin confirmar). */
   huellitasReservadas?: number;
   valorMonetarioHuellita: number;
   nivelActual: NivelLealtad;
@@ -73,7 +73,7 @@ export function CustomerPanel({
     <div className="min-h-screen bg-bark-700 text-white lg:flex">
       <aside className="relative flex w-full shrink-0 flex-col border-b border-white/10 bg-bark-800 px-5 py-6 lg:w-[17.5rem] lg:border-b-0 lg:border-r lg:border-white/10 lg:px-6 lg:py-8">
         <div className="flex items-center gap-2">
-          <HuellitaIcon size={22} className="text-terracotta-400" />
+          <PuntoIcon size={22} className="text-terracotta-400" />
           <div className="font-display text-xl font-extrabold leading-none tracking-tight">
             <span className="text-white">Mascot</span>
             <span className="text-terracotta-400">Points</span>
@@ -108,10 +108,10 @@ export function CustomerPanel({
             <li className="border-b border-white/10 pb-4">
               <p className="font-semibold text-white">Programa activo</p>
               <p className="mt-1 text-xs text-white/75">
-                Hola, {primerNombre}. Tus movimientos del local aparecerán acá.
+                Hola, {primerNombre}. Tus movimientos del comercio aparecerán acá.
               </p>
               <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-terracotta-300">
-                <HuellitaIcon size={14} className="text-terracotta-300" />
+                <PuntoIcon size={14} className="text-terracotta-300" />
                 +{formatNumber(saldoHuellitas)} disponibles
               </p>
             </li>
@@ -119,7 +119,7 @@ export function CustomerPanel({
               <p className="font-semibold text-white">Rango actual</p>
               <p className="mt-1 text-xs text-white/75">{nivelActual.nombre}</p>
               <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-terracotta-300">
-                <HuellitaIcon size={14} className="text-terracotta-300" />
+                <PuntoIcon size={14} className="text-terracotta-300" />
                 {formatNumber(saldoHuellitas)} en saldo
               </p>
             </li>
@@ -166,9 +166,9 @@ export function CustomerPanel({
         <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
           {bannerInicio}
           <div className="mb-6 flex items-center gap-2">
-            <HuellitaIcon size={24} className="text-terracotta-400" />
+            <PuntoIcon size={24} className="text-terracotta-400" />
             <h1 className="font-display text-2xl font-bold text-white">
-              Huellita
+              Punto
             </h1>
           </div>
 
@@ -183,8 +183,8 @@ export function CustomerPanel({
 
               <div className="relative">
                 <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/75">
-                  <HuellitaIcon size={12} className="text-terracotta-400" />
-                  Tus huellitas acumuladas
+                  <PuntoIcon size={12} className="text-terracotta-400" />
+                  Tus puntos acumuladas
                 </p>
 
                 <div className="mt-4 flex items-end gap-2">
@@ -192,7 +192,7 @@ export function CustomerPanel({
                     {saldoEntero}
                   </span>
                   <span className="pb-2 text-sm font-bold uppercase tracking-[0.16em] text-white/80">
-                    Huellitas
+                    Puntos
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-white/70">
@@ -204,7 +204,7 @@ export function CustomerPanel({
                 </p>
                 {huellitasReservadas > 0 ? (
                   <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
-                    <HuellitaIcon size={12} className="text-terracotta-300" />
+                    <PuntoIcon size={12} className="text-terracotta-300" />
                     {formatNumber(huellitasReservadas)} reservadas en canjes
                     pendientes
                   </p>
@@ -245,18 +245,18 @@ export function CustomerPanel({
           </div>
 
           <section
-            id="como-sumar-huellitas"
+            id="como-sumar-puntos"
             className="mt-8 rounded-3xl bg-bark-800 p-5 shadow-soft ring-1 ring-white/5 lg:p-6"
           >
             <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/75">
-              <HuellitaIcon size={12} className="text-terracotta-400" />
-              Cómo sumar más huellitas
+              <PuntoIcon size={12} className="text-terracotta-400" />
+              Cómo sumar más puntos
             </p>
             <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:items-center">
               <PasoCard
                 icono={<Gift size={20} />}
                 titulo="Registrate"
-                texto="Sumate al programa del local y empezá a acumular con tu cuenta."
+                texto="Sumate al programa del comercio y empezá a acumular con tu cuenta."
               />
               <ArrowRight
                 size={18}
@@ -265,7 +265,7 @@ export function CustomerPanel({
               <PasoCard
                 icono={<Stethoscope size={20} />}
                 titulo="Primera consulta"
-                texto="Visitá el local y pedí que sumen tus Huellitas en caja."
+                texto="Visitá el local y pedí que sumen tus Puntos en caja."
               />
               <ArrowRight
                 size={18}
@@ -274,7 +274,7 @@ export function CustomerPanel({
               <PasoCard
                 icono={<ShoppingBag size={20} />}
                 titulo={`Por cada ${formatARS(montoParaUnaHuellita)} gastados`}
-                texto={`Cada huellita vale ${formatARS(valorMonetarioHuellita)} y vence a los ${diasVencimiento} días.`}
+                texto={`Cada punto vale ${formatARS(valorMonetarioHuellita)} y vence a los ${diasVencimiento} días.`}
               />
             </div>
           </section>

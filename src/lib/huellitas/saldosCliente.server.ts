@@ -1,7 +1,12 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { patchHuellitasActuales, patchHuellitasHistoricas } from "@/lib/huellitas/saldosCliente";
+import {
+  patchHuellitasActuales,
+  patchHuellitasHistoricas,
+  patchPuntosActuales,
+  patchPuntosHistoricos
+} from "@/lib/huellitas/saldosCliente";
 
-/** Escrituras con FieldValue — solo importar desde código server (API routes, services). */
+/** Escrituras con FieldValue — solo servidor (API routes, services). */
 
 export function incrementHuellitasActuales(delta: number): Record<string, unknown> {
   const d = Math.round(delta);
@@ -11,6 +16,8 @@ export function incrementHuellitasActuales(delta: number): Record<string, unknow
   };
 }
 
+export const incrementPuntosActuales = incrementHuellitasActuales;
+
 export function incrementHuellitasHistoricas(delta: number): Record<string, unknown> {
   const d = Math.round(delta);
   return {
@@ -19,7 +26,8 @@ export function incrementHuellitasHistoricas(delta: number): Record<string, unkn
   };
 }
 
-/** Venta / emisión: suben actuales e históricas en paralelo. */
+export const incrementPuntosHistoricos = incrementHuellitasHistoricas;
+
 export function patchIncrementoVenta(
   deltaActuales: number,
   deltaHistoricas: number
@@ -30,4 +38,11 @@ export function patchIncrementoVenta(
   };
 }
 
-export { patchHuellitasActuales, patchHuellitasHistoricas };
+export const patchIncrementoVentaPuntos = patchIncrementoVenta;
+
+export {
+  patchHuellitasActuales,
+  patchHuellitasHistoricas,
+  patchPuntosActuales,
+  patchPuntosHistoricos
+};

@@ -12,7 +12,7 @@ import {
   Sparkles,
   TrendingUp
 } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import type { NivelLealtad } from "@/lib/huellitas/types";
 import { reproducirSonidoExitoVenta } from "@/lib/sound";
 import { formatARS, formatNumber } from "@/lib/utils";
@@ -189,7 +189,7 @@ export function NuevaVentaForm({
             <p className="mt-2 text-sm text-[color:var(--muted)]">
               {nombreLocal} ·{" "}
               <span className="font-medium text-bark-600">
-                1 Huellita cada {formatARS(montoParaUnaHuellita)}
+                1 Punto cada {formatARS(montoParaUnaHuellita)}
               </span>
             </p>
           </div>
@@ -248,7 +248,7 @@ export function NuevaVentaForm({
                 {/* Monto */}
                 <FieldDark
                   label="Monto de la venta"
-                  hint={`Total en pesos · canje 1 Huellita = ${formatARS(valorMonetarioHuellita)}`}
+                  hint={`Total en pesos · canje 1 Punto = ${formatARS(valorMonetarioHuellita)}`}
                   icon={<Receipt size={16} />}
                 >
                   <div className="relative">
@@ -273,8 +273,8 @@ export function NuevaVentaForm({
                 <details className="group rounded-xl border border-bark-100 bg-cream-50 p-4">
                   <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-bark-600 transition group-open:text-bark-700">
                     <span className="flex items-center gap-2">
-                      <HuellitaIcon size={14} className="text-bark-500" />
-                      Canjear huellitas en esta venta (opcional)
+                      <PuntoIcon size={14} className="text-bark-500" />
+                      Canjear puntos en esta venta (opcional)
                     </span>
                     <span className="text-xs text-bark-400">
                       {canjeNum > 0
@@ -294,7 +294,7 @@ export function NuevaVentaForm({
                       className="w-full rounded-lg input-elegant py-2.5 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                     />
                     <p className="mt-2 text-xs text-bark-400">
-                      El cliente puede canjear sus huellitas vigentes para
+                      El cliente puede canjear sus puntos vigentes para
                       descontar parte del total. El sistema valida saldo y tope
                       configurado.
                     </p>
@@ -304,7 +304,7 @@ export function NuevaVentaForm({
                 {/* Cálculo en vivo */}
                 <CalculoEnVivo
                   monto={montoNum}
-                  huellitas={huellitasPrevistas}
+                  puntos={huellitasPrevistas}
                   valorEnPesos={valorEnPesos}
                   montoParaUnaHuellita={montoParaUnaHuellita}
                 />
@@ -360,7 +360,7 @@ export function NuevaVentaForm({
 
         <p className="mt-6 text-center text-xs text-[color:var(--muted)]">
           Local: <span className="text-bark-500">{localId}</span> · Las
-          huellitas se acreditan al instante en el saldo del cliente.
+          puntos se acreditan al instante en el saldo del cliente.
         </p>
     </div>
   );
@@ -395,12 +395,12 @@ function FieldDark({
 
 function CalculoEnVivo({
   monto,
-  huellitas,
+  puntos,
   valorEnPesos,
   montoParaUnaHuellita
 }: {
   monto: number;
-  huellitas: number;
+  puntos: number;
   valorEnPesos: number;
   montoParaUnaHuellita: number;
 }) {
@@ -412,7 +412,7 @@ function CalculoEnVivo({
   return (
     <div
       className={`rounded-2xl border p-5 shadow-soft transition-all ${
-        huellitas > 0
+        puntos > 0
           ? "border-amber-200/80 bg-cream-50/90 ring-1 ring-amber-100"
           : "border-bark-100 bg-cream-50/70"
       }`}
@@ -425,20 +425,20 @@ function CalculoEnVivo({
           <div className="mt-1 flex items-baseline gap-2">
             <span
               className={`font-display text-5xl font-bold tabular-nums ${
-                huellitas > 0 ? "text-amber-600" : "text-bark-300"
+                puntos > 0 ? "text-amber-600" : "text-bark-300"
               }`}
             >
-              {formatNumber(huellitas)}
+              {formatNumber(puntos)}
             </span>
             <span
               className={`text-lg font-medium ${
-                huellitas > 0 ? "text-amber-700" : "text-bark-300"
+                puntos > 0 ? "text-amber-700" : "text-bark-300"
               }`}
             >
-              Huellitas
+              Puntos
             </span>
           </div>
-          {huellitas > 0 && (
+          {puntos > 0 && (
             <p className="mt-2 text-sm text-amber-800/80">
               Equivalen a{" "}
               <span className="font-semibold text-amber-800">
@@ -448,31 +448,31 @@ function CalculoEnVivo({
             </p>
           )}
         </div>
-        <HuellitasFlotantes huellitas={huellitas} />
+        <HuellitasFlotantes puntos={puntos} />
       </div>
       {muestraResto && (
         <div className="mt-4 flex items-center gap-2 border-t border-bark-100 pt-3 text-xs text-bark-400">
           <TrendingUp size={12} />
-          Sumá {formatARS(restoParaSiguiente)} más para ganar 1 Huellita extra
+          Sumá {formatARS(restoParaSiguiente)} más para ganar 1 Punto extra
         </div>
       )}
     </div>
   );
 }
 
-function HuellitasFlotantes({ huellitas }: { huellitas: number }) {
-  const visibles = Math.min(huellitas, 5);
+function HuellitasFlotantes({ puntos }: { puntos: number }) {
+  const visibles = Math.min(puntos, 5);
   if (visibles === 0) {
     return (
       <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-bark-200 text-bark-300">
-        <HuellitaIcon size={28} />
+        <PuntoIcon size={28} />
       </div>
     );
   }
   return (
     <div className="relative h-16 w-20">
       {Array.from({ length: visibles }).map((_, i) => (
-        <HuellitaIcon
+        <PuntoIcon
           key={i}
           size={26}
           className="absolute text-amber-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
@@ -484,9 +484,9 @@ function HuellitasFlotantes({ huellitas }: { huellitas: number }) {
           }}
         />
       ))}
-      {huellitas > 5 && (
+      {puntos > 5 && (
         <span className="absolute -bottom-1 right-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-          +{huellitas - 5}
+          +{puntos - 5}
         </span>
       )}
     </div>
@@ -529,7 +529,7 @@ function ResultadoVenta({
           Nuevo saldo del cliente
         </p>
         <div className="mt-2 flex items-center justify-center gap-3">
-          <HuellitaIcon
+          <PuntoIcon
             size={36}
             className="text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
           />
@@ -538,7 +538,7 @@ function ResultadoVenta({
           </span>
         </div>
         <p className="mt-1 text-sm text-bark-600">
-          Huellitas vigentes (acumulado histórico:{" "}
+          Puntos vigentes (acumulado histórico:{" "}
           {formatNumber(resultado.acumuladoHistorico ?? 0)})
         </p>
       </div>
@@ -615,7 +615,7 @@ function ResultadoVenta({
                       resultado.bonificaciones.cumpleanos.huellitasExtra ?? 0
                     )}
                   </span>{" "}
-                  Huellitas extra
+                  Puntos extra
                 </p>
               </div>
             </div>
@@ -638,7 +638,7 @@ function ResultadoVenta({
                       resultado.bonificaciones.primeraCompra.huellitasExtra ?? 0
                     )}
                   </span>{" "}
-                  Huellitas
+                  Puntos
                 </p>
               </div>
             </div>

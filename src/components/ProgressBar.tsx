@@ -1,34 +1,41 @@
 import { cn } from "@/lib/utils";
-import type { NivelLealtad } from "@/lib/huellitas/types";
+import type { NivelLealtad, TemaNivel } from "@/lib/huellitas/types";
+import { resolverTemaNivel } from "@/lib/huellitas/types";
 
 const trackByTema = {
-  cachorro: "from-cachorro-400 to-cachorro-600",
-  explorador: "from-explorador-400 to-explorador-600",
-  guardian: "from-guardian-400 to-guardian-600"
-} as const;
+  bronce: "from-cachorro-400 to-cachorro-600",
+  plata: "from-explorador-400 to-explorador-600",
+  oro: "from-terracotta-300 to-terracotta-500",
+  elite: "from-guardian-400 to-guardian-600"
+} satisfies Record<TemaNivel, string>;
 
 export interface ProgressBarProps {
-  /** Valor 0..1 (clamp interno). */
   value: number;
   tema?: NivelLealtad["tema"];
+  nivel?: Pick<NivelLealtad, "tema" | "id">;
   size?: "sm" | "md";
   className?: string;
-  /** Mostrar marcador animado en la punta. */
   glow?: boolean;
 }
 
-/**
- * Barra de progreso elegante. Coherente con la estética "Cadena Web Elite":
- * track translúcido, fill con gradiente del nivel actual, esquinas redondeadas
- * generosas, transición suave.
- */
 export function ProgressBar({
   value,
-  tema = "cachorro",
+  tema,
+  nivel,
   size = "md",
   className,
   glow = true
 }: ProgressBarProps) {
+  const temaResuelto =
+    nivel != null
+      ? resolverTemaNivel(nivel)
+      : tema === "bronce" ||
+          tema === "plata" ||
+          tema === "oro" ||
+          tema === "elite"
+        ? tema
+        : resolverTemaNivel({ tema: tema ?? "bronce", id: "bronce" });
+
   const pct = Math.max(0, Math.min(1, value)) * 100;
   const heights = { sm: "h-1.5", md: "h-2.5" } as const;
 
@@ -47,7 +54,7 @@ export function ProgressBar({
       <div
         className={cn(
           "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r transition-[width] duration-700 ease-out",
-          trackByTema[tema]
+          trackByTema[temaResuelto]
         )}
         style={{ width: `${pct}%` }}
       />
@@ -65,10 +72,6 @@ export function ProgressBar({
   );
 }
 
-/**
- * Stepper visual: muestra los niveles como puntos equidistantes
- * sobre una línea, indicando los alcanzados.
- */
 export function ProgressStepper({
   niveles,
   acumulado,
@@ -81,17 +84,21 @@ export function ProgressStepper({
   const ord = [...niveles].sort(
     (a, b) => a.umbralHistorico - b.umbralHistorico
   );
-  const dotColor = (t: NivelLealtad["tema"]) =>
-    t === "cachorro"
-      ? "bg-cachorro-400"
-      : t === "explorador"
-      ? "bg-explorador-400"
-      : "bg-guardian-400";
+  const dotColor = (nivel: NivelLealtad) => {
+    const t = resolverTemaNivel(nivel);
+    if (t === "bronce") return "bg-cachorro-400";
+    if (t === "plata") return "bg-explorador-400";
+    if (t === "oro") return "bg-terracotta-400";
+    return "bg-guardian-400";
+  };
 
   return (
     <div className={cn("relative", className)}>
       <div className="absolute left-3 right-3 top-1.5 h-0.5 rounded-full bg-bark-100" />
-      <div className="relative grid" style={{ gridTemplateColumns: `repeat(${ord.length}, 1fr)` }}>
+      <div
+        className="relative grid"
+        style={{ gridTemplateColumns: `repeat(${ord.length}, 1fr)` }}
+      >
         {ord.map((n) => {
           const reached = acumulado >= n.umbralHistorico;
           return (
@@ -99,7 +106,7 @@ export function ProgressStepper({
               <div
                 className={cn(
                   "h-3.5 w-3.5 rounded-full ring-4 ring-cream-50 transition",
-                  reached ? dotColor(n.tema) : "bg-bark-100"
+                  reached ? dotColor(n) : "bg-bark-100"
                 )}
                 aria-hidden
               />
@@ -114,7 +121,7 @@ export function ProgressStepper({
               <div className="text-[10px] text-bark-400">
                 {n.umbralHistorico === 0
                   ? "Inicio"
-                  : `${n.umbralHistorico.toLocaleString("es-AR")} 🐾`}
+                  : `${n.umbralHistorico.toLocaleString("es-AR")} pts`}
               </div>
             </div>
           );

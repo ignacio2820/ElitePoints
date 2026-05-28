@@ -26,7 +26,7 @@ function normalizarResendFrom(raw: string | undefined): string | undefined {
   return s || undefined;
 }
 
-/** Remitente transaccional con marca MascotPoints. */
+/** Remitente transaccional con marca ElitePoints. */
 export function emailFromAddress(): string {
   return normalizarResendFrom(process.env.RESEND_FROM) ?? CONTACT_FROM;
 }

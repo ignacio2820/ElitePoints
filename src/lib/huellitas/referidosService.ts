@@ -132,7 +132,6 @@ export async function crearClienteConReferido(input: {
     referidosActivados: 0,
     referidosTotales: 0,
     primerCompraRegistrada: false,
-    mascotas: [],
     creadoEn: new Date().toISOString(),
     // Sólo incluimos referidoPor si efectivamente vino por código —
     // Firestore rechaza valores undefined en escrituras directas.

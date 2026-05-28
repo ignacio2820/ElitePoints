@@ -19,7 +19,7 @@ import {
   ShieldCheck,
   Sparkles
 } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { Field } from "@/components/ui/Field";
 import { comprimirImagenEnCliente } from "@/lib/images/compressImageClient";
 import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
@@ -143,7 +143,7 @@ function Formulario({
             Tu Pet Shop con un programa de fidelidad de verdad.
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-[color:var(--muted)]">
-            En 60 segundos creás tu cuenta, tu sistema de Huellitas y empezás
+            En 60 segundos creás tu cuenta, tu sistema de Puntos y empezás
             a sumar clientes recurrentes. Sin tarjetas de plástico, sin Excel.
           </p>
         </div>
@@ -152,22 +152,22 @@ function Formulario({
           <Beneficio
             icon={<ShieldCheck size={16} />}
             titulo="Costo del programa: 1%"
-            sub="Por defecto: $1.000 = 1 Huellita. 1 Huellita = $10. Tu margen queda intacto."
+            sub="Por defecto: $1.000 = 1 Punto. 1 Punto = $10. Tu margen queda intacto."
           />
           <Beneficio
             icon={<PartyPopper size={16} />}
             titulo="Niveles + cumpleaños listos"
-            sub="Cachorro, Explorador, Gran Guardián. Saludos automáticos a las mascotas."
+            sub="Bronce, Plata, Oro y Elite. Bonos y multiplicadores listos para activar."
           />
           <Beneficio
-            icon={<HuellitaIconMini />}
+            icon={<PuntoIconMini />}
             titulo="App lista para tus clientes"
             sub="Cada cliente tiene su panel mobile-first y un código corto para la caja."
           />
         </ul>
 
         <p className="relative mt-10 text-xs text-bark-400">
-          ¿Ya sos dueño de un Pet Shop con cuenta? Volvé a la{" "}
+          ¿Ya tenés un comercio con cuenta? Volvé a la{" "}
           <a href="/login" className="font-semibold text-bark-700 underline underline-offset-2">
             pantalla de ingreso
           </a>
@@ -209,7 +209,7 @@ function Formulario({
                   value={activationToken}
                 />
                 <CampoConIcono
-                  label="Nombre del local"
+                  label="Nombre del comercio"
                   hint={
                     slugPreview
                       ? `Tu URL: tuapp.com/${slugPreview}`
@@ -266,7 +266,7 @@ function Formulario({
                 </CampoConIcono>
 
                 <Field
-                  label="Logo del local (opcional)"
+                  label="Logo del comercio (opcional)"
                   hint="Podés subirlo ahora o más tarde desde Configuración. Se comprime automáticamente."
                 >
                   <div className="flex flex-wrap items-start gap-4">
@@ -434,8 +434,8 @@ function Beneficio({
   );
 }
 
-function HuellitaIconMini() {
-  return <HuellitaIcon size={16} />;
+function PuntoIconMini() {
+  return <PuntoIcon size={16} />;
 }
 
 function ExitoPanel({
@@ -453,7 +453,7 @@ function ExitoPanel({
           ¡Tu Pet Shop está listo!
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
-          Creamos tu local con el identificador{" "}
+          Creamos tu comercio con el identificador{" "}
           <code className="rounded-lg bg-cream-100 px-2 py-0.5 font-mono text-sm text-bark-700 ring-1 ring-bark-100">
             {state.localId}
           </code>{" "}

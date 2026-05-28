@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle2, Gift, Loader2, X } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { HUELLITAS_OPCIONES_DISCULPA } from "@/lib/huellitas/encuestasConstants";
 import type { AlertaEncuestaAdmin } from "@/lib/huellitas/encuestasAlertasService";
 import { cn } from "@/lib/utils";
@@ -14,9 +14,9 @@ interface Props {
 }
 
 export function ModalEnviarDisculpa({ alerta, onClose, onSuccess }: Props) {
-  const [huellitas, setHuellitas] = useState<number>(HUELLITAS_OPCIONES_DISCULPA[0]);
+  const [puntos, setHuellitas] = useState<number>(HUELLITAS_OPCIONES_DISCULPA[0]);
   const [nota, setNota] = useState(
-    `Hola ${alerta.nombreCliente}, lamentamos que tu experiencia no haya sido la esperada. Queremos compensarte con Huellitas de regalo.`
+    `Hola ${alerta.nombreCliente}, lamentamos que tu experiencia no haya sido la esperada. Queremos compensarte con Puntos de regalo.`
   );
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export function ModalEnviarDisculpa({ alerta, onClose, onSuccess }: Props) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ huellitas, nota: nota.trim() })
+          body: JSON.stringify({ puntos, nota: nota.trim() })
         }
       );
       const data = (await res.json()) as { ok: boolean; error?: string };
@@ -90,7 +90,7 @@ export function ModalEnviarDisculpa({ alerta, onClose, onSuccess }: Props) {
           <div className="mt-8 flex flex-col items-center py-6 text-center">
             <CheckCircle2 className="h-12 w-12 text-emerald-600" strokeWidth={1.5} />
             <p className="mt-3 font-semibold text-emerald-900">
-              Disculpa enviada y Huellitas acreditadas
+              Disculpa enviada y Puntos acreditadas
             </p>
           </div>
         ) : (
@@ -100,7 +100,7 @@ export function ModalEnviarDisculpa({ alerta, onClose, onSuccess }: Props) {
               billetera del cliente y la alerta quedará resuelta.
             </p>
 
-            <p className="label-elegant mt-6 mb-2">Huellitas compensatorias</p>
+            <p className="label-elegant mt-6 mb-2">Puntos compensatorias</p>
             <div className="flex flex-wrap gap-2">
               {HUELLITAS_OPCIONES_DISCULPA.map((n) => (
                 <button
@@ -110,12 +110,12 @@ export function ModalEnviarDisculpa({ alerta, onClose, onSuccess }: Props) {
                   onClick={() => setHuellitas(n)}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition",
-                    huellitas === n
+                    puntos === n
                       ? "bg-emerald-800 text-white shadow-sm"
                       : "bg-white text-emerald-900 ring-1 ring-emerald-200 hover:ring-[#fb8500]"
                   )}
                 >
-                  <HuellitaIcon size={16} className={huellitas === n ? "text-[#fb8500]" : "text-emerald-600"} />
+                  <PuntoIcon size={16} className={puntos === n ? "text-[#fb8500]" : "text-emerald-600"} />
                   +{n}
                 </button>
               ))}

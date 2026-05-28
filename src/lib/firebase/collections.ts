@@ -1,12 +1,11 @@
 import type { Firestore } from "firebase-admin/firestore";
 
 /**
- * Helpers tipados para acceder al árbol Firestore multi-tenant.
+ * Helpers tipados para el árbol Firestore multi-tenant (ElitePoints).
  *   /Locales/{localId}
  *     /ConfiguracionLocal/main
  *     /Clientes/{clienteId}
- *       /Mascotas/{mascotaId}
- *       /Huellitas/{loteId}
+ *       /Huellitas/{loteId}   ← lotes de puntos (nombre legacy en Firestore)
  *     /Ventas/{ventaId}
  *     /Canjes/{canjeId}
  */
@@ -22,12 +21,11 @@ export const cols = {
   cliente: (db: Firestore, localId: string, clienteId: string) =>
     db.doc(`Locales/${localId}/Clientes/${clienteId}`),
 
-  mascotas: (db: Firestore, localId: string, clienteId: string) =>
-    db.collection(`Locales/${localId}/Clientes/${clienteId}/Mascotas`),
+  /** Lotes FIFO de puntos del cliente (ruta Firestore: `Huellitas`). */
+  puntos: (db: Firestore, localId: string, clienteId: string) =>
+    db.collection(`Locales/${localId}/Clientes/${clienteId}/Huellitas`),
 
-  mascota: (db: Firestore, localId: string, clienteId: string, mascotaId: string) =>
-    db.doc(`Locales/${localId}/Clientes/${clienteId}/Mascotas/${mascotaId}`),
-
+  /** @deprecated Alias de `puntos` — misma subcolección `Huellitas`. */
   huellitas: (db: Firestore, localId: string, clienteId: string) =>
     db.collection(`Locales/${localId}/Clientes/${clienteId}/Huellitas`),
 
@@ -43,39 +41,30 @@ export const cols = {
   premio: (db: Firestore, localId: string, premioId: string) =>
     db.doc(`Locales/${localId}/Premios/${premioId}`),
 
-  /** Índice código → clienteId. El doc ID ES el código (uppercase). */
   referidos: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/Referidos`),
 
   referido: (db: Firestore, localId: string, codigo: string) =>
     db.doc(`Locales/${localId}/Referidos/${codigo}`),
 
-  /** Auditoría de activaciones de bonus (idempotencia + email enviado). */
   eventosReferido: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/EventosReferido`),
 
-  /** Tickets de canje pendiente — el cliente reserva, el admin confirma. */
   canjesPendientes: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/CanjesPendientes`),
 
   canjePendiente: (db: Firestore, localId: string, canjeId: string) =>
     db.doc(`Locales/${localId}/CanjesPendientes/${canjeId}`),
 
-  /**
-   * Índice del código corto del cliente (humanamente memorizable, ej "ABC-123").
-   * El doc ID es el código sin guión (ABC123). Garantiza unicidad por path.
-   */
   codigosClientes: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/CodigosClientes`),
 
   codigoCliente: (db: Firestore, localId: string, codigoDocId: string) =>
     db.doc(`Locales/${localId}/CodigosClientes/${codigoDocId}`),
 
-  /** Auditoría de canjes completados (app, manual, confirmación en caja). */
   logsCanjes: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/logs_canjes`),
 
-  /** Alertas en tiempo casi-real para el dashboard del dueño. */
   notificacionesCanjes: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/NotificacionesCanje`),
 
@@ -86,25 +75,19 @@ export const cols = {
     db.doc(`Locales/${localId}/Sorteos/${sorteoId}`),
 
   transaccionesCliente: (db: Firestore, localId: string, clienteId: string) =>
-    db.collection(
-      `Locales/${localId}/Clientes/${clienteId}/Transacciones`
-    ),
+    db.collection(`Locales/${localId}/Clientes/${clienteId}/Transacciones`),
 
-  /** Invitaciones únicas post-compra (doc id = token del enlace). */
   invitacionesEncuesta: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/InvitacionesEncuesta`),
 
   invitacionEncuesta: (db: Firestore, localId: string, token: string) =>
     db.doc(`Locales/${localId}/InvitacionesEncuesta/${token}`),
 
-  /** Respuestas de satisfacción completadas. */
   encuestas: (db: Firestore, localId: string) =>
     db.collection(`Locales/${localId}/Encuestas`),
 
   encuesta: (db: Firestore, localId: string, encuestaId: string) =>
     db.doc(`Locales/${localId}/Encuestas/${encuestaId}`),
 
-  /** Encuestas nativas in-app (colección raíz, multi-tenant por campos). */
-  encuestasSatisfaccion: (db: Firestore) =>
-    db.collection("encuestas_satisfaccion")
+  encuestasSatisfaccion: (db: Firestore) => db.collection("encuestas_satisfaccion")
 };

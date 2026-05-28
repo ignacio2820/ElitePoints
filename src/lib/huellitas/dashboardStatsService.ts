@@ -1,7 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
-import type { Cliente, Mascota, Venta } from "./types";
+import type { Cliente, Venta } from "./types";
 
 /**
  * Servicio server-side de métricas para el panel admin.
@@ -91,71 +91,39 @@ export async function calcularEmisionVsCanje(
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// 2) Top mascotas (huellitas acumuladas)
+// 2) Top clientes (puntos históricos)
 // ───────────────────────────────────────────────────────────────────────────
 
-export interface MascotaRanking {
-  nombreMascota: string;
-  especie: Mascota["especie"];
-  raza?: string;
-  /** Nombre del dueño (truncado al primer nombre). */
-  dueno: string;
-  /** Acumulado de huellitas atribuido a esta mascota. */
-  huellitasAcumuladas: number;
+export interface ClienteRanking {
   clienteId: string;
-  /**
-   * Indica si el acumulado es del DUEÑO (compartido con otras mascotas)
-   * o exclusivo de esta mascota (cuando el dueño tiene una sola).
-   */
-  compartido: boolean;
+  nombre: string;
+  puntosHistoricos: number;
+  nivelId?: string;
 }
 
-/**
- * Atribución del acumulado del cliente a sus mascotas:
- *  - 1 mascota → todo el acumulado del cliente va a ella.
- *  - N mascotas → reparte por igual (acumulado / N) y marca `compartido=true`.
- *  - 0 mascotas → cliente no aparece en este ranking.
- *
- * Es la mejor aproximación que podemos hacer sin trackear consumo por
- * mascota a nivel de cada venta. Se documenta como "acumulado del hogar".
- */
-export async function topMascotas(
+export async function topClientesPorPuntos(
   localId: string,
-  top = 5,
-  candidatos = 30
-): Promise<MascotaRanking[]> {
+  top = 5
+): Promise<ClienteRanking[]> {
   const db = adminDb();
   const snap = await cols
     .clientes(db, localId)
     .orderBy("acumuladoHistorico", "desc")
-    .limit(candidatos)
+    .limit(top)
     .get();
 
-  const ranking: MascotaRanking[] = [];
-  for (const d of snap.docs) {
-    const c = d.data() as Partial<Cliente>;
-    const mascotas = (c.mascotas ?? []) as Mascota[];
-    const acumulado = Number(c.acumuladoHistorico ?? 0);
-    if (acumulado <= 0 || mascotas.length === 0) continue;
-
-    const porMascota = Math.floor(acumulado / mascotas.length);
-    const dueno = (c.nombre ?? "—").split(" ")[0];
-    for (const m of mascotas) {
-      if (!m?.nombre) continue;
-      ranking.push({
-        nombreMascota: m.nombre,
-        especie: m.especie,
-        raza: m.raza,
-        dueno,
-        huellitasAcumuladas: porMascota,
+  return snap.docs
+    .map((d) => {
+      const c = d.data() as Partial<Cliente>;
+      const puntos = Number(c.acumuladoHistorico ?? c.huellitasHistoricas ?? 0);
+      return {
         clienteId: d.id,
-        compartido: mascotas.length > 1
-      });
-    }
-  }
-
-  ranking.sort((a, b) => b.huellitasAcumuladas - a.huellitasAcumuladas);
-  return ranking.slice(0, top);
+        nombre: String(c.nombre ?? "Cliente"),
+        puntosHistoricos: puntos,
+        nivelId: c.nivelId
+      };
+    })
+    .filter((r) => r.puntosHistoricos > 0);
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -237,15 +205,15 @@ export async function calcularRetencion(
 
 export interface DashboardStats {
   emision: EmisionVsCanjeStats;
-  topMascotas: MascotaRanking[];
+  topClientes: ClienteRanking[];
   retencion: RetencionStats;
 }
 
 export async function getDashboardStats(localId: string): Promise<DashboardStats> {
-  const [emision, mascotas, retencion] = await Promise.all([
+  const [emision, topClientes, retencion] = await Promise.all([
     calcularEmisionVsCanje(localId, 30),
-    topMascotas(localId, 5),
+    topClientesPorPuntos(localId, 5),
     calcularRetencion(localId, 60)
   ]);
-  return { emision, topMascotas: mascotas, retencion };
+  return { emision, topClientes, retencion };
 }

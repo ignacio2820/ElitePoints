@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Cake,
   ScanLine,
   Settings2,
   Users,
@@ -10,7 +9,6 @@ import {
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ActivarPasskeyAviso } from "@/components/admin/ActivarPasskeyAviso";
 import { AlertasCanjeDashboard } from "@/components/admin/AlertasCanjeDashboard";
-import { DashboardCumpleanos } from "@/components/admin/DashboardCumpleanos";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { requireAdmin } from "@/lib/auth/server";
 import { getInfoLocal } from "@/lib/huellitas/localService";
@@ -22,13 +20,13 @@ export default async function AdminDashboard() {
   const localId = sesion.claims.localId;
   const info = await getInfoLocal(localId);
   const tieneNombre = info.nombre.trim().length > 0 && info.nombre !== localId;
-  const saludo = tieneNombre ? info.nombre : "tu Pet Shop";
+  const saludo = tieneNombre ? info.nombre : "tu comercio";
 
   return (
     <div>
       <section className="mb-10">
         <span className="inline-block rounded-full bg-bark-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-bark-700">
-          Panel del local
+          Panel del comercio
         </span>
         <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight text-bark-700 sm:text-5xl">
           Bienvenido de vuelta,
@@ -36,8 +34,8 @@ export default async function AdminDashboard() {
           <span className="text-terracotta-400">{saludo}</span>
         </h1>
         <p className="mt-3 max-w-xl text-base leading-relaxed text-bark-600">
-          Registrá ventas en caja, configurá tu programa, monitoreá clientes y
-          cumpleaños desde un solo lugar.
+          Registrá ventas en caja, configurá tu programa y monitoreá clientes
+          desde un solo lugar.
         </p>
       </section>
 
@@ -63,7 +61,7 @@ export default async function AdminDashboard() {
                   Registrar nueva venta
                 </h2>
                 <p className="mt-1 max-w-md text-sm text-white/90">
-                  Acreditá huellitas al instante y subí el nivel del cliente.
+                  Acreditá puntos al instante y subí el nivel del cliente.
                 </p>
               </div>
             </div>
@@ -81,13 +79,11 @@ export default async function AdminDashboard() {
 
       <DashboardStats localId={localId} />
 
-      <DashboardCumpleanos localId={localId} />
-
       <section>
         <h2 className="mb-5 font-display text-2xl font-bold text-bark-700">
           Accesos rápidos
         </h2>
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2">
           <DashboardCard
             href="/admin/configuracion"
             title="Configuración"
@@ -96,15 +92,9 @@ export default async function AdminDashboard() {
           />
           <DashboardCard
             href="/admin/clientes"
-            title="Clientes y mascotas"
-            description="Saldos, movimientos y mascotas registradas."
+            title="Clientes"
+            description="Saldos, niveles de lealtad y movimientos."
             Icon={Users}
-          />
-          <DashboardCard
-            href="/admin/cumpleanos"
-            title="Cumpleaños"
-            description="Quiénes cumplen pronto y a quiénes saludamos."
-            Icon={Cake}
           />
         </div>
       </section>

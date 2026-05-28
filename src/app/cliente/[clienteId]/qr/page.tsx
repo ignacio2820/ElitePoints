@@ -4,8 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { requiereAccesoClientePublico } from "@/lib/auth/clientePortal";
 import { adminDb } from "@/lib/firebase/admin";
 import { cols } from "@/lib/firebase/collections";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
-import { MascotPointsFooter } from "@/components/MascotPointsFooter";
+import { PuntoIcon } from "@/components/PuntoIcon";
+import { ElitePointsFooter } from "@/components/ElitePointsFooter";
 import type { Cliente } from "@/lib/huellitas/types";
 import { rutaConLocalId } from "@/lib/huellitas/tenant";
 import { CredencialDigitalCliente } from "@/components/qr/CredencialDigitalCliente";
@@ -14,7 +14,7 @@ import { PantallaQrCliente } from "@/components/qr/PantallaQrCliente";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Tu tarjeta de fidelidad — Huellitas"
+  title: "Tu tarjeta de fidelidad — Puntos"
 };
 
 export default async function ClienteQrPage({
@@ -55,9 +55,9 @@ export default async function ClienteQrPage({
             Volver
           </Link>
           <div className="flex items-center gap-2">
-            <HuellitaIcon size={22} className="text-terracotta-500" />
+            <PuntoIcon size={22} className="text-terracotta-500" />
             <span className="font-display text-lg font-semibold text-bark-800">
-              Huellitas
+              Puntos
             </span>
           </div>
           <div className="w-14" />
@@ -74,7 +74,7 @@ export default async function ClienteQrPage({
             <span className="text-terracotta-600">{nombreLocal}</span>
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-bark-600">
-            Elegí el modo según el lector del local. Subí el brillo al máximo.
+            Elegí el modo según el lector del comercio. Subí el brillo al máximo.
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export default async function ClienteQrPage({
         </div>
       </main>
 
-      <MascotPointsFooter creditLabel="Producido por" className="print:hidden" />
+      <ElitePointsFooter creditLabel="Producido por" className="print:hidden" />
     </PantallaQrCliente>
   );
 }

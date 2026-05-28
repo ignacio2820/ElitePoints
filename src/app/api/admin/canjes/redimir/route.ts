@@ -11,7 +11,7 @@ const Body = z.object({
 });
 
 /**
- * Canje manual en caja: descuenta huellitas, stock y registra en logs_canjes.
+ * Canje manual en caja: descuenta puntos, stock y registra en logs_canjes.
  */
 export async function POST(req: Request) {
   try {

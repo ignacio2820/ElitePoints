@@ -102,7 +102,7 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
               Nuevo cliente
             </h2>
             <p className="mt-1 text-sm text-bark-500">
-              El email no puede repetirse entre clientes de tu local.
+              El email no puede repetirse entre clientes de tu comercio.
             </p>
           </div>
           <button
@@ -136,7 +136,7 @@ export function AltaClienteModal({ onClose, onCreado }: Props) {
             />
           </Field>
 
-          <Field label="Email" hint="Opcional. Debe ser único en tu local si lo completás.">
+          <Field label="Email" hint="Opcional. Debe ser único en tu comercio si lo completás.">
             <TextInput
               type="email"
               value={email}

@@ -87,7 +87,7 @@ export function MargenWarning({
                 {formatARS(cfg.valorMonetarioHuellita)}
               </div>
               <div className="mt-1 text-xs text-bark-600">
-                lo que descontás por cada huellita canjeada
+                lo que descontás por cada punto canjeada
               </div>
             </div>
           </div>
@@ -97,7 +97,7 @@ export function MargenWarning({
             <strong className="text-bark-700">{formatARS(ticketEjemplo)}</strong>{" "}
             el cliente suma{" "}
             <strong className="text-bark-700">
-              {huellitasEjemplo} huellitas
+              {huellitasEjemplo} puntos
             </strong>
             . Cuando las canjee, le estarás descontando{" "}
             <strong className="text-bark-700">

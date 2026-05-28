@@ -1,5 +1,5 @@
 import { CredencialDigitalCliente } from "@/components/qr/CredencialDigitalCliente";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 
 export interface QRClienteProps {
   /** Código corto del cliente (ej. "YMS-Q6Y"). */
@@ -19,7 +19,7 @@ export async function QRCliente({
   return (
     <div className="relative inline-block w-full max-w-full text-center">
       <div className="absolute -left-3 -top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-bark-700 text-cream-50 ring-4 ring-white">
-        <HuellitaIcon size={16} className="text-cream-50" />
+        <PuntoIcon size={16} className="text-cream-50" />
       </div>
       <CredencialDigitalCliente codigoCliente={codigoCliente} qrSize={size} />
       {caption ? (

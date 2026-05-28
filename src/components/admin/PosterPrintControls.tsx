@@ -6,7 +6,7 @@ export function PosterPrintControls() {
   return (
     <div className="mb-8 flex flex-wrap items-center justify-between gap-4 print:hidden">
       <div>
-        <span className="label-elegant">Material del local</span>
+        <span className="label-elegant">Material del comercio</span>
         <h1 className="mt-1 font-display text-3xl font-semibold text-bark-700">
           Póster de registro
         </h1>

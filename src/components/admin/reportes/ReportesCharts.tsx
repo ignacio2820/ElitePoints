@@ -42,7 +42,7 @@ export function ReportesCharts({ ventasSerie, nivelesDistribucion }: Props) {
             Ventas fidelizadas
           </h3>
           <p className="mt-1 text-xs text-cream-100/60">
-            Monto en pesos de ventas que generaron huellitas en el período.
+            Monto en pesos de ventas que generaron puntos en el período.
           </p>
         </header>
         {vacioVentas ? (
@@ -104,12 +104,12 @@ export function ReportesCharts({ ventasSerie, nivelesDistribucion }: Props) {
             Niveles de lealtad
           </h3>
           <p className="mt-1 text-xs text-cream-100/60">
-            Segmentación por huellitas históricas actuales.
+            Segmentación por puntos históricas actuales.
           </p>
         </header>
         {donutData.length === 0 ? (
           <p className="flex h-56 items-center justify-center rounded-2xl border border-dashed border-white/10 text-sm text-cream-100/50">
-            Aún no hay clientes con huellitas históricas.
+            Aún no hay clientes con puntos históricas.
           </p>
         ) : (
           <>

@@ -16,7 +16,6 @@ import {
 import { crearClienteConReferido } from "@/lib/huellitas/referidosService";
 import { mayExposeDevMagicLink } from "@/lib/auth/allowedOrigins";
 import { enviarEmailMagicLink } from "@/lib/email/magicLink";
-import { EspecieSchema } from "@/lib/huellitas/types";
 import { urlVerificacionLogin } from "@/lib/auth/continueUrl";
 import { upsertCustomerIndex } from "@/lib/auth/identityIndex";
 import { RUTA_PORTAL } from "@/lib/auth/redirect";
@@ -30,22 +29,12 @@ const Body = z.object({
   localId: z.string().min(1, "Falta el local"),
   /** Código de referido opcional (cliente vino con un link de invitación). */
   codigoReferido: z.string().max(20).optional(),
-  mascota: z.object({
-    nombre: z.string().min(1, "El nombre de la mascota es obligatorio").max(60),
-    especie: EspecieSchema.default("perro"),
-    raza: z.string().max(80).optional(),
-    /** YYYY-MM-DD; si no se provee usamos un placeholder editable luego. */
-    fechaNacimiento: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD")
-      .optional()
-  })
+  /** Cumpleaños del cliente (YYYY-MM-DD), opcional al registrarse. */
+  fechaNacimiento: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD")
+    .optional()
 });
-
-function fechaPlaceholder(): string {
-  const d = new Date();
-  return `${d.getFullYear() - 1}-01-01`;
-}
 
 export async function POST(req: Request) {
   let raw: unknown;
@@ -140,25 +129,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: msg }, { status: 500 });
     }
 
-    // 6. Adjuntar mascota inicial + uid + claims
-    const fechaNac = data.mascota.fechaNacimiento ?? fechaPlaceholder();
-    await cols
-      .cliente(adminDb(), localId, created.clienteId)
-      .set(
-        {
-          uid,
-          mascotas: [
-            {
-              nombre: data.mascota.nombre,
-              tipo: data.mascota.especie,
-              especie: data.mascota.especie,
-              raza: data.mascota.raza ?? "",
-              fechaNacimiento: fechaNac
-            }
-          ]
-        },
-        { merge: true }
-      );
+    // 6. Vincular uid y datos opcionales del cliente
+    await cols.cliente(adminDb(), localId, created.clienteId).set(
+      {
+        uid,
+        ...(data.fechaNacimiento ? { fechaNacimiento: data.fechaNacimiento } : {})
+      },
+      { merge: true }
+    );
 
     await setCustomClaims(uid, {
       role: "cliente",

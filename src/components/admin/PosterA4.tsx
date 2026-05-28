@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
-import { MascotPointsFooter } from "@/components/MascotPointsFooter";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { ElitePointsFooter } from "@/components/ElitePointsFooter";
+import { PuntoIcon } from "@/components/PuntoIcon";
 
 export interface PosterA4Props {
   nombreLocal: string;
@@ -44,7 +44,7 @@ export async function PosterA4({
 
         <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
           <p className="max-w-[165mm] font-display text-[2rem] font-semibold leading-tight text-bark-700">
-            ¡Sumá Huellitas y canjeá premios!
+            ¡Sumá Puntos y canjeá premios!
           </p>
 
           <div className="mt-8 rounded-[28px] border-2 border-terracotta-400 bg-white p-5 shadow-[inset_0_0_0_1px_rgba(251,133,0,0.2)]">
@@ -63,14 +63,14 @@ export async function PosterA4({
           </p>
 
           <div className="mt-8 flex items-center justify-center gap-3 rounded-full border border-bark-100 bg-cream-50 px-5 py-3">
-            <HuellitaIcon size={28} className="text-terracotta-400" />
+            <PuntoIcon size={28} className="text-terracotta-400" />
             <span className="font-display text-lg font-semibold text-bark-600">
-              Huellitas
+              Puntos
             </span>
           </div>
         </div>
 
-        <MascotPointsFooter variant="poster" />
+        <ElitePointsFooter variant="poster" />
       </div>
     </article>
   );

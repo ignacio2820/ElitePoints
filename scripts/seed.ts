@@ -27,10 +27,11 @@ import { Timestamp } from "firebase-admin/firestore";
 import { adminDb } from "../src/lib/firebase/admin";
 import { cols } from "../src/lib/firebase/collections";
 import {
+  CONFIGURACION_DEFAULT,
   ConfiguracionLocalSchema,
+  NIVELES_DEFAULT,
   PremioSchema,
   type ConfiguracionLocal,
-  type NivelLealtad,
   type Premio
 } from "../src/lib/huellitas/types";
 import { esSlugValido, nombreASlug } from "../src/lib/huellitas/slug";
@@ -40,70 +41,16 @@ interface SeedArgs {
   nombreLocal: string;
 }
 
-const NIVELES: NivelLealtad[] = [
-  {
-    id: "cachorro",
-    nombre: "Cachorro",
-    umbralHistorico: 0,
-    multiplicador: 1.0,
-    descuentoFijoPct: 0,
-    tema: "cachorro",
-    beneficios: [
-      "Acumulás huellitas con cada compra",
-      "Saludo de cumpleaños para tu mascota"
-    ]
-  },
-  {
-    id: "explorador",
-    nombre: "Explorador",
-    umbralHistorico: 500,
-    multiplicador: 1.1,
-    descuentoFijoPct: 0,
-    tema: "explorador",
-    beneficios: [
-      "Sumás 1.1× huellitas en cada compra",
-      "Acceso a premios de nivel intermedio"
-    ]
-  },
-  {
-    id: "gran-guardian",
-    nombre: "Gran Guardián",
-    umbralHistorico: 2000,
-    multiplicador: 1.5,
-    descuentoFijoPct: 0.05,
-    tema: "guardian",
-    beneficios: [
-      "Sumás 1.5× huellitas en cada compra",
-      "5% de descuento fijo en todo el local",
-      "Premios premium reservados a tu rango"
-    ]
-  }
-];
-
 function configFor(localId: string): ConfiguracionLocal {
   return {
+    ...CONFIGURACION_DEFAULT,
     localId,
-    montoParaUnaHuellita: 1000,
-    valorMonetarioHuellita: 10,
-    diasVencimiento: 365,
-    minimoHuellitasCanje: 10,
-    topeDescuentoPorcentual: 0.5,
-    emailsCumpleanosActivos: true,
-    emailsEncuestaActivos: true,
-    bonoCumpleanos: 2,
-    niveles: NIVELES,
-    bonificaciones: {
-      cumpleanos: { activo: true, multiplicador: 2 },
-      primeraCompra: { activo: true, huellitasExtra: 100 }
-    },
     referidos: {
-      activo: true,
+      ...CONFIGURACION_DEFAULT.referidos,
       bonusBienvenida: 30,
-      bonusReferente: 50,
-      diasVencimientoBonus: 365,
-      mensajeWhatsApp:
-        "¡Hola! Te recomiendo {local}. Registrate con mi código y ganá tus primeras Huellitas gratis: {url}"
-    }
+      bonusReferente: 50
+    },
+    niveles: NIVELES_DEFAULT
   };
 }
 
@@ -111,39 +58,33 @@ function premiosFor(localId: string): Premio[] {
   return [
     {
       localId,
-      nombre: "Snack para tu mascota",
-      descripcion:
-        "Una bolsita de snacks naturales para premiar a tu compañero.",
+      nombre: "Beneficio de bienvenida",
+      descripcion: "Premio de entrada para nuevos clientes.",
       costoHuellitas: 50,
-      nivelMinimoId: "cachorro",
-      categoria: "alimento",
+      nivelMinimoId: "bronce",
+      categoria: "otro",
       stock: null,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     },
     {
       localId,
-      nombre: "Juguete sorpresa",
-      descripcion:
-        "Un juguete a elección del local. Ideal para clientes que ya volvieron a comprar.",
+      nombre: "Descuento intermedio",
+      descripcion: "Para clientes nivel Plata.",
       costoHuellitas: 200,
-      nivelMinimoId: "explorador",
-      categoria: "juguete",
+      nivelMinimoId: "plata",
+      categoria: "otro",
       stock: null,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     },
     {
       localId,
-      nombre: "Servicio destacado",
-      descripcion:
-        "Beneficio premium reservado a tus clientes más fieles (corte, baño, consulta o lo que mejor calce con tu negocio).",
+      nombre: "Experiencia premium",
+      descripcion: "Beneficio reservado a clientes Elite.",
       costoHuellitas: 800,
-      nivelMinimoId: "gran-guardian",
+      nivelMinimoId: "elite",
       categoria: "servicio",
       stock: null,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     }
   ];
 }
@@ -247,7 +188,9 @@ async function main(): Promise<void> {
   console.log(
     `   Regla:          1 Huellita = $${cfg.montoParaUnaHuellita}  |  Canje: $${cfg.valorMonetarioHuellita}/Huellita  (1% de costo)`
   );
-  console.log(`   Niveles:        ${NIVELES.map((n) => n.nombre).join(" → ")}`);
+  console.log(
+    `   Niveles:        ${NIVELES_DEFAULT.map((n) => n.nombre).join(" → ")}`
+  );
   console.log(`   Premios:        ${premios.map((p) => p.nombre).join(", ")}`);
   console.log(
     `\n   Verificá en: https://console.firebase.google.com/project/${process.env.FIREBASE_ADMIN_PROJECT_ID}/firestore/data/~2FLocales~2F${localId}`

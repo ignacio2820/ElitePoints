@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import type { VistaEncuestaPublica } from "@/lib/huellitas/encuestasService";
 
 interface Props {
@@ -90,7 +90,7 @@ export function EncuestaSatisfaccionForm({
       <EstadoFinal
         titulo="Ya registramos tu opinión"
         subtitulo="Gracias por haber participado antes."
-        huellitas={vista.huellitasRegalo}
+        puntos={vista.huellitasRegalo}
         mostrarRegalo={false}
       />
     );
@@ -103,9 +103,9 @@ export function EncuestaSatisfaccionForm({
         subtitulo={
           exito.yaCompletada
             ? "Tu encuesta ya estaba registrada."
-            : `Sumaste ${exito.huellitasRegalo} Huellitas extra`
+            : `Sumaste ${exito.huellitasRegalo} Puntos extra`
         }
-        huellitas={exito.huellitasRegalo}
+        puntos={exito.huellitasRegalo}
         mostrarRegalo={!exito.yaCompletada}
       />
     );
@@ -135,7 +135,7 @@ export function EncuestaSatisfaccionForm({
           <Panel
             className="mb-6 flex justify-center gap-2 sm:gap-3"
             role="radiogroup"
-            aria-label="Calificación con huellitas"
+            aria-label="Calificación con puntos"
           >
             {[1, 2, 3, 4, 5].map((n) => {
               const valor = hover || puntuacion;
@@ -159,12 +159,12 @@ export function EncuestaSatisfaccionForm({
                   onBlur={() => setHover(0)}
                   onClick={() => setPuntuacion(n)}
                 >
-                  <HuellitaIcon
+                  <PuntoIcon
                     size={40}
                     filled={seleccionado}
                     className={color}
                   />
-                  <span className="sr-only">{n} huellitas</span>
+                  <span className="sr-only">{n} puntos</span>
                 </button>
               );
             })}
@@ -204,7 +204,7 @@ export function EncuestaSatisfaccionForm({
           </button>
 
           <p className="mt-4 text-center text-xs text-bark-500">
-            Al enviar, sumás {vista.huellitasRegalo} Huellitas de regalo en tu
+            Al enviar, sumás {vista.huellitasRegalo} Puntos de regalo en tu
             billetera.
           </p>
         </>
@@ -216,12 +216,12 @@ export function EncuestaSatisfaccionForm({
 function EstadoFinal({
   titulo,
   subtitulo,
-  huellitas,
+  puntos,
   mostrarRegalo
 }: {
   titulo: string;
   subtitulo: string;
-  huellitas: number;
+  puntos: number;
   mostrarRegalo: boolean;
 }) {
   return (
@@ -235,8 +235,8 @@ function EstadoFinal({
       <p className="mt-2 text-bark-700">{subtitulo}</p>
       {mostrarRegalo ? (
         <Panel className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800">
-          <HuellitaIcon size={22} className="text-[#fb8500]" />
-          +{huellitas} Huellitas
+          <PuntoIcon size={22} className="text-[#fb8500]" />
+          +{puntos} Puntos
         </Panel>
       ) : null}
     </Panel>

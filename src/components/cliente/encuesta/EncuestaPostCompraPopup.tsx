@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { CheckCircle2, Loader2, MessageSquare, X } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { PREGUNTAS_ENCUESTA_IN_APP } from "@/lib/huellitas/encuestasInAppConstants";
 import type { EncuestaPendienteInApp } from "@/lib/huellitas/encuestasInAppService";
 import type { RespuestasEncuestaInApp } from "@/lib/huellitas/encuestasInAppTypes";
@@ -117,7 +117,7 @@ export function EncuestaPostCompraPopup({
                   ¿Cómo fue tu visita?
                 </h2>
                 <p className="mt-1 text-sm text-bark-500">
-                  Hola, {encuesta.nombreCliente}. Sumaste huellitas recién — contanos
+                  Hola, {encuesta.nombreCliente}. Sumaste puntos recién — contanos
                   cómo te fue en {encuesta.nombreLocal}.
                 </p>
               </div>
@@ -199,13 +199,13 @@ export function EncuestaPostCompraPopup({
                   </>
                 ) : (
                   <>
-                    <HuellitaIcon size={18} className="text-white" />
+                    <PuntoIcon size={18} className="text-white" />
                     Enviar
                   </>
                 )}
               </button>
               <p className="mt-2 text-center text-[11px] text-bark-500">
-                +{encuesta.huellitasRegalo} Huellitas de regalo al completar
+                +{encuesta.huellitasRegalo} Puntos de regalo al completar
               </p>
             </footer>
           </>

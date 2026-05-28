@@ -5,7 +5,7 @@ export const CONTACT_EMAIL = 'contacto@webelitesolution.io';
  * Remitente transaccional Resend (string literal limpio, sin comillas escapadas).
  * Debe coincidir con un dominio verificado en Resend.
  */
-export const CONTACT_FROM = 'MascotPoints <contacto@webelitesolution.io>';
+export const CONTACT_FROM = 'ElitePoints <hola@elitepoints.app>';
 
 export function mailtoContact(subject?: string): string {
   const base = `mailto:${CONTACT_EMAIL}`;

@@ -4,7 +4,7 @@ import { VerifyClient } from "./VerifyClient";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Verificando — Huellitas"
+  title: "Verificando — Puntos"
 };
 
 export default function VerifyPage() {

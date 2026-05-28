@@ -5,13 +5,13 @@ import { getSesion } from "@/lib/auth/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Huellitas — Fidelidad para Pet Shops",
+  title: "ElitePoints — Fidelización para comercios",
   description:
-    "Motor de fidelización multi-tenant para Pet Shops. Configurá tu programa, cuidá tu margen y enamorá a tus clientes.",
+    "Motor de puntos multi-tenant para comercios. Configurá tu programa, cuidá tu margen y fidelizá a tus clientes.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "MascotPoints",
+    title: "ElitePoints",
     statusBarStyle: "black-translucent"
   },
   icons: {

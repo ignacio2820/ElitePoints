@@ -17,15 +17,21 @@ export function formatNumber(n: number): string {
   return new Intl.NumberFormat("es-AR").format(n);
 }
 
-/** Huellitas visibles: entero, redondeo al más cercano (≥0,5 sube). */
-export function huellitasEnteras(n: number): number {
+/** Puntos visibles: entero, redondeo al más cercano (≥0,5 sube). */
+export function puntosEnteros(n: number): number {
   if (!Number.isFinite(n)) return 0;
   return Math.round(n);
 }
 
-export function formatHuellitas(n: number): string {
-  return formatNumber(huellitasEnteras(n));
+/** @deprecated Usar `puntosEnteros`. */
+export const huellitasEnteras = puntosEnteros;
+
+export function formatPuntos(n: number): string {
+  return formatNumber(puntosEnteros(n));
 }
+
+/** @deprecated Usar `formatPuntos`. */
+export const formatHuellitas = formatPuntos;
 
 export function formatPercent(n: number, fractionDigits = 1): string {
   return new Intl.NumberFormat("es-AR", {

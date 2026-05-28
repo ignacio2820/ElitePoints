@@ -23,8 +23,8 @@ export interface PayloadEncuestaSatisfaccion {
 export function renderEmailEncuestaSatisfaccion(
   p: PayloadEncuestaSatisfaccion
 ): { subject: string; html: string; text: string } {
-  const huellitas = p.huellitasRegalo ?? HUELLITAS_REGALO_ENCUESTA;
-  const subject = `¿Cómo fue tu visita a ${p.nombreLocal}? 🐾`;
+  const puntos = p.huellitasRegalo ?? HUELLITAS_REGALO_ENCUESTA;
+  const subject = `¿Cómo fue tu visita a ${p.nombreLocal}?`;
 
   const html = `<!doctype html>
 <html lang="es">
@@ -44,12 +44,12 @@ export function renderEmailEncuestaSatisfaccion(
             </p>
             <div style="margin:24px 0;padding:20px;border:1px solid #D8F3DC;border-radius:16px;background:#F1FAEE;">
               <div style="font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#1B4332;font-weight:700;">Regalo por tu feedback</div>
-              <div style="font-size:20px;font-weight:700;margin-top:8px;color:#1B4332;">+${huellitas} Huellitas al completar la encuesta</div>
+              <div style="font-size:20px;font-weight:700;margin-top:8px;color:#1B4332;">+${puntos} Puntos al completar la encuesta</div>
             </div>
             <table cellpadding="0" cellspacing="0" style="margin:28px 0;">
               <tr><td>
                 <a href="${p.urlEncuesta}" style="display:inline-block;background:#FB8500;color:#fff;font-weight:700;font-size:16px;text-decoration:none;padding:14px 28px;border-radius:999px;box-shadow:0 8px 18px -8px rgba(251,133,0,0.55);">
-                  Calificar con Huellitas
+                  Calificar con Puntos
                 </a>
               </td></tr>
             </table>
@@ -69,7 +69,7 @@ export function renderEmailEncuestaSatisfaccion(
 
   const text =
     `Hola ${p.nombreCliente},\n\n` +
-    `¿Cómo fue tu experiencia en ${p.nombreLocal}? Completá la encuesta y sumá ${huellitas} Huellitas:\n` +
+    `¿Cómo fue tu experiencia en ${p.nombreLocal}? Completá la encuesta y sumá ${puntos} Puntos:\n` +
     `${p.urlEncuesta}\n`;
 
   return { subject, html, text };

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { TerminosVolverButton } from "@/components/legal/TerminosVolverButton";
 
 export const metadata: Metadata = {
-  title: "Términos y Condiciones — MascotPoints",
+  title: "Términos y Condiciones — ElitePoints",
   description:
-    "Bases y condiciones del programa de fidelización Huellitas / MascotPoints."
+    "Bases y condiciones del programa de fidelización Puntos / ElitePoints."
 };
 
 const h2Class =
@@ -32,9 +32,9 @@ export default function TerminosYCondicionesPage() {
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <TerminosVolverButton />
           <div className="flex items-center gap-2 text-terracotta-400">
-            <HuellitaIcon size={20} />
+            <PuntoIcon size={20} />
             <span className="font-display text-sm font-bold tracking-tight">
-              <span className="text-white">Mascot</span>
+              <span className="text-white">Elite</span>
               <span className="text-terracotta-400">Points</span>
             </span>
           </div>
@@ -48,14 +48,14 @@ export default function TerminosYCondicionesPage() {
 
         <article className="mt-6">
           <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl">
-            Términos y Condiciones del Programa de Fidelización &quot;MascotPoints&quot;
+            Términos y Condiciones del Programa de Fidelización &quot;ElitePoints&quot;
           </h1>
 
           <section className="mt-10">
             <h2 className={h2Class}>1. Generalidades y Aceptación</h2>
             <p className={pClass}>
               El presente reglamento rige el programa de fidelización y acumulación
-              de puntos (en adelante, &quot;Huellitas&quot;) aplicable para los clientes
+              de puntos (en adelante, &quot;Puntos&quot;) aplicable para los clientes
               del comercio. La participación en el programa implica la aceptación
               total de estas bases y condiciones por parte del usuario.
             </p>
@@ -64,12 +64,12 @@ export default function TerminosYCondicionesPage() {
           <section>
             <h2 className={h2Class}>2. Mecánica de Acumulación y Equivalencias</h2>
             <p className={pClass}>
-              El cliente acumulará Huellitas mediante las compras realizadas
-              exclusivamente en el local comercial. La relación entre el monto de
-              compra y la cantidad de Huellitas otorgadas, así como el valor de
-              conversión de cada Huellita, será fijada dinámicamente por la
+              El cliente acumulará Puntos mediante las compras realizadas
+              exclusivamente en el comercio comercial. La relación entre el monto de
+              compra y la cantidad de Puntos otorgadas, así como el valor de
+              conversión de cada Punto, será fijada dinámicamente por la
               administración del comercio y estará siempre expuesta de forma visible
-              en el mostrador de caja, cartelería del local o dentro de la
+              en el mostrador de caja, cartelería del comercio o dentro de la
               aplicación móvil. El comercio se reserva el derecho de modificar
               estos valores, mínimos de compra y tasas de conversión en cualquier
               momento, sin previo aviso, para adaptarlos a la situación económica o
@@ -80,11 +80,11 @@ export default function TerminosYCondicionesPage() {
           <section>
             <h2 className={h2Class}>3. Identificación del Cliente</h2>
             <p className={pClass}>
-              Para la asignación y cómputo de Huellitas, es requisito obligatorio e
+              Para la asignación y cómputo de Puntos, es requisito obligatorio e
               indispensable que el cliente se identifique en la línea de caja
               mediante su método de alta (DNI, Correo Electrónico, Teléfono o
               Escaneo del Código QR de su aplicación) antes de que se emita el
-              comprobante de pago. No se realizarán cargas de Huellitas de forma
+              comprobante de pago. No se realizarán cargas de Puntos de forma
               retroactiva por compras pasadas donde el cliente no se haya
               identificado.
             </p>
@@ -108,7 +108,7 @@ export default function TerminosYCondicionesPage() {
             <h2 className={h2Class}>5. Restricciones y Vencimiento Automático</h2>
             <ul className={ulClass}>
               <li className={liClass}>
-                Las Huellitas acumuladas son personales, intransferibles y no
+                Las Puntos acumulados son personales, intransferibles y no
                 poseen valor monetario comercial directo; bajo ninguna
                 circunstancia podrán ser canjeadas por dinero en efectivo, crédito
                 de curso legal ni vueltos.
@@ -117,19 +117,19 @@ export default function TerminosYCondicionesPage() {
                 <strong className="font-semibold text-white">
                   Vencimiento:
                 </strong>{" "}
-                Las Huellitas acumuladas tendrán un plazo de caducidad exacto de{" "}
+                Las Puntos acumulados tendrán un plazo de caducidad exacto de{" "}
                 <strong className="font-semibold text-white">
                   trescientos sesenta y cinco (365) días corridos
                 </strong>{" "}
                 a partir de la fecha y hora de la compra específica que las
-                originó. Cumplido dicho plazo anual, las huellitas correspondientes
+                originó. Cumplido dicho plazo anual, las puntos correspondientes
                 a esa carga expirarán automáticamente del sistema sin derecho a
                 reclamo ni reactivación.
               </li>
               <li className={liClass}>
-                El programa de Huellitas no es acumulable con otras promociones,
+                El programa de Puntos no es acumulable con otras promociones,
                 descuentos vigentes, liquidaciones de stock o convenios especiales
-                del local, salvo que el comercio especifique lo contrario de manera
+                del comercio, salvo que el comercio especifique lo contrario de manera
                 expresa.
               </li>
             </ul>
@@ -141,7 +141,7 @@ export default function TerminosYCondicionesPage() {
               El comercio se reserva el derecho de auditar las cuentas, cancelar
               la participación de cualquier usuario que haga un uso indebido o
               fraudulento del sistema, y de dar por finalizado o modificar el
-              programa &quot;MascotPoints&quot; en cualquier momento, garantizando a los
+              programa &quot;ElitePoints&quot; en cualquier momento, garantizando a los
               usuarios un plazo prudencial para el canje de los puntos acumulados
               hasta la fecha de cierre.
             </p>

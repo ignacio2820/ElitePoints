@@ -48,7 +48,7 @@ export default async function ClientesPage() {
       <div className="mb-8">
         <span className="label-elegant">Cartera</span>
         <h1 className="mt-2 font-display text-4xl font-semibold text-bark-700">
-          Clientes y mascotas
+          Clientes
         </h1>
         <p className="mt-2 max-w-xl text-[color:var(--muted)]">
           Buscá por nombre, email o teléfono, gestioná alertas de insatisfacción

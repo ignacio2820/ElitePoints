@@ -30,7 +30,7 @@ export default async function PremiosAdminPage() {
           Premios
         </h1>
         <p className="mt-2 max-w-2xl text-[color:var(--muted)]">
-          Gestioná los premios que tus clientes pueden canjear con Huellitas. Las
+          Gestioná los premios que tus clientes pueden canjear con Puntos. Las
           imágenes se comprimen antes de subirse para ahorrar espacio.
         </p>
       </div>

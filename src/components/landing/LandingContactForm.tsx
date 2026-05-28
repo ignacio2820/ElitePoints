@@ -6,7 +6,7 @@ import { CONTACT_EMAIL } from "@/lib/contact";
 
 const WHATSAPP_NUMERO = "3446536509";
 const WHATSAPP_MENSAJE =
-  "Hola WebElite, quiero recibir información sobre MascotPoints para mi comercio.";
+  "Hola WebElite, quiero recibir información sobre ElitePoints para mi comercio.";
 
 const inputClass =
   "mt-2 w-full rounded-2xl border border-bark-200/80 bg-white px-4 py-3 text-sm text-bark-800 shadow-sm outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-500/25";
@@ -147,7 +147,7 @@ export function LandingContactForm() {
               value={consulta}
               onChange={(e) => setConsulta(e.target.value)}
               className={`${inputClass} min-h-[120px] resize-y`}
-              placeholder="Contanos sobre tu local, cantidad de clientes y qué te gustaría lograr con MascotPoints."
+              placeholder="Contanos sobre tu comercio, cantidad de clientes y qué te gustaría lograr con ElitePoints."
             />
           </label>
         </div>

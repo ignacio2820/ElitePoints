@@ -104,7 +104,7 @@ export function RegistroForm({
         <p className="mt-2 text-sm text-bark-500">
           Tu cuenta quedó creada. Acercate al local con esta confirmación y, en
           tu primera compra, vas a recibir{" "}
-          <strong className="text-bark-700">{bonusBienvenida} huellitas</strong>{" "}
+          <strong className="text-bark-700">{bonusBienvenida} puntos</strong>{" "}
           de bienvenida.
         </p>
         <div className="mt-5 inline-block rounded-xl bg-white px-4 py-3 ring-1 ring-bark-100">
@@ -116,7 +116,7 @@ export function RegistroForm({
           </code>
         </div>
         <p className="mt-4 text-xs text-[color:var(--muted)]">
-          Compartilo con amigos y sumá más huellitas cuando ellos visiten el local.
+          Compartilo con amigos y sumá más puntos cuando ellos visiten el comercio.
         </p>
       </div>
     );

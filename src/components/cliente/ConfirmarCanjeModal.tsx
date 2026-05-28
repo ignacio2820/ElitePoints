@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Gift, Loader2, X } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { formatARS, formatNumber } from "@/lib/utils";
 import type { Premio } from "@/lib/huellitas/types";
 
@@ -19,8 +19,8 @@ export interface ConfirmarCanjeModalProps {
  * Modal de confirmación previa al canje.
  *
  * - Si el cliente tiene saldo suficiente: pregunta "¿Querés canjear X por
- *   Y huellitas? Te quedarán Z huellitas." con dos botones.
- * - Si NO alcanza: mensaje claro con cuántas huellitas faltan + un único
+ *   Y puntos? Te quedarán Z puntos." con dos botones.
+ * - Si NO alcanza: mensaje claro con cuántas puntos faltan + un único
  *   botón "Entendido" (no deja confirmar accidentalmente).
  *
  * Evita canjes por error y dobles clicks.
@@ -74,7 +74,7 @@ export function ConfirmarCanjeModal({
             <Gift size={24} />
           </div>
           <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-terracotta-500">
-            {alcanza ? "Confirmar canje" : "Te faltan huellitas"}
+            {alcanza ? "Confirmar canje" : "Te faltan puntos"}
           </p>
           <h3 className="mt-2 font-display text-2xl font-bold leading-tight text-bark-700">
             {premio.nombre}
@@ -91,7 +91,7 @@ export function ConfirmarCanjeModal({
             <span>Costo</span>
             <span className="inline-flex items-center gap-1.5 font-bold tabular-nums">
               {formatNumber(costo)}
-              <HuellitaIcon size={14} className="text-terracotta-500" />
+              <PuntoIcon size={14} className="text-terracotta-500" />
             </span>
           </div>
           <div className="mt-2 flex items-center justify-between text-bark-600">
@@ -121,7 +121,7 @@ export function ConfirmarCanjeModal({
             <p>
               Vamos a reservar{" "}
               <strong className="text-bark-700">
-                {formatNumber(costo)} huellitas
+                {formatNumber(costo)} puntos
               </strong>{" "}
               y generar tu código. Mostralo al vendedor para retirar el premio.
             </p>
@@ -130,7 +130,7 @@ export function ConfirmarCanjeModal({
           <div className="mx-6 mt-4 rounded-2xl border border-terracotta-200 bg-terracotta-50 px-4 py-3 text-center text-sm font-medium text-bark-700 sm:mx-8">
             Te faltan{" "}
             <strong className="text-terracotta-500">
-              {formatNumber(faltan)} huellitas
+              {formatNumber(faltan)} puntos
             </strong>{" "}
             para canjear este premio. Sumá más en tu próxima compra.
           </div>

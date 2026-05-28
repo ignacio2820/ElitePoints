@@ -15,7 +15,7 @@ import {
   urlWhatsApp
 } from "@/lib/huellitas/referidos";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { cn, formatNumber } from "@/lib/utils";
 
 export interface InvitarAmigosProps {
@@ -38,7 +38,7 @@ export interface InvitarAmigosProps {
  * Sección "Invitar Amigos" en el perfil del cliente.
  * - Código grande, copiable.
  * - Botón directo a WhatsApp con mensaje pre-armado.
- * - Stats de cuántos invitados llegaron + huellitas ganadas.
+ * - Stats de cuántos invitados llegaron + puntos ganadas.
  *
  * Estética: card sólida, el código va en una "boleta" con borde dashed
  * para invitar a copiarlo. Animación sutil al copiar.
@@ -90,16 +90,16 @@ export function InvitarAmigos({
             <span className="label-elegant text-sage-300">Invitá amigos</span>
           </div>
           <CardTitle className="mt-2 text-2xl">
-            Boca en boca, huellitas en tu bolsillo
+            Boca en boca, puntos en tu bolsillo
           </CardTitle>
           <CardDescription>
             Cuando un amigo se registre con tu código y haga su primera compra:
             <strong className="ml-1 text-bark-700">
-              vos ganás {bonusReferente} huellitas
+              vos ganás {bonusReferente} puntos
             </strong>{" "}
             y él/ella suma{" "}
             <strong className="text-bark-700">
-              {bonusBienvenida} huellitas de bienvenida
+              {bonusBienvenida} puntos de bienvenida
             </strong>
             .
           </CardDescription>
@@ -203,8 +203,8 @@ export function InvitarAmigos({
               value={formatNumber(stats.referidosActivados)}
             />
             <Stat
-              icon={<HuellitaIcon size={14} className="text-bark-400" />}
-              label="Huellitas ganadas"
+              icon={<PuntoIcon size={14} className="text-bark-400" />}
+              label="Puntos ganadas"
               value={formatNumber(stats.huellitasGanadas)}
             />
           </div>

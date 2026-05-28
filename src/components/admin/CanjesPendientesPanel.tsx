@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Clock, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import type { CanjePendienteResumen } from "@/lib/huellitas/canjeService";
@@ -68,7 +68,7 @@ export function CanjesPendientesPanel({
         return;
       }
       setSuccess(
-        `Canje confirmado: -${formatNumber(data.huellitasDescontadas)} Huellitas (${data.premioNombre}). Saldo final: ${formatNumber(data.saldoFinal)}.`
+        `Canje confirmado: -${formatNumber(data.huellitasDescontadas)} Puntos (${data.premioNombre}). Saldo final: ${formatNumber(data.saldoFinal)}.`
       );
       reproducirSonidoExitoCanje();
       setTickets((prev) => prev.filter((t) => t.codigo !== codigoNorm));
@@ -140,7 +140,7 @@ export function CanjesPendientesPanel({
             <div>
               <CardTitle className="text-xl">Tickets activos</CardTitle>
               <CardDescription>
-                Confirmar descuenta huellitas y entrega el premio.
+                Confirmar descuenta puntos y entrega el premio.
               </CardDescription>
             </div>
             <button
@@ -188,7 +188,7 @@ export function CanjesPendientesPanel({
                     </p>
                     <div className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-bark-700">
                       {formatNumber(t.costoHuellitas)}
-                      <HuellitaIcon
+                      <PuntoIcon
                         size={12}
                         className="text-terracotta-500"
                       />

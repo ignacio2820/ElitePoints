@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Sparkles, Ticket, Trophy, Zap } from "lucide-react";
 import { CountdownSorteo } from "@/components/sorteos/CountdownSorteo";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import {
   COSTO_BOOST_DUPLICAR,
   COSTO_BOOST_TRIPLICAR,
@@ -107,7 +107,7 @@ export function SorteosClientePanel({ saldoInicial, onSaldoChange }: Props) {
           No hay sorteos activos
         </p>
         <p className="mt-1 text-sm text-bark-500">
-          Cuando tu local lance un sorteo, lo vas a ver acá.
+          Cuando tu comercio lance un sorteo, lo vas a ver acá.
         </p>
       </div>
     );
@@ -124,7 +124,7 @@ export function SorteosClientePanel({ saldoInicial, onSaldoChange }: Props) {
             <p className="mt-1 text-sm text-bark-500">
               Más chances = más peso en el sorteo. Tu saldo:{" "}
               <span className="inline-flex items-center gap-1 font-semibold text-bark-700">
-                <HuellitaIcon size={14} />
+                <PuntoIcon size={14} />
                 {formatNumber(saldo)}
               </span>
             </p>
@@ -184,7 +184,7 @@ export function SorteosClientePanel({ saldoInicial, onSaldoChange }: Props) {
                   {!s.elegible ? (
                     <p className="rounded-xl bg-cream-100 px-4 py-3 text-sm text-bark-600">
                       Tu nivel de lealtad aún no alcanza para este sorteo. Seguí sumando
-                      huellitas históricas en el local.
+                      puntos históricas en el comercio.
                     </p>
                   ) : inscripto ? (
                     <div className="rounded-xl border border-terracotta-100 bg-terracotta-50/40 px-4 py-3">
@@ -248,12 +248,12 @@ export function SorteosClientePanel({ saldoInicial, onSaldoChange }: Props) {
                 <p className="mt-3 rounded-xl border border-terracotta-200 bg-terracotta-50 px-4 py-3 text-sm font-semibold text-terracotta-800">
                   <Trophy size={16} className="mr-1.5 inline" />
                   ¡Felicitaciones! Ganaste este sorteo. Revisá tu email con instrucciones para
-                  retirar el premio en el local.
+                  retirar el premio en el comercio.
                 </p>
               ) : s.ganadorNombre || s.ganadorId ? (
                 <p className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-bark-600">
                   <Trophy size={14} className="text-terracotta-500" />
-                  Ganador: {s.ganadorNombre ?? "Participante del local"}
+                  Ganador: {s.ganadorNombre ?? "Participante del comercio"}
                 </p>
               ) : (
                 <p className="mt-2 text-sm text-bark-500">Sorteo cerrado sin ganador registrado.</p>
@@ -314,7 +314,7 @@ function BoostButton({
           destacado ? "mt-1 text-xs text-white/85" : "mt-1 text-xs text-bark-500"
         }
       >
-        {sub} · {costo} huellitas
+        {sub} · {costo} puntos
       </span>
     </button>
   );

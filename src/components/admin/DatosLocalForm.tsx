@@ -225,7 +225,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
         <div className="flex items-center gap-2 text-terracotta-500">
           <Store size={16} />
           <span className="text-[11px] font-bold uppercase tracking-[0.18em]">
-            Datos del local
+            Datos del comercio
           </span>
         </div>
         <CardTitle className="mt-2 text-2xl font-bold text-bark-700">
@@ -238,7 +238,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
       </CardHeader>
 
       <div className="space-y-5">
-        <Field label="Nombre del local" hint="Lo ve el cliente arriba de su saldo.">
+        <Field label="Nombre del comercio" hint="Lo ve el cliente arriba de su saldo.">
           <input
             className="input-elegant"
             maxLength={120}
@@ -248,7 +248,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
         </Field>
 
         <Field
-          label="Logo del local"
+          label="Logo del comercio"
           hint="Subí un JPG o PNG. Se guarda en Firebase y se muestra en el panel y en Mi Cuenta."
         >
           <div className="flex flex-wrap items-start gap-4">
@@ -257,7 +257,7 @@ export function DatosLocalForm({ initial }: DatosLocalFormProps) {
               <img
                 key={displaySrc}
                 src={displaySrc}
-                alt={`Logo de ${nombre || "tu local"}`}
+                alt={`Logo de ${nombre || "tu comercio"}`}
                 className="h-16 w-16 rounded-xl border border-amber-200/70 bg-white object-cover shadow-soft"
               />
             ) : (

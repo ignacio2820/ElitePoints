@@ -6,7 +6,7 @@ import { AccesoClienteLanding } from "@/components/acceso/AccesoClienteLanding";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Acceso — Huellitas"
+  title: "Acceso — Puntos"
 };
 
 export default async function AccesoPage({
@@ -23,7 +23,7 @@ export default async function AccesoPage({
             Link incompleto
           </h1>
           <p className="mt-3 text-sm text-bark-100">
-            Escaneá el QR del local o pedile el enlace con su identificador.
+            Escaneá el QR del comercio o pedile el enlace con su identificador.
           </p>
           <Link href="/" className="btn-primary mt-8 inline-flex">
             Volver al inicio

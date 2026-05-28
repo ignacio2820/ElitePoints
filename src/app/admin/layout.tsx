@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { MascotPointsFooter } from "@/components/MascotPointsFooter";
+import { ElitePointsFooter } from "@/components/ElitePointsFooter";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { getSesion } from "@/lib/auth/server";
 import { RUTA_PORTAL } from "@/lib/auth/redirect";
@@ -68,7 +68,7 @@ export default async function AdminLayout({
         ) : null}
         {children}
       </main>
-      <MascotPointsFooter className="print:hidden" />
+      <ElitePointsFooter className="print:hidden" />
     </div>
   );
 }

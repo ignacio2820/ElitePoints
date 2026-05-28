@@ -20,7 +20,7 @@ export type WhatsAppSorteoResult = {
 
 export function mensajeWhatsAppLanzamientoSorteo(nombre: string): string {
   const primerNombre = nombre.split(" ")[0] ?? nombre;
-  return `¡Hola ${primerNombre}! 🐾 Hay un nuevo sorteo para tu mascota en el local. ¡Entra a la app y multiplica tus chances con tus huellitas!`;
+  return `¡Hola ${primerNombre}! Hay un nuevo sorteo en tu comercio. Entrá a la app y multiplicá tus chances con tus puntos.`;
 }
 
 export async function enviarWhatsAppSorteo(

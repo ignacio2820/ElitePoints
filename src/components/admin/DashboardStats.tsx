@@ -2,19 +2,19 @@ import {
   AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
-  Heart,
   Sparkles,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
+  Users
 } from "lucide-react";
 import {
   getDashboardStats,
+  type ClienteRanking,
   type DashboardStats as TStats,
   type EmisionVsCanjeStats,
-  type MascotaRanking,
   type RetencionStats
 } from "@/lib/huellitas/dashboardStatsService";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { formatNumber } from "@/lib/utils";
 
 /**
@@ -49,7 +49,7 @@ export async function DashboardStats({ localId }: { localId: string }) {
               </p>
             )}
             <p className="mt-2 text-xs text-bark-600">
-              Si tu local es nuevo, todavía no hay ventas registradas. Cargá la
+              Si tu comercio es nuevo, todavía no hay ventas registradas. Cargá la
               primera desde la Caja.
             </p>
           </div>
@@ -63,7 +63,7 @@ export async function DashboardStats({ localId }: { localId: string }) {
       <CabeceraSeccion />
       <div className="grid gap-5 lg:grid-cols-3">
         <CardEmisionCanje stats={stats.emision} />
-        <CardTopMascotas mascotas={stats.topMascotas} />
+        <CardTopClientes clientes={stats.topClientes} />
         <CardRetencion stats={stats.retencion} />
       </div>
     </section>
@@ -75,7 +75,7 @@ function CabeceraSeccion() {
     <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div>
         <span className="inline-block rounded-full bg-terracotta-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-terracotta-500">
-          Pulse del local
+          Pulse del comercio
         </span>
         <h2 className="mt-2 font-display text-2xl font-bold text-bark-700 sm:text-3xl">
           Métricas en vivo
@@ -89,7 +89,7 @@ function CabeceraSeccion() {
         <code className="rounded bg-bark-50 px-1.5 py-0.5 font-mono text-[10px] text-bark-600">
           /Canjes
         </code>{" "}
-        de tu local (Admin SDK en servidor).
+        de tu comercio (Admin SDK en servidor).
       </p>
     </div>
   );
@@ -122,7 +122,7 @@ function CardEmisionCanje({ stats }: { stats: EmisionVsCanjeStats }) {
         </div>
         <span
           className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tono}`}
-          title="Porcentaje de huellitas emitidas que se canjearon"
+          title="Porcentaje de puntos emitidas que se canjearon"
         >
           {saludable ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
           {stats.emitidas > 0 ? `${ratioPct}%` : "—"}
@@ -150,7 +150,7 @@ function CardEmisionCanje({ stats }: { stats: EmisionVsCanjeStats }) {
       {/* Detalle */}
       <p className="text-[11px] leading-relaxed text-bark-600">
         <strong className="text-bark-700">Canjeadas</strong> = descuento con
-        Huellitas en caja (campo de cada venta) + canjes de premios
+        Puntos en caja (campo de cada venta) + canjes de premios
         confirmados en <code className="font-mono">/Canjes</code>.
       </p>
       <footer className="grid grid-cols-2 gap-3 border-t border-bark-100 pt-3 text-xs text-bark-600">
@@ -200,7 +200,7 @@ function Barra({
           {etiqueta}
         </span>
         <span className="flex items-center gap-1 tabular-nums text-bark-700">
-          <HuellitaIcon size={11} />
+          <PuntoIcon size={11} />
           <span className="font-display text-base font-bold">
             {formatNumber(valor)}
           </span>
@@ -210,16 +210,16 @@ function Barra({
         <div
           className={`h-full rounded-full bg-gradient-to-r ${color} transition-[width] duration-700 ease-out`}
           style={{ width: `${Math.max(pct, valor > 0 ? 4 : 0)}%` }}
-          aria-label={`${etiqueta}: ${valor} huellitas`}
+          aria-label={`${etiqueta}: ${valor} puntos`}
         />
       </div>
     </div>
   );
 }
 
-// ─── Card 2: Top mascotas ─────────────────────────────────────────────────
+// ─── Card 2: Top clientes ─────────────────────────────────────────────────
 
-function CardTopMascotas({ mascotas }: { mascotas: MascotaRanking[] }) {
+function CardTopClientes({ clientes }: { clientes: ClienteRanking[] }) {
   return (
     <article className="card flex flex-col gap-4 rounded-3xl p-6">
       <header className="flex items-start justify-between">
@@ -228,28 +228,26 @@ function CardTopMascotas({ mascotas }: { mascotas: MascotaRanking[] }) {
             Lealtad
           </p>
           <h3 className="mt-1 font-display text-xl font-bold text-bark-700">
-            Top 5 Mascotas
+            Top 5 clientes
           </h3>
           <p className="mt-0.5 text-[11px] text-bark-600">
-            Por acumulado histórico de huellitas (atribución por hogar si hay
-            varias mascotas).
+            Por puntos históricos acumulados en el programa.
           </p>
         </div>
         <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-terracotta-50 text-terracotta-500">
-          <Heart size={16} />
+          <Users size={16} />
         </span>
       </header>
 
-      {mascotas.length === 0 ? (
+      {clientes.length === 0 ? (
         <p className="rounded-2xl bg-cream-50 p-4 text-center text-xs text-bark-600">
-          Cuando registres ventas con clientes que tengan mascotas,
-          aparecerán acá.
+          Cuando registres ventas, tus clientes más activos aparecerán acá.
         </p>
       ) : (
         <ol className="space-y-2">
-          {mascotas.map((m, i) => (
+          {clientes.map((c, i) => (
             <li
-              key={`${m.clienteId}-${m.nombreMascota}-${i}`}
+              key={`${c.clienteId}-${i}`}
               className="flex items-center gap-3 rounded-2xl bg-cream-50 px-3 py-2 transition hover:bg-cream-100"
             >
               <span
@@ -267,24 +265,16 @@ function CardTopMascotas({ mascotas }: { mascotas: MascotaRanking[] }) {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-display text-sm font-bold text-bark-700">
-                  {m.nombreMascota}{" "}
-                  <span className="text-xs font-medium text-bark-500">
-                    · de {m.dueno}
-                  </span>
-                </p>
-                <p className="truncate text-[11px] text-bark-600">
-                  {especieLabel(m.especie)}
-                  {m.raza ? ` · ${m.raza}` : ""}
-                  {m.compartido ? " · acumulado del hogar" : ""}
+                  {c.nombre}
                 </p>
               </div>
               <span className="flex shrink-0 items-center gap-1 tabular-nums">
-                <HuellitaIcon
+                <PuntoIcon
                   size={11}
                   className="text-[#FB8500] drop-shadow-[0_1px_0_rgba(255,255,255,1)]"
                 />
                 <span className="font-display text-sm font-black text-[#FB8500] [text-shadow:0_1px_0_rgb(255_255_255),0_0_12px_rgba(255_255_255,0.85)]">
-                  {formatNumber(m.huellitasAcumuladas)}
+                  {formatNumber(c.puntosHistoricos)}
                 </span>
               </span>
             </li>
@@ -293,23 +283,6 @@ function CardTopMascotas({ mascotas }: { mascotas: MascotaRanking[] }) {
       )}
     </article>
   );
-}
-
-function especieLabel(e: MascotaRanking["especie"]): string {
-  switch (e) {
-    case "perro":
-      return "Perro";
-    case "gato":
-      return "Gato";
-    case "ave":
-      return "Ave";
-    case "roedor":
-      return "Roedor";
-    case "reptil":
-      return "Reptil";
-    default:
-      return "Otro";
-  }
 }
 
 // ─── Card 3: Retención / Churn ────────────────────────────────────────────

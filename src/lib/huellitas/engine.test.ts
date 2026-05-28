@@ -287,36 +287,42 @@ describe("cumpleaños", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("calcularNivel", () => {
-  it("Cachorro cuando acumulado < umbral Explorador", () => {
-    expect(calcularNivel(0, NIVELES_DEFAULT).id).toBe("cachorro");
-    expect(calcularNivel(499, NIVELES_DEFAULT).id).toBe("cachorro");
+  it("Bronce cuando acumulado < umbral Plata", () => {
+    expect(calcularNivel(0, NIVELES_DEFAULT).id).toBe("bronce");
+    expect(calcularNivel(499, NIVELES_DEFAULT).id).toBe("bronce");
   });
 
-  it("Explorador desde 500 hasta < 2000", () => {
-    expect(calcularNivel(500, NIVELES_DEFAULT).id).toBe("explorador");
-    expect(calcularNivel(1999, NIVELES_DEFAULT).id).toBe("explorador");
+  it("Plata desde 500 hasta < 2000", () => {
+    expect(calcularNivel(500, NIVELES_DEFAULT).id).toBe("plata");
+    expect(calcularNivel(1999, NIVELES_DEFAULT).id).toBe("plata");
   });
 
-  it("Gran Guardián desde 2000 en adelante", () => {
-    expect(calcularNivel(2000, NIVELES_DEFAULT).id).toBe("gran-guardian");
-    expect(calcularNivel(99999, NIVELES_DEFAULT).id).toBe("gran-guardian");
+  it("Oro desde 2000 hasta < 5000", () => {
+    expect(calcularNivel(2000, NIVELES_DEFAULT).id).toBe("oro");
+    expect(calcularNivel(4999, NIVELES_DEFAULT).id).toBe("oro");
+  });
+
+  it("Elite desde 5000 en adelante", () => {
+    expect(calcularNivel(5000, NIVELES_DEFAULT).id).toBe("elite");
+    expect(calcularNivel(99999, NIVELES_DEFAULT).id).toBe("elite");
   });
 
   it("multiplicadores correctos", () => {
     expect(calcularNivel(0, NIVELES_DEFAULT).multiplicador).toBe(1.0);
     expect(calcularNivel(500, NIVELES_DEFAULT).multiplicador).toBeCloseTo(1.1);
-    expect(calcularNivel(2000, NIVELES_DEFAULT).multiplicador).toBe(1.5);
+    expect(calcularNivel(5000, NIVELES_DEFAULT).multiplicador).toBe(1.5);
   });
 
-  it("descuento fijo solo en Gran Guardián", () => {
+  it("descuento fijo en Oro y Elite", () => {
     expect(calcularNivel(0, NIVELES_DEFAULT).descuentoFijoPct).toBe(0);
     expect(calcularNivel(500, NIVELES_DEFAULT).descuentoFijoPct).toBe(0);
-    expect(calcularNivel(2000, NIVELES_DEFAULT).descuentoFijoPct).toBe(0.05);
+    expect(calcularNivel(2000, NIVELES_DEFAULT).descuentoFijoPct).toBe(0.02);
+    expect(calcularNivel(5000, NIVELES_DEFAULT).descuentoFijoPct).toBe(0.05);
   });
 
   it("acepta niveles desordenados (defensivo)", () => {
     const desorden = [...NIVELES_DEFAULT].reverse();
-    expect(calcularNivel(700, desorden).id).toBe("explorador");
+    expect(calcularNivel(700, desorden).id).toBe("plata");
   });
 
   it("falla con array vacío", () => {
@@ -325,25 +331,25 @@ describe("calcularNivel", () => {
 });
 
 describe("progresoNivel", () => {
-  it("cliente nuevo: tramo 0%, faltan 500 para Explorador", () => {
+  it("cliente nuevo: tramo 0%, faltan 500 para Plata", () => {
     const p = progresoNivel(0, NIVELES_DEFAULT);
-    expect(p.nivelActual.id).toBe("cachorro");
-    expect(p.nivelSiguiente?.id).toBe("explorador");
+    expect(p.nivelActual.id).toBe("bronce");
+    expect(p.nivelSiguiente?.id).toBe("plata");
     expect(p.huellitasFaltantes).toBe(500);
     expect(p.pctTramo).toBe(0);
   });
 
-  it("a mitad de Explorador (1250 = mitad entre 500 y 2000)", () => {
+  it("a mitad de Plata (1250 = mitad entre 500 y 2000)", () => {
     const p = progresoNivel(1250, NIVELES_DEFAULT);
-    expect(p.nivelActual.id).toBe("explorador");
-    expect(p.nivelSiguiente?.id).toBe("gran-guardian");
+    expect(p.nivelActual.id).toBe("plata");
+    expect(p.nivelSiguiente?.id).toBe("oro");
     expect(p.huellitasFaltantes).toBe(750);
     expect(p.pctTramo).toBeCloseTo(0.5);
   });
 
-  it("Gran Guardián: tramo y global = 1, faltan 0", () => {
-    const p = progresoNivel(2500, NIVELES_DEFAULT);
-    expect(p.nivelActual.id).toBe("gran-guardian");
+  it("Elite: tramo y global = 1, faltan 0", () => {
+    const p = progresoNivel(6000, NIVELES_DEFAULT);
+    expect(p.nivelActual.id).toBe("elite");
     expect(p.nivelSiguiente).toBeNull();
     expect(p.huellitasFaltantes).toBe(0);
     expect(p.pctTramo).toBe(1);
@@ -362,91 +368,74 @@ describe("aumentarCatalogo", () => {
       nombre: "Pelota interactiva",
       descripcion: "",
       costoHuellitas: 80,
-      nivelMinimoId: "cachorro",
+      nivelMinimoId: "bronce",
       categoria: "juguete",
       stock: null,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     },
     {
       localId: "demo",
       nombre: "Bolsa de premios gourmet",
       descripcion: "",
       costoHuellitas: 200,
-      nivelMinimoId: "explorador",
+      nivelMinimoId: "plata",
       categoria: "alimento",
       stock: 5,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     },
     {
       localId: "demo",
-      nombre: "Sesión de spa canino",
+      nombre: "Experiencia premium",
       descripcion: "",
       costoHuellitas: 500,
-      nivelMinimoId: "gran-guardian",
+      nivelMinimoId: "elite",
       categoria: "servicio",
       stock: null,
-      activo: true,
-      especiesObjetivo: ["perro"]
+      activo: true
     },
     {
       localId: "demo",
       nombre: "Ya canjeado",
       descripcion: "",
       costoHuellitas: 50,
-      nivelMinimoId: "cachorro",
+      nivelMinimoId: "bronce",
       categoria: "otro",
       stock: 0,
-      activo: true,
-      especiesObjetivo: []
+      activo: true
     }
   ];
 
-  it("Cachorro con saldo 100: ve los 4, pero algunos bloqueados", () => {
+  it("Bronce con saldo 100: ve los 4, pero algunos bloqueados", () => {
     const cat = aumentarCatalogo(premios, {
       saldoCliente: 100,
       nivelCliente: NIVELES_DEFAULT[0],
-      niveles: NIVELES_DEFAULT,
-      especiesCliente: ["perro"]
+      niveles: NIVELES_DEFAULT
     });
     const byNombre = (n: string) => cat.find((c) => c.premio.nombre === n)!;
 
     expect(byNombre("Pelota interactiva").desbloqueado).toBe(true);
     expect(byNombre("Bolsa de premios gourmet").motivo).toBe("nivel");
-    expect(byNombre("Sesión de spa canino").motivo).toBe("nivel");
+    expect(byNombre("Experiencia premium").motivo).toBe("nivel");
     expect(byNombre("Ya canjeado").motivo).toBe("stock");
   });
 
-  it("Explorador con saldo suficiente desbloquea su premio", () => {
+  it("Plata con saldo suficiente desbloquea su premio", () => {
     const cat = aumentarCatalogo(premios, {
       saldoCliente: 250,
       nivelCliente: NIVELES_DEFAULT[1],
-      niveles: NIVELES_DEFAULT,
-      especiesCliente: ["perro"]
+      niveles: NIVELES_DEFAULT
     });
     expect(cat.find((c) => c.premio.nombre === "Bolsa de premios gourmet")!.desbloqueado).toBe(true);
-    expect(cat.find((c) => c.premio.nombre === "Sesión de spa canino")!.motivo).toBe("nivel");
+    expect(cat.find((c) => c.premio.nombre === "Experiencia premium")!.motivo).toBe("nivel");
   });
 
-  it("filtra premios por especie cuando el cliente tiene mascotas", () => {
-    const cat = aumentarCatalogo(premios, {
-      saldoCliente: 1000,
-      nivelCliente: NIVELES_DEFAULT[2],
-      niveles: NIVELES_DEFAULT,
-      especiesCliente: ["gato"] // sólo gatos: el spa canino se filtra
-    });
-    expect(cat.find((c) => c.premio.nombre === "Sesión de spa canino")).toBeUndefined();
-  });
-
-  it("Gran Guardián con saldo: bloqueado por saldo si no alcanza", () => {
+  it("Elite con saldo bajo: bloqueado por saldo si no alcanza", () => {
     const cat = aumentarCatalogo(premios, {
       saldoCliente: 100,
-      nivelCliente: NIVELES_DEFAULT[2],
-      niveles: NIVELES_DEFAULT,
-      especiesCliente: ["perro"]
+      nivelCliente: NIVELES_DEFAULT[3],
+      niveles: NIVELES_DEFAULT
     });
-    expect(cat.find((c) => c.premio.nombre === "Sesión de spa canino")!.motivo).toBe("saldo");
-    expect(cat.find((c) => c.premio.nombre === "Sesión de spa canino")!.faltanHuellitas).toBe(400);
+    expect(cat.find((c) => c.premio.nombre === "Experiencia premium")!.motivo).toBe("saldo");
+    expect(cat.find((c) => c.premio.nombre === "Experiencia premium")!.faltanHuellitas).toBe(400);
   });
 });

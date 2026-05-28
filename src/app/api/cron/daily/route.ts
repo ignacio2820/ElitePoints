@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { procesarRegalosCumpleanosDiarios } from "@/lib/huellitas/cumpleanosRegaloService";
 import { procesarEmailsEncuestasPendientes } from "@/lib/huellitas/encuestasNotificacionService";
 
 export const runtime = "nodejs";
@@ -7,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Cron único diario (Vercel Hobby: 03:00 — ver `vercel.json`).
- * Ejecuta cumpleaños + encuestas pendientes en una sola invocación.
+ * Encuestas pendientes; regalos de cumpleaños de mascotas eliminados en ElitePoints.
  */
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization") ?? "";
@@ -16,19 +15,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "no autorizado" }, { status: 401 });
   }
 
-  const [cumpleanos, encuestas] = await Promise.all([
-    procesarRegalosCumpleanosDiarios(),
-    procesarEmailsEncuestasPendientes()
-  ]);
+  const encuestas = await procesarEmailsEncuestasPendientes();
 
   return NextResponse.json({
     ok: true,
-    cumpleanos: {
-      regalosOtorgados: cumpleanos.regalosOtorgados,
-      emailsEnviados: cumpleanos.emailsEnviados,
-      omitidos: cumpleanos.omitidos,
-      errores: cumpleanos.errores
-    },
     encuestas: {
       emailsEnviados: encuestas.emailsEnviados,
       omitidos: encuestas.omitidos,

@@ -1,27 +1,42 @@
-import { Award, Compass, Crown } from "lucide-react";
-import type { NivelLealtad } from "@/lib/huellitas/types";
+import { Award, Compass, Crown, Medal } from "lucide-react";
+import type { NivelLealtad, TemaNivel } from "@/lib/huellitas/types";
+import { resolverTemaNivel } from "@/lib/huellitas/types";
 import { cn } from "@/lib/utils";
 
 const tema = {
-  cachorro: {
+  bronce: {
     bg: "bg-cachorro-50",
     text: "text-cachorro-600",
     ring: "ring-cachorro-100",
     icon: Award
   },
-  explorador: {
+  plata: {
     bg: "bg-explorador-50",
     text: "text-explorador-600",
     ring: "ring-explorador-100",
     icon: Compass
   },
-  guardian: {
+  oro: {
+    bg: "bg-terracotta-50",
+    text: "text-terracotta-500",
+    ring: "ring-terracotta-100",
+    icon: Medal
+  },
+  elite: {
     bg: "bg-guardian-50",
     text: "text-guardian-600",
     ring: "ring-guardian-100",
     icon: Crown
   }
-} as const;
+} satisfies Record<
+  TemaNivel,
+  {
+    bg: string;
+    text: string;
+    ring: string;
+    icon: typeof Award;
+  }
+>;
 
 export interface NivelBadgeProps {
   nivel: NivelLealtad;
@@ -36,7 +51,7 @@ export function NivelBadge({
   showMultiplier = false,
   className
 }: NivelBadgeProps) {
-  const t = tema[nivel.tema];
+  const t = tema[resolverTemaNivel(nivel)];
   const Icon = t.icon;
   const sizes = {
     sm: { root: "px-2.5 py-1 text-xs gap-1.5", icon: 12 },

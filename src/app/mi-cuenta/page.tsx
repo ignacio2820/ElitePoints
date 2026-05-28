@@ -18,14 +18,13 @@ import {
   leerHuellitasHistoricas,
   progresoNivelCliente
 } from "@/lib/huellitas/saldosCliente";
-import { GestionMascotasCliente } from "@/components/cliente/GestionMascotasCliente";
 import { InvitarAmigos } from "@/components/InvitarAmigos";
 import { FloatingWhatsApp } from "@/components/cliente/FloatingWhatsApp";
 import { BannerSorteoActivoCliente } from "@/components/cliente/BannerSorteoActivoCliente";
 import { MiCuentaClienteShell } from "@/components/cliente/MiCuentaClienteShell";
 import { clienteTieneSorteoActivoElegible } from "@/lib/huellitas/sorteosService";
 import { MiCuentaPasskeyCard } from "@/components/cliente/MiCuentaPasskeyCard";
-import type { Cliente, Mascota } from "@/lib/huellitas/types";
+import type { Cliente } from "@/lib/huellitas/types";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +77,7 @@ export default async function MiCuentaPage({
     huellitasReservadas: reservadas,
     /**
      * Lo que el cliente puede gastar AHORA. Si tiene tickets pendientes,
-     * esas huellitas están reservadas y no las puede volver a canjear.
+     * esas puntos están reservadas y no las puede volver a canjear.
      */
     saldoDisponible: Math.max(0, saldoBruto - reservadas),
     acumuladoHistorico: leerHuellitasHistoricas(clienteRaw),
@@ -96,27 +95,6 @@ export default async function MiCuentaPage({
   const telefonoWhatsapp = dataLocal.telefonoWhatsapp ?? null;
 
   const progreso = progresoNivelCliente(clienteRaw, cfg.niveles);
-  const mascotasRaw = (clienteRaw.mascotas as Mascota[] | undefined) ?? [];
-  const mascotas: Mascota[] = mascotasRaw.map((m) => ({
-    id: typeof m.id === "string" ? m.id : undefined,
-    nombre: String(m.nombre ?? ""),
-    tipo: typeof m.tipo === "string" ? m.tipo : m.especie ?? "perro",
-    especie: m.especie ?? "perro",
-    raza: m.raza ? String(m.raza) : undefined,
-    fechaNacimiento:
-      typeof m.fechaNacimiento === "string" && m.fechaNacimiento
-        ? m.fechaNacimiento
-        : "2000-01-01",
-    fechaNacimientoBloqueada:
-      m.fechaNacimientoBloqueada === true ||
-      (typeof m.fechaNacimiento === "string" && m.fechaNacimiento.length > 0),
-    notas: m.notas ? String(m.notas) : undefined,
-    color: m.color ? String(m.color) : undefined,
-    sexo: m.sexo,
-    pesoKg: typeof m.pesoKg === "number" ? m.pesoKg : undefined,
-    esterilizado:
-      typeof m.esterilizado === "boolean" ? m.esterilizado : undefined
-  }));
 
   const h = headers();
   const baseUrl = resolvePublicBaseUrl(h);
@@ -173,7 +151,7 @@ export default async function MiCuentaPage({
                   Mostrar mi QR
                 </p>
                 <p className="text-sm text-bark-500">
-                  El local lo escanea para sumar Huellitas
+                  El local lo escanea para sumar Puntos
                 </p>
               </div>
             </div>
@@ -195,7 +173,7 @@ export default async function MiCuentaPage({
                   Catálogo de recompensas
                 </p>
                 <p className="text-sm text-bark-500">
-                  Canjeá tus Huellitas por premios del local
+                  Canjeá tus Puntos por premios del comercio
                 </p>
               </div>
             </div>
@@ -217,15 +195,13 @@ export default async function MiCuentaPage({
                   Sorteos activos
                 </p>
                 <p className="text-sm text-bark-500">
-                  Potenciá tus chances con huellitas
+                  Potenciá tus chances con puntos
                 </p>
               </div>
             </div>
             <ChevronRight className="text-bark-400 transition group-hover:translate-x-1" />
           </div>
         </Link>
-
-        <GestionMascotasCliente mascotasIniciales={mascotas} />
 
         {cliente.codigoReferido && cfg.referidos.activo && (
           <InvitarAmigos

@@ -6,7 +6,7 @@ import type {
   TopClienteReporte,
   TopPremioReporte
 } from "@/lib/huellitas/reportesService";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { formatNumber } from "@/lib/utils";
 
 type Props = {
@@ -27,7 +27,7 @@ export function ReportesRankings({ topClientes, topPremios }: Props) {
               Top 5 clientes
             </h3>
             <p className="mt-1 text-xs text-cream-100/60">
-              Mayor huellitas históricas — tus clientes más fieles.
+              Mayor puntos históricas — tus clientes más fieles.
             </p>
           </div>
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300">
@@ -64,7 +64,7 @@ export function ReportesRankings({ topClientes, topPremios }: Props) {
                   <p className="text-[11px] text-cream-100/55">{c.nivelNombre}</p>
                 </div>
                 <span className="flex shrink-0 items-center gap-1 tabular-nums text-sm font-bold text-amber-200">
-                  <HuellitaIcon size={12} />
+                  <PuntoIcon size={12} />
                   {formatNumber(c.huellitasHistoricas)}
                 </span>
               </li>
@@ -108,7 +108,7 @@ export function ReportesRankings({ topClientes, topPremios }: Props) {
                   <p className="truncate font-semibold text-cream-50">{p.nombre}</p>
                   <p className="text-[11px] text-cream-100/55">
                     {p.cantidad} canje{p.cantidad === 1 ? "" : "s"} ·{" "}
-                    {formatNumber(p.huellitasTotales)} huellitas
+                    {formatNumber(p.huellitasTotales)} puntos
                   </p>
                 </div>
               </li>

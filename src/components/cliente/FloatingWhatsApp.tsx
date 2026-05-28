@@ -15,7 +15,7 @@ export interface FloatingWhatsAppProps {
 }
 
 const PLANTILLA_DEFAULT =
-  "Hola! Soy {nombre}, queria consultar por mi saldo de {saldo} Huellitas en {local}.";
+  "Hola! Soy {nombre}, queria consultar por mi saldo de {saldo} Puntos en {local}.";
 
 function normalizarTelefono(raw: string | null | undefined): string | null {
   if (!raw) return null;

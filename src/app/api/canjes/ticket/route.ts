@@ -20,7 +20,7 @@ const CancelarBody = z.object({
  * POST /api/canjes/ticket
  * Body: { premioId }
  *
- * Crea un canje pendiente: valida saldo, descuenta huellitas (FIFO en lotes)
+ * Crea un canje pendiente: valida saldo, descuenta puntos (FIFO en lotes)
  * y guarda el documento en `Locales/{localId}/Canjes` con estado `pendiente`.
  * El admin marca la entrega desde /admin/canjes.
  */

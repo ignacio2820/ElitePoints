@@ -79,7 +79,7 @@ export function AlertasCanjeDashboard({ localId }: Props) {
             <p className="mt-0.5 text-sm text-amber-900">
               <strong>{n.clienteNombre}</strong> canjeó{" "}
               <strong>{n.premioNombre}</strong> (
-              {formatNumber(n.costoHuellitas)} Huellitas)
+              {formatNumber(n.costoHuellitas)} Puntos)
             </p>
             <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-amber-800">
               <span className="inline-flex items-center gap-1">

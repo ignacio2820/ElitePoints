@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { Bone, Gift, Loader2, Lock, Package, Stethoscope } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import {
   aumentarCatalogo,
   type PremioAumentado
@@ -21,14 +21,13 @@ export interface CanjesDisponiblesProps {
   /**
    * Saldo DISPONIBLE del cliente (saldoHuellitas - huellitasReservadas).
    * Es lo que se compara contra el costo del premio para decidir si está
-   * desbloqueado y para el mensaje "te faltan X huellitas".
+   * desbloqueado y para el mensaje "te faltan X puntos".
    */
   saldoCliente: number;
   /** Valor en pesos de 1 huellita, para mostrar equivalencias. */
   valorMonetarioHuellita?: number;
   nivelCliente: NivelLealtad;
   niveles: NivelLealtad[];
-  especiesCliente?: string[];
   tema?: "premium" | "warm";
   /** `catalog`: grid 2 cols móvil / auto-fill desktop (vista dedicada). */
   layout?: "embedded" | "page" | "catalog";
@@ -41,7 +40,7 @@ export interface CanjesDisponiblesProps {
 }
 
 function descripcionCorta(text: string | undefined, max = 120): string {
-  if (!text?.trim()) return "Canjealo en el local con tu cupón.";
+  if (!text?.trim()) return "Canjealo en el comercio con tu cupón.";
   const t = text.trim();
   if (t.length <= max) return t;
   return `${t.slice(0, max).trim()}…`;
@@ -53,7 +52,6 @@ export function CanjesDisponibles({
   valorMonetarioHuellita = 0,
   nivelCliente,
   niveles,
-  especiesCliente,
   layout: layoutProp,
   embedded = false,
   puedeCanjear = true,
@@ -77,7 +75,6 @@ export function CanjesDisponibles({
     saldoCliente: saldoLocal,
     nivelCliente,
     niveles,
-    especiesCliente
   });
 
   const ordenados = [...aumentado].sort((a, b) => {
@@ -208,7 +205,7 @@ export function CanjesDisponibles({
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-bark-500">
               Elegí un premio y obtené un cupón con código para mostrar en caja.
-              Las huellitas se descuentan al generar el cupón; el local confirma
+              Las puntos se descuentan al generar el cupón; el local confirma
               la entrega cuando te entrega el premio o el descuento.
             </p>
           </header>
@@ -321,7 +318,7 @@ function PremioCard({
             : "mt-auto w-full cursor-not-allowed rounded-full border border-bark-100 bg-cream-50 py-3 font-sans text-sm font-medium text-bark-400"
         }
       >
-        Te faltan {formatNumber(faltanHuellitas)} huellitas
+        Te faltan {formatNumber(faltanHuellitas)} puntos
       </button>
     );
   } else if (motivo === "nivel" && nivelMinimo) {
@@ -410,15 +407,15 @@ function PremioCard({
         }
       >
         {embedded ? (
-          <HuellitaIcon size={22} className="shrink-0 text-white" />
+          <PuntoIcon size={22} className="shrink-0 text-white" />
         ) : (
-          <HuellitaIcon size={22} className="shrink-0 text-bark-500" />
+          <PuntoIcon size={22} className="shrink-0 text-bark-500" />
         )}
         <span className={embedded ? "text-2xl font-extrabold tabular-nums" : "text-lg font-bold tabular-nums tracking-tight"}>
           {formatNumber(premio.costoHuellitas)}
         </span>
         <span className={embedded ? "ml-1 text-sm font-semibold text-white/85" : "text-sm font-medium text-bark-500"}>
-          huellitas
+          puntos
         </span>
       </div>
 

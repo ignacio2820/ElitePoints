@@ -33,7 +33,7 @@ export default async function CanjesPendientesPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-bark-600">
           Acá aparecen los canjes que solicitaron tus clientes. Pedíle el
-          código (o escaneále el QR) y confirmá para descontarle las Huellitas
+          código (o escaneále el QR) y confirmá para descontarle las Puntos
           y entregarle el premio.
         </p>
       </header>

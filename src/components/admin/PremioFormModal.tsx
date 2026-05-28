@@ -122,7 +122,7 @@ export function PremioFormModal({
     try {
       const costo = Number(costoHuellitas);
       if (!Number.isFinite(costo) || costo <= 0) {
-        throw new Error("Ingresá un costo válido en Huellitas.");
+        throw new Error("Ingresá un costo válido en Puntos.");
       }
 
       const stockValue =
@@ -267,7 +267,7 @@ export function PremioFormModal({
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Costo en Huellitas">
+            <Field label="Costo en Puntos">
               <input
                 className="input-elegant"
                 type="number"
@@ -281,7 +281,7 @@ export function PremioFormModal({
 
             <Field
               label="Valor del descuento ($)"
-              hint="Lo que descuenta este premio al canjearse. Vacío = se calcula automático con la configuración del local."
+              hint="Lo que descuenta este premio al canjearse. Vacío = se calcula automático con la configuración del comercio."
             >
               <input
                 className="input-elegant"

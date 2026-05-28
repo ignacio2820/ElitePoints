@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, X } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { payloadQrCanje } from "@/lib/qr/scannerPayloads";
 import { QrEscanerFisico } from "@/components/qr/QrEscanerFisico";
 import { BrilloMaximoQr } from "@/components/qr/BrilloMaximoQr";
@@ -90,8 +90,8 @@ export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
             {ticket.premioNombre}
           </h3>
           <div className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-bark-700">
-            <HuellitaIcon size={14} className="text-terracotta-500" />
-            {formatNumber(ticket.costoHuellitas)} Huellitas
+            <PuntoIcon size={14} className="text-terracotta-500" />
+            {formatNumber(ticket.costoHuellitas)} Puntos
             {typeof ticket.valorDescuento === "number" &&
             ticket.valorDescuento > 0 ? (
               <span className="text-bark-600">
@@ -128,7 +128,7 @@ export function TicketCanjeModal({ ticket, onClose }: TicketCanjeModalProps) {
           <p>
             <strong className="text-bark-700">{ticket.clienteNombre}</strong>,
             mostrale el QR (o el código) al vendedor para retirar tu premio.
-            Las huellitas quedan reservadas hasta que el local confirme.
+            Las puntos quedan reservadas hasta que el local confirme.
           </p>
           {expiraTexto ? (
             <p className="mt-3 text-[11px] font-bold uppercase tracking-widest text-terracotta-500">

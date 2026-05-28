@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Gift, Loader2, RefreshCw } from "lucide-react";
-import { HuellitaIcon } from "@/components/HuellitaIcon";
+import { PuntoIcon } from "@/components/PuntoIcon";
 import { NivelBadge } from "@/components/NivelBadge";
 import { ModalEnviarDisculpa } from "@/components/admin/encuestas/ModalEnviarDisculpa";
 import type { AlertaEncuestaAdmin } from "@/lib/huellitas/encuestasAlertasService";
@@ -104,7 +104,7 @@ export function AlertasEncuestasPanel({ onCountChange }: Props = {}) {
       {alertas.length === 0 && !error ? (
         <div className="surface-card rounded-2xl p-10 text-center">
           <p className="text-bark-600">
-            Cuando un cliente califique con 1 o 2 huellitas, la alerta aparecerá
+            Cuando un cliente califique con 1 o 2 puntos, la alerta aparecerá
             aquí para que puedas recuperarlo.
           </p>
         </div>
@@ -140,7 +140,7 @@ export function AlertasEncuestasPanel({ onCountChange }: Props = {}) {
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-0.5 text-red-700 font-bold">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <HuellitaIcon
+                          <PuntoIcon
                             key={i}
                             size={18}
                             filled={i < a.puntuacion}
