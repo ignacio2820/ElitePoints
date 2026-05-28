@@ -87,11 +87,13 @@ export function LandingPlanesSection() {
             Membresías
           </span>
           <h2 className="mt-4 font-display text-3xl font-extrabold text-bark-700 sm:text-4xl">
-            Elegí el plan para tu Pet Shop o Veterinaria
+            Elegí el plan perfecto para tu Comercio o Negocio
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-bark-600">
-            Sin precios publicados en la web: cada local es distinto. Charlamos por
-            WhatsApp y armamos la propuesta que mejor calce con tu operación.
+            Sin precios publicados en la web: cada comercio es distinto. Charlamos
+            por WhatsApp y armamos la propuesta que mejor calce con tu operación —
+            ya sea una tienda de ropa, un bar, un retail o cualquier rubro con
+            clientes recurrentes.
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import { PuntoIcon } from "@/components/PuntoIcon";
+import { ElitePointsLogo } from "@/components/ElitePointsLogo";
 import { cn } from "@/lib/utils";
 
 export interface LocalBrandMarkProps {
@@ -72,9 +72,10 @@ export function LocalBrandMark({
   }
 
   return (
-    <PuntoIcon
-      size={size}
-      className={cn("shrink-0 text-bark-400", iconClassName, className)}
+    <ElitePointsLogo
+      height={size}
+      className={cn(className)}
+      imageClassName={cn(iconClassName, imageClassName)}
     />
   );
 }

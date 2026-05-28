@@ -1,17 +1,15 @@
 import Link from "next/link";
-import { PuntoIcon, PuntosStack } from "@/components/PuntoIcon";
+import { PuntosStack } from "@/components/PuntoIcon";
+import { ElitePointsLogo } from "@/components/ElitePointsLogo";
 import { LandingMarketingSections } from "@/components/landing/LandingMarketingSections";
 
 export default function Home() {
   return (
     <main className="paw-bg min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-2">
-          <PuntoIcon size={28} className="text-terracotta-400" />
-          <span className="font-display text-xl font-semibold text-white">
-            Elite<span className="text-terracotta-400">Points</span>
-          </span>
-        </div>
+        <Link href="/" className="flex items-center gap-3">
+          <ElitePointsLogo height={40} priority imageClassName="brightness-0 invert" />
+        </Link>
         <nav className="flex items-center gap-3">
           <Link href="/admin/configuracion" className="btn-ghost text-sm">
             Panel del comercio

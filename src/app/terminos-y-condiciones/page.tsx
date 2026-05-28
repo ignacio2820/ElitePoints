@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PuntoIcon } from "@/components/PuntoIcon";
+import { ElitePointsLogo } from "@/components/ElitePointsLogo";
 import { TerminosVolverButton } from "@/components/legal/TerminosVolverButton";
 
 export const metadata: Metadata = {
@@ -31,13 +31,7 @@ export default function TerminosYCondicionesPage() {
       <header className="relative border-b border-white/10 bg-bark-900/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <TerminosVolverButton />
-          <div className="flex items-center gap-2 text-terracotta-400">
-            <PuntoIcon size={20} />
-            <span className="font-display text-sm font-bold tracking-tight">
-              <span className="text-white">Elite</span>
-              <span className="text-terracotta-400">Points</span>
-            </span>
-          </div>
+          <ElitePointsLogo height={32} imageClassName="brightness-0 invert" />
         </div>
       </header>
 

@@ -1,7 +1,8 @@
 import {
+  Award,
   BarChart3,
-  Cake,
   CheckCircle2,
+  LineChart,
   MessageSquareWarning,
   Ticket
 } from "lucide-react";
@@ -18,18 +19,18 @@ const FEATURES = [
       "Creá sorteos con bases de puntos y selección de ganadores transparente para mantener a tu comunidad activa."
   },
   {
-    icon: Cake,
-    emoji: "🎂",
-    title: "Celebración de cumpleaños",
+    icon: Award,
+    emoji: "🏅",
+    title: "Niveles de fidelización premium",
     description:
-      "Sistema inteligente que felicita a tus clientes en su cumpleaños y activa bonos multiplicadores configurables (2x o 3x) para incentivar la compra."
+      "Bronce, Plata, Oro y Elite con multiplicadores configurables para premiar a tus mejores clientes y hacer crecer el ticket promedio."
   },
   {
-    icon: BarChart3,
+    icon: LineChart,
     emoji: "📊",
-    title: "Inteligencia de negocio y reportes",
+    title: "Estadísticas de canjes en tiempo real",
     description:
-      "Dashboard avanzado con gráficas en tiempo real de retención de clientes, métricas de consumo y crecimiento de comunidad."
+      "Dashboard con métricas de canjes, premios más redimidos y evolución del programa para decidir con datos, no con intuición."
   },
   {
     icon: MessageSquareWarning,
@@ -47,7 +48,7 @@ const BENEFITS = [
   },
   {
     title: "Automatización total",
-    text: "El sistema trabaja por vos enviando encuestas y correos de cumpleaños en piloto automático a las 03:00 AM."
+    text: "El sistema trabaja por vos con encuestas post-compra y alertas automáticas en piloto, sin depender de planillas."
   },
   {
     title: "Reputación blindada",

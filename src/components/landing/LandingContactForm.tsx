@@ -111,7 +111,7 @@ export function LandingContactForm() {
               value={nombreComercio}
               onChange={(e) => setNombreComercio(e.target.value)}
               className={inputClass}
-              placeholder="Ej: Pet Shop Luna"
+              placeholder="Ej: Boutique Nova, Bar Central…"
             />
           </label>
           <label className="block">

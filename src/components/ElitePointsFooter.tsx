@@ -1,3 +1,4 @@
+import { ElitePointsLogo } from "@/components/ElitePointsLogo";
 import { CONTACT_EMAIL, mailtoContact } from "@/lib/contact";
 import { inferFooterTone, type FooterVariant } from "@/lib/footerTone";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,14 @@ export function ElitePointsFooter({
         className
       )}
     >
+      {onDark && !isPoster ? (
+        <div className="mb-4 flex justify-center sm:justify-center">
+          <ElitePointsLogo
+            height={36}
+            imageClassName="brightness-0 invert opacity-95"
+          />
+        </div>
+      ) : null}
       <p className={onDark && !isPoster ? "text-zinc-100" : undefined}>
         {creditLabel}{" "}
         <ElitePointsBrand /> ·{" "}

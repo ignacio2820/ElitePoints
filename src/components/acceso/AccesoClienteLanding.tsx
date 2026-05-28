@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowRight, LogIn, PawPrint, UserPlus } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LocalBrandMark } from "@/components/LocalBrandMark";
-import { PuntoIcon } from "@/components/PuntoIcon";
+import { ElitePointsLogo } from "@/components/ElitePointsLogo";
 import { RUTA_PORTAL } from "@/lib/auth/redirect";
 
 interface Props {
@@ -45,9 +45,10 @@ export function AccesoClienteLanding({
               {nombreLocal}
             </span>
           </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-terracotta-400/90">
-            <PuntoIcon size={20} className="text-white" />
-          </div>
+          <ElitePointsLogo
+            height={28}
+            imageClassName="rounded-lg brightness-0 invert"
+          />
         </div>
       </header>
 
