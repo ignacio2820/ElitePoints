@@ -31,7 +31,7 @@ export default function TerminosYCondicionesPage() {
       <header className="relative border-b border-white/10 bg-bark-900/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <TerminosVolverButton />
-          <ElitePointsLogo height={32} imageClassName="brightness-0 invert" />
+          <ElitePointsLogo variant="lockup" size={36} tone="onDark" href="/" />
         </div>
       </header>
 

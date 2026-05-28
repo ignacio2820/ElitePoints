@@ -7,9 +7,7 @@ export default function Home() {
   return (
     <main className="paw-bg min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <Link href="/" className="flex items-center gap-3">
-          <ElitePointsLogo height={40} priority imageClassName="brightness-0 invert" />
-        </Link>
+        <ElitePointsLogo variant="lockup" size={40} priority href="/" tone="onDark" />
         <nav className="flex items-center gap-3">
           <Link href="/admin/configuracion" className="btn-ghost text-sm">
             Panel del comercio

@@ -45,10 +45,7 @@ export function AccesoClienteLanding({
               {nombreLocal}
             </span>
           </div>
-          <ElitePointsLogo
-            height={28}
-            imageClassName="rounded-lg brightness-0 invert"
-          />
+          <ElitePointsLogo variant="icon" size={32} />
         </div>
       </header>
 

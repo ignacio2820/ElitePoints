@@ -73,7 +73,8 @@ export function LocalBrandMark({
 
   return (
     <ElitePointsLogo
-      height={size}
+      variant="icon"
+      size={size}
       className={cn(className)}
       imageClassName={cn(iconClassName, imageClassName)}
     />

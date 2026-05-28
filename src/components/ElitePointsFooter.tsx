@@ -14,7 +14,7 @@ export function ElitePointsBrand({ className }: { className?: string }) {
   return (
     <span className={cn("font-display font-semibold tracking-tight", className)}>
       <span className="text-[#1B4332]">Elite</span>
-      <span className="text-[#FB8500]">Points</span>
+      <span className="text-[#f17105]">Points</span>
     </span>
   );
 }
@@ -42,16 +42,17 @@ export function ElitePointsFooter({
       )}
     >
       {onDark && !isPoster ? (
-        <div className="mb-4 flex justify-center sm:justify-center">
-          <ElitePointsLogo
-            height={36}
-            imageClassName="brightness-0 invert opacity-95"
-          />
+        <div className="mb-4 flex justify-center">
+          <ElitePointsLogo variant="lockup" size={36} tone="onDark" />
         </div>
       ) : null}
       <p className={onDark && !isPoster ? "text-zinc-100" : undefined}>
         {creditLabel}{" "}
-        <ElitePointsBrand /> ·{" "}
+        {!onDark || isPoster ? (
+          <>
+            <ElitePointsBrand /> ·{" "}
+          </>
+        ) : null}
         <span
           className={
             isPoster
