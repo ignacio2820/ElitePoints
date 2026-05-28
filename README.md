@@ -260,3 +260,4 @@ src/
 - [ ] Reglas de bonus (2x huellitas en cumpleaños de la mascota,
       primer compra, etc.) — el motor está preparado para extenderse.
 # MascotPoints
+# ElitePoints
