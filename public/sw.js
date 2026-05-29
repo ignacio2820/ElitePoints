@@ -1,4 +1,4 @@
-const CACHE = "mascotpoints-shell-v2";
+const CACHE = "elitepoints-shell-v3";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -6,8 +6,11 @@ self.addEventListener("install", (event) => {
       cache.addAll([
         "/portal",
         "/manifest.webmanifest",
+        "/favicon.ico",
         "/icons/icon-192.png",
-        "/icons/icon-512.png"
+        "/icons/icon-512.png",
+        "/icons/icon-512-maskable.png",
+        "/icons/apple-touch-icon.png"
       ])
     )
   );

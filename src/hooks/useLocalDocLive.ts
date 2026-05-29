@@ -10,7 +10,7 @@ export interface LocalDocLive {
   cargando: boolean;
 }
 
-export const LOGO_PLACEHOLDER = "/icons/icon.svg";
+export const LOGO_PLACEHOLDER = "/icons/icon-192.png";
 
 function parseLocalDoc(
   localId: string,
